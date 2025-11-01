@@ -53,7 +53,7 @@ same plan because such joins are compiled as scanning node tables followed by sc
 
 ### MULTI_JOIN clause: Worst-case optimal join plans
 
-CypherDB plans can use a combination of binary join operators and [worst-case optimal join (WCOJ)](https://opencypher.github.io/blog/post/wcoj/) operators.
+CypherDB plans can use a combination of binary join operators and worst-case optimal join (WCOJ) operators.
 WCOJ operators are useful if your `MATCH` pattern contains cycles, e.g., when finding triangles or larger cliques of nodes in your databases.
 Using HINT, you can also force the optimizer to use a WCOJ operator as follows:
 
