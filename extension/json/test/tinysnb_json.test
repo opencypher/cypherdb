@@ -1,0 +1,11 @@
+-DATASET JSON tinysnb_json
+-BUFFER_POOL_SIZE 512000000
+
+--
+
+-CASE JsonifyUnion
+-STATEMENT MATCH (o:organisation) RETURN to_json(o.info);
+---- 3
+3.119999885559082
+"abcd"
+"2023-12-15"

@@ -1,0 +1,156 @@
+-DATASET CSV tinysnb
+
+--
+
+-CASE BasicAlgorithm
+-STATEMENT CALL PROJECT_GRAPH('PK', ['person'], ['knows'])
+---- ok
+-STATEMENT CALL PROJECT_GRAPH('PK', [], [])
+---- error
+Runtime exception: Projected graph PK already exists.
+-STATEMENT CALL PROJECT_GRAPH('dummy', ['knows'], [])
+---- error
+Binder exception: knows is not a NODE table.
+-STATEMENT CALL PROJECT_GRAPH('PKWO', ['person', 'organisation'], ['knows', 'workAt'])
+---- ok
+-STATEMENT MATCH (a:person)-[:knows*1..2]->(b:person) WHERE a.ID < 6 RETURN a.fName, COUNT(*);
+---- 4
+Alice|12
+Bob|12
+Carol|12
+Dan|12
+
+-STATEMENT CALL SHOW_PROJECTED_GRAPHS() RETURN *;
+---- 2
+PKWO|NATIVE
+PK|NATIVE
+-STATEMENT CALL PROJECT_GRAPH('withFilter', {'person': 'n.age > 35'}, {'knows':'size(r.comments) > 5'})
+---- ok
+-STATEMENT CALL SHOW_PROJECTED_GRAPHS() RETURN *;
+---- 3
+PKWO|NATIVE
+PK|NATIVE
+withFilter|NATIVE
+-STATEMENT CALL PROJECT_GRAPH('multipleTableWithFilter', {'person': 'n.age > 35', 'organisation': 'n.ID > 2'}, {'knows': 'size(r.comments) > 5'})
+---- ok
+-STATEMENT CALL SHOW_PROJECTED_GRAPHS() RETURN *;
+---- 4
+PKWO|NATIVE
+PK|NATIVE
+multipleTableWithFilter|NATIVE
+withFilter|NATIVE
+-STATEMENT CALL PROJECT_GRAPH('emptygraph', [], [])
+---- ok
+-STATEMENT CALL PROJECT_GRAPH_CYPHER('G', "MATCH (n) WHERE n.age < 10 RETURN n")
+---- ok
+-STATEMENT CALL SHOW_PROJECTED_GRAPHS() RETURN *;
+---- 6
+G|CYPHER
+PKWO|NATIVE
+PK|NATIVE
+multipleTableWithFilter|NATIVE
+withFilter|NATIVE
+emptygraph|NATIVE
+-STATEMENT CALL PROJECTED_GRAPH_INFO('dummy') RETURN *
+---- error
+Binder exception: Graph dummy does not exist.
+-STATEMENT CALL PROJECTED_GRAPH_INFO('emptygraph') RETURN *
+---- 0
+-STATEMENT CALL PROJECTED_GRAPH_INFO('G') RETURN *
+---- 1
+MATCH (n) WHERE n.age < 10 RETURN n
+-STATEMENT CALL PROJECTED_GRAPH_INFO('withFilter') RETURN *
+---- 2
+NODE|person|n.age > 35
+REL|knows|size(r.comments) > 5
+-STATEMENT CALL PROJECTED_GRAPH_INFO('multipleTableWithFilter') RETURN *
+---- 3
+NODE|organisation|n.ID > 2
+NODE|person|n.age > 35
+REL|knows|size(r.comments) > 5
+-STATEMENT CALL PROJECTED_GRAPH_INFO('PKWO') RETURN *
+---- 4
+NODE|organisation|
+NODE|person|
+REL|knows|
+REL|workAt|
+-STATEMENT CALL PROJECTED_GRAPH_INFO('PK') RETURN *
+---- 2
+NODE|person|
+REL|knows|
+-STATEMENT CALL drop_projected_graph('dummy')
+---- error
+Runtime exception: Projected graph dummy does not exists.
+-STATEMENT CALL drop_projected_graph('PK')
+---- ok
+-STATEMENT CALL PROJECT_GRAPH('PK', ['person'], ['knows'])
+---- ok
+-STATEMENT CALL VAR_LEN_JOINS() RETURN *
+---- error
+Catalog exception: function VAR_LEN_JOINS does not exist.
+-STATEMENT MATCH (a:person)<-[:knows*1..2]-(b:person) WHERE a.ID < 6 RETURN a.fName, COUNT(*);
+---- 4
+Alice|12
+Bob|12
+Carol|12
+Dan|12
+-STATEMENT MATCH (a:person)-[:knows*1..2]-(b:person) WHERE a.ID < 6 RETURN a.fName, COUNT(*);
+---- 4
+Alice|42
+Bob|42
+Carol|42
+Dan|42
+-STATEMENT MATCH (a:person)-[e:knows* SHORTEST 1..2]->(b:person) WHERE a.ID = 0 RETURN a.fName, b.fName, length(e);
+---- 3
+Alice|Bob|1
+Alice|Carol|1
+Alice|Dan|1
+
+-STATEMENT MATCH (a:person)-[e:knows|:workAt* SHORTEST 1..2]->(b:person:organisation) WHERE a.ID = 0 RETURN a.fName, b.fName, b.name, length(e);
+---- 5
+Alice|Bob||1
+Alice|Carol||1
+Alice|Dan||1
+Alice||CsWork|2
+Alice||DEsWork|2
+
+-STATEMENT MATCH p = (a:person)-[e:knows*1..2]->(b:person) WHERE a.ID = 0 RETURN properties(nodes(p),'fName'), properties(rels(p), 'date'), properties(rels(e), '_src'), properties(rels(e), '_dst'), a.fName, b.fName
+---- 12
+[Alice,Bob,Alice]|[2021-06-30,2021-06-30]|[0:0,0:1]|[0:1,0:0]|Alice|Alice
+[Alice,Bob,Carol]|[2021-06-30,1950-05-14]|[0:0,0:1]|[0:1,0:2]|Alice|Carol
+[Alice,Bob,Dan]|[2021-06-30,1950-05-14]|[0:0,0:1]|[0:1,0:3]|Alice|Dan
+[Alice,Bob]|[2021-06-30]|[0:0]|[0:1]|Alice|Bob
+[Alice,Carol,Alice]|[2021-06-30,2021-06-30]|[0:0,0:2]|[0:2,0:0]|Alice|Alice
+[Alice,Carol,Bob]|[2021-06-30,1950-05-14]|[0:0,0:2]|[0:2,0:1]|Alice|Bob
+[Alice,Carol,Dan]|[2021-06-30,2000-01-01]|[0:0,0:2]|[0:2,0:3]|Alice|Dan
+[Alice,Carol]|[2021-06-30]|[0:0]|[0:2]|Alice|Carol
+[Alice,Dan,Alice]|[2021-06-30,2021-06-30]|[0:0,0:3]|[0:3,0:0]|Alice|Alice
+[Alice,Dan,Bob]|[2021-06-30,1950-05-14]|[0:0,0:3]|[0:3,0:1]|Alice|Bob
+[Alice,Dan,Carol]|[2021-06-30,2000-01-01]|[0:0,0:3]|[0:3,0:2]|Alice|Carol
+[Alice,Dan]|[2021-06-30]|[0:0]|[0:3]|Alice|Dan
+-STATEMENT MATCH p = (a:person)-[e:knows* 3..3]->(b:person) WHERE a.ID = 0 RETURN COUNT(*)
+---- 1
+27
+-STATEMENT MATCH p = (a:person)-[e:knows* TRAIL 3..3]->(b:person) WHERE a.ID = 0 RETURN COUNT(*)
+---- 1
+24
+# 3 * 3 * 2
+-STATEMENT MATCH p = (a:person)-[e:knows* ACYCLIC 4..4]->(b:person) WHERE a.ID = 0 RETURN COUNT(*)
+---- 1
+54
+
+-STATEMENT MATCH p = (a:person)-[e:knows*1..2]->(b:person) WHERE a.ID = 0 RETURN properties(nodes(p),'fName'), properties(rels(p), 'date'), properties(rels(e), '_src'), properties(rels(e), '_dst'), a.fName, b.fName
+---- 12
+[Alice,Bob,Alice]|[2021-06-30,2021-06-30]|[0:0,0:1]|[0:1,0:0]|Alice|Alice
+[Alice,Bob,Carol]|[2021-06-30,1950-05-14]|[0:0,0:1]|[0:1,0:2]|Alice|Carol
+[Alice,Bob,Dan]|[2021-06-30,1950-05-14]|[0:0,0:1]|[0:1,0:3]|Alice|Dan
+[Alice,Bob]|[2021-06-30]|[0:0]|[0:1]|Alice|Bob
+[Alice,Carol,Alice]|[2021-06-30,2021-06-30]|[0:0,0:2]|[0:2,0:0]|Alice|Alice
+[Alice,Carol,Bob]|[2021-06-30,1950-05-14]|[0:0,0:2]|[0:2,0:1]|Alice|Bob
+[Alice,Carol,Dan]|[2021-06-30,2000-01-01]|[0:0,0:2]|[0:2,0:3]|Alice|Dan
+[Alice,Carol]|[2021-06-30]|[0:0]|[0:2]|Alice|Carol
+[Alice,Dan,Alice]|[2021-06-30,2021-06-30]|[0:0,0:3]|[0:3,0:0]|Alice|Alice
+[Alice,Dan,Bob]|[2021-06-30,1950-05-14]|[0:0,0:3]|[0:3,0:1]|Alice|Bob
+[Alice,Dan,Carol]|[2021-06-30,2000-01-01]|[0:0,0:3]|[0:3,0:2]|Alice|Carol
+[Alice,Dan]|[2021-06-30]|[0:0]|[0:3]|Alice|Dan
+

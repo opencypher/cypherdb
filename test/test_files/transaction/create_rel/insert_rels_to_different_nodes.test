@@ -1,0 +1,88 @@
+-DATASET CSV rel-update-tests
+-TEST_FWD_ONLY_REL
+--
+
+-DEFINE_STATEMENT_BLOCK INSERT_RELS_TO_DIFFERENT_NODES [
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=500 and b.ID=2200 CREATE (a)-[e:knows]->(b)
+---- ok
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=243 and b.ID=744 CREATE (a)-[e:knows{length: 752, place: 'waterloo', tag: ['good test']}]->(b)
+---- ok
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=67 and b.ID=43 CREATE (a)-[e:knows{length: 143,  tag: ['long long string']}]->(b)
+---- ok
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=84 and b.ID=21 CREATE (a)-[e:knows{place: 'very very special string'}]->(b)
+---- ok
+]
+
+
+-CASE insertRelsToDifferentNodesCommitNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_DIFFERENT_NODES
+-STATEMENT COMMIT
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID > 50 RETURN e.length, e.place, e.tag
+---- 4
+143||[long long string]
+752|waterloo|[good test]
+|very very special string|
+||
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertRelsToDifferentNodesCommitRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_DIFFERENT_NODES
+-STATEMENT COMMIT
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID > 50 RETURN e.length, e.place, e.tag
+---- 4
+143||[long long string]
+752|waterloo|[good test]
+|very very special string|
+||
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertRelsToDifferentNodesRollbackNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_DIFFERENT_NODES
+-STATEMENT Rollback
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID > 50 RETURN e.length, e.place, e.tag
+---- 0
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertRelsToDifferentNodesRollbackRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_DIFFERENT_NODES
+-STATEMENT ROLLBACK
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID > 50 RETURN e.length, e.place, e.tag
+---- 0
+-STATEMENT COMMIT;
+---- ok

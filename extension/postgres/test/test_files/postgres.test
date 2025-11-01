@@ -1,0 +1,106 @@
+-DATASET CSV empty
+
+--
+
+-CASE ScanPostgresTable
+-SKIP
+-LOAD_DYNAMIC_EXTENSION postgres
+-STATEMENT ATTACH 'dbname=pgscan user=ci host=localhost' as tinysnb (dbtype POSTGRES);
+---- ok
+-STATEMENT create node table person_copy (ID INt64, fName StRING, gender INT64, isStudent BoOLEAN, isWorker BOOLEAN, age INT64, eyeSight DOUBLE, birthdate DATE, registerTime TIMESTAMP, lastJobDuration interval, workedHours INT64[], usedNames STRING[], height double, u UUID, PRIMARY KEY (ID));
+---- ok
+-STATEMENT COPY person_copy FROM tinysnb.person;
+---- 1
+8 tuples have been copied to the person_copy table.
+-STATEMENT MATCH (p:person_copy) RETURN p.*
+---- 8
+0|Alice|1|True|False|35|5.000000|1900-01-01|2011-08-20 11:25:30|3 years 2 days 13:02:00|[10,5]|[Aida]|1.731000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+10|Hubert Blaine Wolfeschlegelsteinhausenbergerdorff|2|False|True|83|4.900000|1990-11-27|2023-02-21 13:25:30|3 years 2 days 13:02:00|[10,11,12,3,4,5,6,7]|[Ad,De,Hi,Kye,Orlan]|1.323000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18
+2|Bob|2|True|False|30|5.100000|1900-01-01|2008-11-03 15:25:30.000526|10 years 5 months 13:00:00.000024|[12,8]|[Bobby]|0.990000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12
+3|Carol|1|False|True|45|5.000000|1940-06-22|1911-08-20 02:32:21|48:24:11|[4,5]|[Carmen,Fred]|1.000000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13
+5|Dan|2|False|True|20|4.800000|1950-07-23|2031-11-30 12:25:30|10 years 5 months 13:00:00.000024|[1,9]|[Wolfeschlegelstein,Daniel]|1.300000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14
+7|Elizabeth|1|False|True|20|4.700000|1980-10-26|1976-12-23 11:21:42|48:24:11|[2]|[Ein]|1.463000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15
+8|Farooq|2|True|False|25|4.500000|1980-10-26|1972-07-31 13:22:30.678559|00:18:00.024|[3,4,5,6,7]|[Fesdwe]|1.510000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16
+9|Greg|2|False|False|40|4.900000|1980-10-26|1976-12-23 11:21:42|10 years 5 months 13:00:00.000024|[1]|[Grad]|1.600000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17
+-STATEMENT LOAD FROM tinysnb.person RETURN *;
+---- 8
+0|Alice|1|True|False|35|5.000000|1900-01-01|2011-08-20 11:25:30|3 years 2 days 13:02:00|[10,5]|[Aida]|1.731000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+10|Hubert Blaine Wolfeschlegelsteinhausenbergerdorff|2|False|True|83|4.900000|1990-11-27|2023-02-21 13:25:30|3 years 2 days 13:02:00|[10,11,12,3,4,5,6,7]|[Ad,De,Hi,Kye,Orlan]|1.323000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18
+2|Bob|2|True|False|30|5.100000|1900-01-01|2008-11-03 15:25:30.000526|10 years 5 months 13:00:00.000024|[12,8]|[Bobby]|0.990000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12
+3|Carol|1|False|True|45|5.000000|1940-06-22|1911-08-20 02:32:21|48:24:11|[4,5]|[Carmen,Fred]|1.000000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13
+5|Dan|2|False|True|20|4.800000|1950-07-23|2031-11-30 12:25:30|10 years 5 months 13:00:00.000024|[1,9]|[Wolfeschlegelstein,Daniel]|1.300000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14
+7|Elizabeth|1|False|True|20|4.700000|1980-10-26|1976-12-23 11:21:42|48:24:11|[2]|[Ein]|1.463000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15
+8|Farooq|2|True|False|25|4.500000|1980-10-26|1972-07-31 13:22:30.678559|00:18:00.024|[3,4,5,6,7]|[Fesdwe]|1.510000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16
+9|Greg|2|False|False|40|4.900000|1980-10-26|1976-12-23 11:21:42|10 years 5 months 13:00:00.000024|[1]|[Grad]|1.600000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17
+-STATEMENT LOAD FROM tinysnb.organisation RETURN *;
+---- 3
+1|ABFsUni|325|3.700000|-2|10 years 5 months 13:00:00.000024|3 years 5 days|1.000000|{revenue: 138, "location": [toronto,montr,eal]}|{price: [96,56], volume: 1000}|3.12
+4|CsWork|934|4.100000|-100|2 years 4 days 10:00:00|26 years 52 days 48:00:00|0.780000|{revenue: 152, "location": [vanco,uver north area]}|{price: [15,78,671], volume: 432}|abcd
+6|DEsWork|824|4.100000|7|2 years 04:34:00.000022|82:00:00.1|0.520000|{revenue: 558, "location": [very long city name,new york]}|{price: [22], volume: 99}|2023-12-15
+-STATEMENT LOAD FROM tinysnb.movies RETURN *;
+---- 3
+Roma|298|the movie is very interesting and funny|{rating: 1223.000000, stars: 100, "views": 10003, "release": 2011-02-11 16:44:22, release_ns: 2011-02-11 16:44:22, release_ms: 2011-02-11 16:44:22, release_sec: 2011-02-11 16:44:22, release_tz: 2011-02-11 08:44:22+00, film: 2013-02-22, u8: 1, u16: 15, u32: 200, u64: 4, hugedata: -15.000000}|pure ascii characters|[]
+Sóló cón tu párejâ|126|this is a very very good movie|{rating: 5.300000, stars: 2, "views": 152, "release": 2011-08-20 11:25:30, release_ns: 2011-08-20 11:25:30, release_ms: 2011-08-20 11:25:30, release_sec: 2011-08-20 11:25:30, release_tz: 2011-08-20 03:25:30+00, film: 2012-05-11, u8: 220, u16: 20, u32: 1, u64: 180, hugedata: 1844674407370955161600000000.000000}|\x5CxAA\x5CxABinteresting\x5Cx0B|[{"key": audience1, "value": 52},{"key": audience53, "value": 42}]
+The 😂😃🧘🏻‍♂️🌍🌦️🍞🚗 movie|2544|the movie is very very good|{rating: 7.000000, stars: 10, "views": 982, "release": 2018-11-13 13:33:11, release_ns: 2018-11-13 13:33:11, release_ms: 2018-11-13 13:33:11, release_sec: 2018-11-13 13:33:11, release_tz: 2018-11-13 05:33:11+00, film: 2014-09-12, u8: 12, u16: 120, u32: 55, u64: 1, hugedata: -1844674407370954899456.000000}|\x5CxAB\x5CxCD|[{"key": audience1, "value": 33}]
+-STATEMENT LOAD FROM tinysnb.person1 RETURN *;
+---- error
+Catalog exception: person1 does not exist in catalog.
+-STATEMENT LOAD FROM tinysnb1.person RETURN *;
+---- error
+Runtime exception: No database named tinysnb1.
+-STATEMENT ATTACH 'dbname=pgscan user=ci host=localhost' (dbtype POSTGRES);
+---- ok
+-STATEMENT LOAD FROM pgscan.movies RETURN count(*);
+---- 1
+3
+-STATEMENT CALL CLEAR_ATTACHED_DB_CACHE();
+---- ok
+-STATEMENT LOAD FROM pgscan.movies where length > 2500 RETURN name;
+---- 1
+The 😂😃🧘🏻‍♂️🌍🌦️🍞🚗 movie
+# TODO(Ziyi): the error message is dependent on platforms. We have to implement regex in testing framework to handle this.
+#-LOG IncorrectConnectionStr
+#-STATEMENT ATTACH 'dbname=test2132131 user=ci host=127.0.0.1' as tinysnb (dbtype 'POSTGRES');
+#---- error
+#Binder exception: Failed to attach postgres database due to: IO Error: Unable to connect to Postgres at dbname=test2132131 user=ci host=127.0.0.1: connection to server at "127.0.0.1", port 5432 failed: Connection refused
+#	Is the server running on that host and accepting TCP/IP connections?
+# Note: We use duckdb as an intermediate when scanning from postgres. When duckdb attaches postgres, it generates some
+# auxiliary tables to store type information in postgres. When the user calls show_tables(), those auxiliary tables will also
+# be displayed.
+-STATEMENT CALL SHOW_TABLES() RETURN *;
+---- 9
+0|movies|ATTACHED|pgscan(POSTGRES)|
+0|movies|ATTACHED|tinysnb(POSTGRES)|
+0|person_copy|NODE|local(kuzu)|
+1|organisation|ATTACHED|pgscan(POSTGRES)|
+1|organisation|ATTACHED|tinysnb(POSTGRES)|
+2|person|ATTACHED|pgscan(POSTGRES)|
+2|person|ATTACHED|tinysnb(POSTGRES)|
+3|persontest|ATTACHED|pgscan(POSTGRES)|
+3|persontest|ATTACHED|tinysnb(POSTGRES)|
+
+-STATEMENT CALL TABLE_INFO('pgscan.person') RETURN *;
+---- 14
+0|id|INT64|NULL
+1|fname|STRING|NULL
+2|gender|INT64|NULL
+3|isstudent|BOOL|NULL
+4|isworker|BOOL|NULL
+5|age|INT64|NULL
+6|eyesight|DOUBLE|NULL
+7|birthdate|DATE|NULL
+8|registertime|TIMESTAMP|NULL
+9|lastjobduration|INTERVAL|NULL
+10|workedhours|INT64[]|NULL
+11|usednames|STRING[]|NULL
+12|height|DOUBLE|NULL
+13|u|UUID|NULL
+-LOG AttachPGWithNonDefaultSchema
+-STATEMENT ATTACH 'dbname=pgscan user=ci host=localhost' as ku (dbtype POSTGRES, SCHEMA = 'kuzu');
+---- 1
+Attached database successfully.
+-STATEMENT LOAD FROM ku.user RETURN *;
+---- 3
+5|apple|4
+7|ms|5
+9|blackberry|7

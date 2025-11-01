@@ -1,0 +1,49 @@
+-DATASET CSV empty
+-BUFFER_POOL_SIZE 512000000
+
+--
+
+-CASE ExtractNotExistField
+-LOAD_DYNAMIC_EXTENSION json
+-STATEMENT create node table person (id INT64, description json, primary key(id));
+---- ok
+-STATEMENT CREATE (p:person {id: 5, description: 6})
+---- ok
+-STATEMENT CREATE (p:person {id: 8, description: to_json({"family": "anatidae", "species": [ "duck", "goose", "swan", null]})})
+---- ok
+-STATEMENT MATCH (p:person) return json_extract(p.description, '$.family');
+---- 2
+
+"anatidae"
+
+-CASE ExampleDoc
+-LOAD_DYNAMIC_EXTENSION json
+-STATEMENT create node table person (id INT64, description json, primary key(id));
+---- ok
+-STATEMENT CREATE (p:person {id: 20, description: to_json({height: 52, age: 32, scores: [1,2,5]})});
+---- ok
+-STATEMENT CREATE (p:person {id: 40, description: to_json({age: 55, scores: [1,32,5,null], name: 'dan'})});
+---- ok
+-STATEMENT MATCH (p:person) RETURN p.*;
+---- 2
+20|{"height":52,"age":32,"scores":[1,2,5]}
+40|{"age":55,"scores":[1,32,5,null],"name":"dan"}
+-STATEMENT COPY (MATCH (p:person) with p.id as id, p.description as description return *) To '${KUZU_ROOT_DIRECTORY}/test.json'
+---- ok
+-STATEMENT DROP TABLE person;
+---- ok
+-STATEMENT create node table person (id INT64, description json, primary key(id));
+---- ok
+-STATEMENT copy person from '${KUZU_ROOT_DIRECTORY}/test.json'
+---- ok
+
+-CASE JsonFunctionsSample
+-SKIP
+-LOAD_DYNAMIC_EXTENSION json
+-STATEMENT return cast('alice' as json)
+---- 1
+"alice"
+-LOG CompositeJsonStringCast
+-STATEMENT return cast(to_json({age: 50, names: ['Alice', 'Bob', 'Carol', 'Dan'], description: {height: 2}}) as struct(age int64, names string[], description struct(height int64)));
+---- 1
+{age: 50, names: ["Alice","Bob","Carol","Dan"], description: {height: 2}}

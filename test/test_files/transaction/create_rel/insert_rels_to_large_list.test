@@ -1,0 +1,83 @@
+-DATASET CSV rel-update-tests
+-TEST_FWD_ONLY_REL
+--
+
+-DEFINE_STATEMENT_BLOCK INSERT_RELS_TO_LARGE_LIST [
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=0 and b.ID=2301 CREATE (a)-[e:knows{length: 543, place: 'waterloo', tag: ['good']}]->(b)
+---- ok
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=0 and b.ID=2305 CREATE (a)-[e:knows{place: 'ontario', tag: ['excellent']}]->(b)
+---- ok
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=0 and b.ID=2410 CREATE (a)-[e:knows{length: 2340, place: 'toronto'}]->(b)
+---- ok
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=0 and b.ID=2424 CREATE (a)-[e:knows]->(b)
+---- ok
+]
+
+-CASE insertRelsToLargeListCommitNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_LARGE_LIST
+-STATEMENT COMMIT
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID = 0 RETURN e.length, e.place, e.tag
+---- 2304
+<FILE>:insert_rels_to_large_list_commit.txt
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertRelsToLargeListCommitRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_LARGE_LIST
+-STATEMENT COMMIT
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID = 0 RETURN e.length, e.place, e.tag
+---- 2304
+<FILE>:insert_rels_to_large_list_commit.txt
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertRelsToLargeListRollbackNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_LARGE_LIST
+-STATEMENT Rollback
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID = 0 RETURN e.length, e.place, e.tag
+---- 2300
+<FILE>:insert_rels_to_large_list_rollback.txt
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertRelsToLargeListRollbackRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_LARGE_LIST
+-STATEMENT ROLLBACK
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID = 0 RETURN e.length, e.place, e.tag
+---- 2300
+<FILE>:insert_rels_to_large_list_rollback.txt
+-STATEMENT COMMIT;
+---- ok

@@ -1,0 +1,74 @@
+-DATASET CSV rel-update-tests
+-TEST_FWD_ONLY_REL
+--
+
+-CASE deleteAllRelsFromSmallListCommitNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (:person)-[e:knows]->(:person) DELETE e
+---- ok
+-STATEMENT COMMIT
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) WHERE p.ID = 0 RETURN e.length
+---- 0
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE deleteAllRelsFromSmallListCommitRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (:person)-[e:knows]->(:person) DELETE e
+---- ok
+-STATEMENT COMMIT
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) WHERE p.ID = 0 RETURN e.length
+---- 0
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE deleteAllRelsFromSmallListRollbackNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (:person)-[e:knows]->(:person) DELETE e
+---- ok
+-STATEMENT Rollback
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) WHERE p.ID = 0 RETURN e.length
+---- 2300
+<FILE>:delete_rels.txt
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE deleteAllRelsFromSmallListRollbackRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (:person)-[e:knows]->(:person) DELETE e
+---- ok
+-STATEMENT ROLLBACK
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) WHERE p.ID = 0 RETURN e.length
+---- 2300
+<FILE>:delete_rels.txt
+-STATEMENT COMMIT;
+---- ok

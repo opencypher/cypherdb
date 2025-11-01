@@ -1,0 +1,70 @@
+name: LSQB Benchmark
+on:
+  schedule:
+    - cron: "0 5 * * *"
+
+  workflow_dispatch:
+    inputs:
+      scale_factor:
+        description: 'Scale factor'
+        required: true
+        default: "30"
+        type: choice
+        options:
+          - "0.1"
+          - "0.3"
+          - "1"
+          - "3"
+          - "10"
+          - "30"
+          - "100"
+      timeout:
+        description: 'Timeout in milliseconds'
+        required: true
+        default: 60000
+        type: number
+
+jobs:
+  benchmark:
+    name: benchmark
+    env:
+      NUM_THREADS: 30
+      GEN: Ninja
+    runs-on: kuzu-self-hosted-benchmarking
+    steps:
+      - name: Set env for scheduled run
+        if: ${{ github.event_name == 'schedule' }}
+        run: |
+            echo "TIMEOUT=600000" >> $GITHUB_ENV
+            echo "SCALE_FACTOR=100" >> $GITHUB_ENV
+
+      - name: Set env for workflow dispatch
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+            echo "TIMEOUT=${{ github.event.inputs.timeout }}" >> $GITHUB_ENV
+            echo "SCALE_FACTOR=${{ github.event.inputs.scale_factor }}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          pip install -r tools/python_api/requirements_dev.txt 
+          make python
+
+      - name: Benchmark
+        run: python3 benchmark/lsqb/benchmark_runner.py
+
+      - name: Upload result csv
+        uses: actions/upload-artifact@v4
+        with:
+          name: lsqb-benchmark-result
+          path: /tmp/benchmark_result/results.csv
+      
+      - name: Upload log
+        uses: actions/upload-artifact@v4
+        with:
+          name: lsqb-benchmark-log
+          path: lsqb.log
+
+      - name: Report result to server
+        run:  python3 benchmark/lsqb/results_reporter.py

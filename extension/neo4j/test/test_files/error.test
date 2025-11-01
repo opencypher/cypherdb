@@ -1,0 +1,59 @@
+-DATASET CSV empty
+-BUFFER_POOL_SIZE 1024000000
+-SKIP
+
+--
+
+-CASE IncorrectServerInfo
+-STATEMENT load extension "${KUZU_ROOT_DIRECTORY}/extension/neo4j/build/libneo4j.kuzu_extension"
+---- ok
+-STATEMENT CALL NEO4J_MIGRATE("http://incorrect-url-does-not-exist.com:7474", "neo4j", "czy990424", ["person", "student"], ["KNOWS"]);
+---- error
+Runtime exception: Failed to connect to Neo4j. Please check whether it is a valid connection url.
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j!", "czy990424", ["Person", "Student"], ["KNOWS"]);
+---- error
+Runtime exception: Failed to connect to neo4j. Server returned: 401, Response: {"errors":[{"code":"Neo.ClientError.Security.Unauthorized","message":"Invalid credential."}]}.
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424!", ["Person", "Student"], ["KNOWS"]);
+---- error
+Runtime exception: Failed to connect to neo4j. Server returned: 401, Response: {"errors":[{"code":"Neo.ClientError.Security.Unauthorized","message":"Invalid credential."}]}.
+
+-CASE InvalidTableName
+-STATEMENT load extension "${KUZU_ROOT_DIRECTORY}/extension/neo4j/build/libneo4j.kuzu_extension"
+---- ok
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", ["Person123", "Student"], ["KNOWS"]);
+---- error
+Runtime exception: NODE 'Person123' does not exist in neo4j.
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", ["412313"], []);
+---- error
+Runtime exception: NODE '412313' does not exist in neo4j.
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", ["Student", "Teacher"], ["knows11"]);
+---- error
+Runtime exception: REL 'knows11' does not exist in neo4j.
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", [], ["555"]);
+---- error
+Runtime exception: REL '555' does not exist in neo4j.
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", [], ["KNOWS"]);
+---- error
+Runtime exception: The source node label 'Student' of 'KNOWS' must be present in the nodes import list.
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", ["Student"], ["KNOWS"]);
+---- error
+Runtime exception: The source node label 'Teacher' of 'KNOWS' must be present in the nodes import list.
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", ["TwoLabels1"], ["KNOWS2"]);
+---- error
+Runtime exception: Importing nodes with multi-labels is not supported right now. Found: [["TwoLabels1","TwoLabels2"]]
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", ["*"], ["*"]);
+---- error
+Runtime exception: Importing nodes with multi-labels is not supported right now. Found: [["TwoLabels1","TwoLabels2"]]
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", ["*"], ["KNOWS"]);
+---- error
+Runtime exception: Importing nodes with multi-labels is not supported right now. Found: [["TwoLabels1","TwoLabels2"]]
+
+-CASE KleeneStarWithOtherLabels
+-STATEMENT load extension "${KUZU_ROOT_DIRECTORY}/extension/neo4j/build/libneo4j.kuzu_extension"
+---- ok
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", ["*", "Student"], ["KNOWS"]);
+---- error
+Runtime exception: * cannot be specified with other labels
+-STATEMENT CALL NEO4J_MIGRATE("http://localhost:7474", "neo4j", "czy990424", ["Student", "Teacher"], ["KNOWS", "*"]);
+---- error
+Runtime exception: * cannot be specified with other labels

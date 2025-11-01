@@ -1,0 +1,36 @@
+-DATASET CSV empty
+
+--
+
+-CASE JsonkeyTestFromDuckDB
+
+-LOAD_DYNAMIC_EXTENSION json
+
+-STATEMENT RETURN json_keys('{"duck": 42}');
+---- 1
+[duck]
+
+
+-STATEMENT RETURN json_keys('{"duck": 42, "goose": 43}');
+---- 1
+[duck,goose]
+
+
+-STATEMENT RETURN json_keys('["duck", "goose"]');
+---- 1
+[]
+
+# We not yet support this
+#-STATEMENT RETURN json_keys('{"duck": {"key1": 42}, "goose": {"key1": 42, "key2": 43}}', ['duck', 'goose'])
+#---- 1
+#[[key1], [key1, key2]]
+
+-STATEMENT RETURN json_keys(NULL)
+---- 1
+
+-STATEMENT UNWIND ['[]', '{}', '{"a":null,"1":null}', '{"ffffffffffff": [], "json_array_length": [1, 2, 3]}'] AS ARR RETURN json_keys(ARR)
+---- 4
+[]
+[]
+[a,1]
+[ffffffffffff,json_array_length]

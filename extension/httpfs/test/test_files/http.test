@@ -1,0 +1,167 @@
+-DATASET CSV empty
+
+--
+
+-CASE ScanFromHTTPCSV
+-LOAD_DYNAMIC_EXTENSION httpfs
+-STATEMENT load from "http://localhost/dataset/tinysnb/vPerson.csv" return * limit 5;
+---- 5
+0|Alice|1|True|False|35|5.0|1900-01-01|2011-08-20 11:25:30|3 years 2 days 13:02:00|[10,5]|[Aida]|[[10,8],[6,7,8]]|[96,54,86,92]|1.731|A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11
+2|Bob|2|True|False|30|5.1|1900-01-01|2008-11-03 15:25:30.000526|10 years 5 months 13:00:00.000024|[12,8]|[Bobby]|[[8,9],[9,10]]|[98,42,93,88]|0.990|{a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12}
+3|Carol|1|False|True|45|5.0|1940-06-22|1911-08-20 02:32:21|48:24:11|[4,5]|[Carmen,Fred]|[[8,10]]|[91,75,21,95]|1.000|a0eebc999c0b4ef8bb6d6bb9bd380a13
+5|Dan|2|False|True|20|4.8|1950-07-23|2031-11-30 12:25:30|10 years 5 months 13:00:00.000024|[1,9]|[Wolfeschlegelstein,Daniel]|[[7,4],[8,8],[9]]|[76,88,99,89]|1.300|a0ee-bc99-9c0b-4ef8-bb6d-6bb9-bd38-0a14
+7|Elizabeth|1|False|True|20|4.7|1980-10-26|1976-12-23 11:21:42|48:24:11|[2]|[Ein]|[[6],[7],[8]]|[96,59,65,88]|1.463|{a0eebc99-9c0b4ef8-bb6d6bb9-bd380a15}
+
+-CASE ScanFromLargeFiles
+-LOAD_DYNAMIC_EXTENSION httpfs
+-STATEMENT load from "http://localhost/dataset/copy-test/node/parquet/types_50k_0.parquet" return count(*);
+---- 1
+16666
+-STATEMENT load from "http://localhost/dataset/copy-test/node/csv/types_50k.csv" (auto_detect = false) return count(*);
+---- 1
+50000
+
+-CASE CopyFromHTTPCSV
+-LOAD_DYNAMIC_EXTENSION httpfs
+-STATEMENT CREATE NODE TABLE User(name STRING, age INT64, PRIMARY KEY (name))
+---- ok
+-STATEMENT COPY User from "http://localhost/dataset/demo-db/csv/user.csv"
+---- ok
+-STATEMENT match (u:User) return u.*
+---- 4
+Adam|30
+Karissa|40
+Zhang|50
+Noura|25
+
+-CASE ScanFromHTTPS
+-LOAD_DYNAMIC_EXTENSION httpfs
+-STATEMENT load from "https://extension.kuzudb.com/dataset/test/city.csv" return *;
+---- 3
+Waterloo|150000
+Kitchener|200000
+Guelph|75000
+
+-CASE AttachHTTPDatabase
+-LOAD_DYNAMIC_EXTENSION httpfs
+-LOG validateTableNotExists
+-STATEMENT CALL SHOW_TABLES() RETURN *
+---- 0
+-STATEMENT attach 'http://localhost/dataset/databases/tinysnb/db.kz' as test (dbtype kuzu)
+---- ok
+-LOG validateTableExistsAfterAttach
+-STATEMENT CALL SHOW_TABLES() RETURN *
+---- 8
+0|person|NODE|test(KUZU)|
+1|organisation|NODE|test(KUZU)|
+2|movies|NODE|test(KUZU)|
+4|knows|REL|test(KUZU)|
+6|studyAt|REL|test(KUZU)|
+8|workAt|REL|test(KUZU)|
+10|meets|REL|test(KUZU)|
+12|marries|REL|test(KUZU)|
+
+-LOG QueryRemoteNodeTable
+-STATEMENT match (p:person) return p.*
+---- 8
+0|Alice|1|True|False|35|5.000000|1900-01-01|2011-08-20 11:25:30|3 years 2 days 13:02:00|[10,5]|[Aida]|[[10,8],[6,7,8]]|[96,54,86,92]|1.731000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+2|Bob|2|True|False|30|5.100000|1900-01-01|2008-11-03 15:25:30.000526|10 years 5 months 13:00:00.000024|[12,8]|[Bobby]|[[8,9],[9,10]]|[98,42,93,88]|0.990000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12
+3|Carol|1|False|True|45|5.000000|1940-06-22|1911-08-20 02:32:21|48:24:11|[4,5]|[Carmen,Fred]|[[8,10]]|[91,75,21,95]|1.000000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13
+5|Dan|2|False|True|20|4.800000|1950-07-23|2031-11-30 12:25:30|10 years 5 months 13:00:00.000024|[1,9]|[Wolfeschlegelstein,Daniel]|[[7,4],[8,8],[9]]|[76,88,99,89]|1.300000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14
+7|Elizabeth|1|False|True|20|4.700000|1980-10-26|1976-12-23 11:21:42|48:24:11|[2]|[Ein]|[[6],[7],[8]]|[96,59,65,88]|1.463000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15
+8|Farooq|2|True|False|25|4.500000|1980-10-26|1972-07-31 13:22:30.678559|00:18:00.024|[3,4,5,6,7]|[Fesdwe]|[[8]]|[80,78,34,83]|1.510000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16
+9|Greg|2|False|False|40|4.900000|1980-10-26|1976-12-23 04:41:42|10 years 5 months 13:00:00.000024|[1]|[Grad]|[[10]]|[43,83,67,43]|1.600000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17
+10|Hubert Blaine Wolfeschlegelsteinhausenbergerdorff|2|False|True|83|4.900000|1990-11-27|2023-02-21 13:25:30|3 years 2 days 13:02:00|[10,11,12,3,4,5,6,7]|[Ad,De,Hi,Kye,Orlan]|[[7],[10],[6,7]]|[77,64,100,54]|1.323000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18
+-LOG QueryRemoteRelTable
+-STATEMENT match (p:person)-[e:knows]->(p1:person) return p.fName, p1.fName, e.date
+---- 14
+Alice|Bob|2021-06-30
+Alice|Carol|2021-06-30
+Alice|Dan|2021-06-30
+Bob|Alice|2021-06-30
+Bob|Carol|1950-05-14
+Bob|Dan|1950-05-14
+Carol|Alice|2021-06-30
+Carol|Bob|1950-05-14
+Carol|Dan|2000-01-01
+Dan|Alice|2021-06-30
+Dan|Bob|1950-05-14
+Dan|Carol|2000-01-01
+Elizabeth|Farooq|1905-12-12
+Elizabeth|Greg|1905-12-12
+-LOG CreateNodeError
+-STATEMENT CREATE (p:person {ID: 5})
+---- error
+Connection exception: Cannot execute write operations in a read-only database!
+-STATEMENT DETACH test
+---- ok
+-STATEMENT match (p:person) return p.*
+---- error
+Binder exception: Table person does not exist.
+-STATEMENT CREATE NODE TABLE PERSON(ID INT64, PRIMARY KEY(ID))
+---- ok
+-STATEMENT CREATE (p:PERSON {ID: 5})
+---- ok
+-STATEMENT match (p:PERSON) return p.*
+---- 1
+5
+-STATEMENT CALL HTTP_CACHE_FILE=FALSE
+-LOG AttachAgain
+-STATEMENT attach 'http://localhost/dataset/databases/tinysnb/db.kz' as tinysnb (dbtype kuzu)
+---- ok
+-LOG QueryRemoteNodeTable
+-STATEMENT match (p:person) return p.*
+---- 8
+0|Alice|1|True|False|35|5.000000|1900-01-01|2011-08-20 11:25:30|3 years 2 days 13:02:00|[10,5]|[Aida]|[[10,8],[6,7,8]]|[96,54,86,92]|1.731000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+2|Bob|2|True|False|30|5.100000|1900-01-01|2008-11-03 15:25:30.000526|10 years 5 months 13:00:00.000024|[12,8]|[Bobby]|[[8,9],[9,10]]|[98,42,93,88]|0.990000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12
+3|Carol|1|False|True|45|5.000000|1940-06-22|1911-08-20 02:32:21|48:24:11|[4,5]|[Carmen,Fred]|[[8,10]]|[91,75,21,95]|1.000000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13
+5|Dan|2|False|True|20|4.800000|1950-07-23|2031-11-30 12:25:30|10 years 5 months 13:00:00.000024|[1,9]|[Wolfeschlegelstein,Daniel]|[[7,4],[8,8],[9]]|[76,88,99,89]|1.300000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14
+7|Elizabeth|1|False|True|20|4.700000|1980-10-26|1976-12-23 11:21:42|48:24:11|[2]|[Ein]|[[6],[7],[8]]|[96,59,65,88]|1.463000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15
+8|Farooq|2|True|False|25|4.500000|1980-10-26|1972-07-31 13:22:30.678559|00:18:00.024|[3,4,5,6,7]|[Fesdwe]|[[8]]|[80,78,34,83]|1.510000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16
+9|Greg|2|False|False|40|4.900000|1980-10-26|1976-12-23 04:41:42|10 years 5 months 13:00:00.000024|[1]|[Grad]|[[10]]|[43,83,67,43]|1.600000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17
+10|Hubert Blaine Wolfeschlegelsteinhausenbergerdorff|2|False|True|83|4.900000|1990-11-27|2023-02-21 13:25:30|3 years 2 days 13:02:00|[10,11,12,3,4,5,6,7]|[Ad,De,Hi,Kye,Orlan]|[[7],[10],[6,7]]|[77,64,100,54]|1.323000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18
+-STATEMENT call SHOW_ATTACHED_DATABASES() return *;
+---- 1
+tinysnb|KUZU
+-STATEMENT detach tinysnb
+---- ok
+-LOG AttachWithSlashStylePath
+-STATEMENT attach 'http://localhost/dataset/databases/tinysnb/db.kz' as tinysnb1 (dbtype kuzu)
+---- ok
+-STATEMENT call SHOW_ATTACHED_DATABASES() return *;
+---- 1
+tinysnb1|KUZU
+-STATEMENT detach tinysnb1
+---- ok
+
+-CASE AttachNotExistPath
+-LOAD_DYNAMIC_EXTENSION httpfs
+-STATEMENT attach 'http://localhost/dataset/databases/tinysnb1' as test (dbtype kuzu)
+---- error
+Runtime exception: Cannot attach a remote Kuzu database due to invalid path: http://localhost/dataset/databases/tinysnb1.
+
+#TODO(Ziyi): figure out a way to automate upload if storage has changed.
+-CASE AttachDBWithNonEmptyWAL
+-SKIP
+-LOAD_DYNAMIC_EXTENSION httpfs
+-STATEMENT attach 'http://localhost/dataset/databases/non-empty-wal' as test (dbtype kuzu)
+---- error
+Runtime exception: Cannot attach an external Kuzu database with non-empty wal file. Try manually checkpointing the external database (i.e., run "CHECKPOINT;").
+
+-CASE AttachKuzuWithRelativePath
+-STATEMENT attach '${KUZU_ROOT_DIRECTORY}/dataset/databases/tinysnb/./' (dbtype kuzu)
+---- error
+Binder exception: Attaching a kuzu database without an alias is not allowed.
+
+-CASE InstallOfficialExtension
+-SKIP
+-STATEMENT FORCE INSTALL httpfs FROM 'http://localhost/extension/repo/'
+---- ok
+-LOAD_DYNAMIC_EXTENSION httpfs
+-STATEMENT load from "http://localhost/dataset/tinysnb/vPerson.csv" return * limit 5;
+---- 5
+0|Alice|1|True|False|35|5.0|1900-01-01|2011-08-20 11:25:30|3 years 2 days 13:02:00|[10,5]|[Aida]|[[10,8],[6,7,8]]|[96,54,86,92]|1.731|A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11
+2|Bob|2|True|False|30|5.1|1900-01-01|2008-11-03 15:25:30.000526|10 years 5 months 13:00:00.000024|[12,8]|[Bobby]|[[8,9],[9,10]]|[98,42,93,88]|0.990|{a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12}
+3|Carol|1|False|True|45|5.0|1940-06-22|1911-08-20 02:32:21|48:24:11|[4,5]|[Carmen,Fred]|[[8,10]]|[91,75,21,95]|1.000|a0eebc999c0b4ef8bb6d6bb9bd380a13
+5|Dan|2|False|True|20|4.8|1950-07-23|2031-11-30 12:25:30|10 years 5 months 13:00:00.000024|[1,9]|[Wolfeschlegelstein,Daniel]|[[7,4],[8,8],[9]]|[76,88,99,89]|1.300|a0ee-bc99-9c0b-4ef8-bb6d-6bb9-bd38-0a14
+7|Elizabeth|1|False|True|20|4.7|1980-10-26|1976-12-23 11:21:42|48:24:11|[2]|[Ein]|[[6],[7],[8]]|[96,59,65,88]|1.463|{a0eebc99-9c0b4ef8-bb6d6bb9-bd380a15}

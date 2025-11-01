@@ -1,0 +1,80 @@
+-DATASET CSV empty
+
+--
+
+-CASE HashFuncTests
+
+-LOG HashBool
+-STATEMENT RETURN hash(true);
+---- 1
+4717996019076358352
+
+-STATEMENT RETURN hash(false);
+---- 1
+0
+
+-LOG HashInteger
+-STATEMENT RETURN hash(123213213);
+---- 1
+5409473644860454233
+
+-STATEMENT RETURN hash(-182812789912);
+---- 1
+6017956686658665710
+
+-LOG HashDouble
+-STATEMENT RETURN hash(3.145454);
+---- 1
+7162734438776005526
+
+-LOG HashString
+-STATEMENT RETURN hash('abc');
+---- 1
+13131266495343169797
+
+-LOG HashInterval
+-STATEMENT RETURN hash(interval("1 years 2 months 3 hours"));
+---- 1
+13396667719587599538
+
+-LOG HashStruct
+-STATEMENT RETURN hash({name: 'Bob', age: 25});
+---- 1
+9821934272475076111
+
+-LOG HashList
+-STATEMENT RETURN hash(list_creation(1,2,3,4,5,56,2));
+---- 1
+16087297841925419968
+
+-LOG MD5Example
+-STATEMENT RETURN md5('kuzu')
+---- 1
+caca2358cada60d679fc0310d440f8ca
+
+-LOG SHA256Example
+-STATEMENT RETURN sha256('kuzu')
+---- 1
+e129f5000a4b71ccc3a0e6353a86cc57989106e670793db98efa34b7527aefa5
+
+-LOG Murmurhash64Example
+-STATEMENT RETURN hash('kuzu')
+---- 1
+18302123362979068729
+
+-LOG HashMediumLengthStrings
+-STATEMENT RETURN hash('Some string')
+---- 1
+4300833454950395778
+-STATEMENT RETURN hash('Another string')
+---- 1
+10990913321849272440
+-STATEMENT RETURN hash('aaaaaaaaaaaaaaa')
+---- 1
+2646437354086420181
+
+-SET test_long_string REPEAT 2147 "a"
+-LOG HashLongString
+-STATEMENT RETURN hash('${test_long_string}')
+---- 1
+14828962630991367662

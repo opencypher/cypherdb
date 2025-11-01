@@ -1,0 +1,122 @@
+-DATASET CSV empty
+
+--
+
+-CASE JsonContainsTestFromDuckDB
+
+-LOAD_DYNAMIC_EXTENSION json
+-STATEMENT RETURN JSON_CONTAINS('{"a": 1, "b": 2, "c": {"d": 3}}', '{"c": {"d": 3}}') AS Result;
+---- 1
+True
+
+
+-STATEMENT RETURN JSON_CONTAINS('{"a": 1, "b": 2, "c": {"d": 3}}', '"c": {"d": 3}') AS Result;
+---- error
+Runtime exception: Error unexpected content after document at line 1, column 4, character index 3
+
+# some home-made tests
+
+# empty list is contained in the list
+
+-STATEMENT RETURN json_contains('[1, 2]', '[]')
+---- 1
+True
+
+
+-STATEMENT RETURN json_contains('[1, 2]', '2');
+---- 1
+True
+
+
+-STATEMENT RETURN json_contains('[1, 2]', '[1, 2]');
+---- 1
+True
+
+
+-STATEMENT RETURN json_contains('[1, 2, 3]', '[1, 2]');
+---- 1
+True
+
+# order-independent (follows MySQL behaviour)
+
+-STATEMENT RETURN json_contains('[1, 2]', '[2, 1]');
+---- 1
+True
+
+# {"d": 2} is contained in {"c": 1, "d": 2}, so it counts
+
+-STATEMENT RETURN json_contains('{"a": {"b": [{"c": 1, "d": 2}]}}', '{"d": 2}')
+---- 1
+True
+
+# same with {"c": 1}
+
+-STATEMENT RETURN json_contains('{"a": {"b": [{"c": 1, "d": 2}]}}', '{"c": 1}')
+---- 1
+True
+
+
+-STATEMENT RETURN json_contains('{"a": {"b": [{"c": 1, "d": 2}]}}', '{"c": 1, "d": 2}')
+---- 1
+True
+
+
+-STATEMENT RETURN json_contains('{"a": {"b": [{"c": 1, "d": 2}]}}', '[{"d": 2, "c": 1}]')
+---- 1
+True
+
+# same reasoning with the lists here as before, empty list is contained in the list
+
+-STATEMENT RETURN json_contains('{"a": {"b": [{"c": 1, "d": 2}]}}', '{"a": {"b": []}}')
+---- 1
+True
+
+
+-STATEMENT RETURN json_contains('{"a": {"b": [{"c": 1, "d": 2}]}}', '[]')
+---- 1
+True
+
+# DUCKDB Issue 5960
+
+-STATEMENT RETURN json_contains(json('{"key":"value"}'),json('{"blah":"value"}'))
+---- 1
+False
+
+# Check if the recursion properly stops
+-STATEMENT RETURN json_contains('{"a": {"b": 42}}', '{"a": 42}')
+---- 1
+False
+
+-CASE JsonContainsTest
+-LOAD_DYNAMIC_EXTENSION json
+-STATEMENT UNWIND ['{"a": 1, "b": [1, 2, 3], "c": {"a": "2"}}', '[-1, 0, 1, 2, [-10]]'] AS HAYSTACK UNWIND ['1', '[1, 2]', '"1"', '"a"', '[-10]', '{"a": 1}', '{"a": "2"}'] AS NEEDLE RETURN JSON_CONTAINS(HAYSTACK, NEEDLE)
+---- 14
+True
+True
+False
+False
+False
+True
+True
+True
+True
+False
+False
+True
+False
+False
+-STATEMENT RETURN json_contains(NULL, NULL)
+---- 1
+
+
+-STATEMENT RETURN json_contains(NULL, '{"a": 42}')
+---- 1
+
+
+-STATEMENT RETURN json_contains(to_json({entry: to_json({foo: 31})}), to_json({foo: 31}));
+---- 1
+True
+
+-STATEMENT RETURN json_contains(to_json({entry: to_json({value: 51})}), 51);
+---- 1
+True

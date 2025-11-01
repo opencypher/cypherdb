@@ -1,0 +1,15 @@
+-DATASET CSV snap/twitter/parquet
+-BUFFER_POOL_SIZE 268435456
+
+--
+
+-CASE CopySNAPTwitterParquet
+-STATEMENT MATCH (a:account) RETURN COUNT(*)
+---- 1
+81306
+-STATEMENT MATCH (a:account)-[e:follows]->(b:account) HINT a JOIN (e JOIN b) RETURN COUNT(*)
+---- 1
+2420766
+-STATEMENT MATCH (a:account)-[e:follows]->(b:account) HINT b JOIN (e JOIN a) RETURN COUNT(*)
+---- 1
+2420766

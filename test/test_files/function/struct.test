@@ -1,0 +1,113 @@
+-DATASET CSV tinysnb
+
+--
+
+-CASE FunctionStruct
+
+-LOG StructPack1
+-STATEMENT RETURN {a:1, b:2}
+---- 1
+{a: 1, b: 2}
+
+-LOG StructPack2
+-STATEMENT RETURN {a:1, b:{c: 'C', d: 'D'}}
+---- 1
+{a: 1, b: {c: C, d: D}}
+
+-STATEMENT RETURN STRUCT_PACK("a", "b")
+---- error
+Binder exception: Cannot infer field name for a.
+
+-STATEMENT RETURN {"foo": "bar"};
+---- 1
+{foo: bar}
+
+-LOG StructExtract
+-STATEMENT WITH {a:1, b:{c: 'C', d: 'D'}} AS s RETURN s.b.c
+---- 1
+C
+
+-LOG KeysSingleNodeLabel
+-STATEMENT MATCH (p:movies) RETURN keys(p)
+---- 3
+[name,length,note,description,content,audience,grade]
+[name,length,note,description,content,audience,grade]
+[name,length,note,description,content,audience,grade]
+
+-LOG KeysMultiNodeLabel
+-STATEMENT MATCH (p:person:organisation) RETURN keys(p)
+---- 11
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+[ID,fName,gender,isStudent,isWorker,age,eyeSight,birthdate,registerTime,lastJobDuration,workedHours,usedNames,courseScoresPerTerm,grades,height,u,name,orgCode,mark,score,history,licenseValidInterval,rating,state,info]
+
+-LOG KeysSingleRelLabel
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) RETURN keys(e)
+---- 14
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+[date,meetTime,validInterval,comments,summary,notes,someMap]
+
+-LOG KeysMultiRelLabel
+-STATEMENT MATCH (p:person)-[e:knows|:meets]->(:person) RETURN keys(e)
+---- 21
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+[date,meetTime,validInterval,comments,summary,notes,someMap,location,times,data]
+
+-LOG StructPackWithOptionalParam
+-STATEMENT RETURN STRUCT_PACK(x:=2,y:=3);
+---- 1
+{x: 2, y: 3}
+
+-STATEMENT MATCH (p:person) RETURN keys(null)
+---- 8
+
+
+
+
+
+
+
+
+
+-STATEMENT RETURN keys(null)
+---- 1
+

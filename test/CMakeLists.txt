@@ -1,0 +1,17 @@
+# Don't install gtest libraries.
+add_subdirectory(gtest EXCLUDE_FROM_ALL)
+
+enable_testing()
+add_subdirectory(api)
+add_subdirectory(binder)
+add_subdirectory(copy)
+add_subdirectory(c_api)
+add_subdirectory(common)
+add_subdirectory(graph_test)
+add_subdirectory(optimizer)
+add_subdirectory(planner)
+add_subdirectory(runner)
+add_subdirectory(storage)
+add_subdirectory(test_helper)
+add_subdirectory(test_runner)
+add_subdirectory(transaction)

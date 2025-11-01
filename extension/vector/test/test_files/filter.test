@@ -1,0 +1,433 @@
+-DATASET CSV empty
+-BUFFER_POOL_SIZE 134217728
+
+--
+
+-CASE Filtered8DimDotProduct
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT CREATE NODE TABLE embeddings (id int64, vec FLOAT[8], PRIMARY KEY (id));
+---- ok
+-STATEMENT CALL threads=1;
+---- ok
+-STATEMENT COPY embeddings FROM "${KUZU_ROOT_DIRECTORY}/dataset/embeddings/embeddings-8-1k.csv" (deLim=',');
+---- ok
+-STATEMENT CALL CREATE_VECTOR_INDEX('embeddings', 'e_hnsw_index', 'vec', metric := 'dotproduct');
+---- ok
+-STATEMENT CALL project_graph_cypher('G1', 'MATCH (n:embeddings) WHERE n.id < 100 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+58
+93
+28
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    directed_search_up_sel := 0.8,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+58
+93
+28
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557], 'FLOAT[8]'),
+    3,
+    blind_search_up_sel := 0.8,
+    directed_search_up_sel := 0.9,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+58
+93
+28
+-STATEMENT CALL project_graph('G2', {'embeddings': 'n.id < 100'}, []);
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G2',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+58
+93
+28
+-STATEMENT MATCH (n:embeddings) WHERE n.id < 100 WITH n.id as id, array_dot_product(n.vec, CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]')) AS dist RETURN id ORDER BY dist LIMIT 3;
+-CHECK_ORDER
+---- 3
+58
+93
+28
+-LOG InvalidFilterQuery
+-STATEMENT CALL project_graph_cypher('G3', 'MATCH (n:embeddings) WHERE n.dummy < 100 RETURN n');
+---- error
+Binder exception: Cannot find property dummy for n.
+-STATEMENT CALL project_graph_cypher('G4', 'MATCH (n:embeddings) WHERE n.id < 100 RETURN n.id, 1');
+---- ok
+-LOG IncorrectFilterReturn1
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G4',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+---- error
+Binder exception: The return clause of a filter query should contain exactly one node expression. Found more than one expressions: n.id,1.
+
+-STATEMENT CALL project_graph_cypher('G5', 'MATCH (n:embeddings) WHERE n.id < 100 RETURN n.id');
+---- ok
+-LOG IncorrectFilterReturn2
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G5',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+---- error
+Binder exception: The return clause of a filter query should be of type NODE. Found type INT64 instead.
+-LOG IncorrectFilterReturn3
+-STATEMENT CREATE NODE TABLE TEMP(id INT64 PRIMARY KEY);
+---- ok
+-STATEMENT CALL project_graph_cypher('G6', 'MATCH (n:TEMP) WHERE n.id < 100 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G6',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+---- error
+Binder exception: Table TEMP doesn't have an index with name e_hnsw_index.
+-STATEMENT CALL project_graph_cypher('G7', 'MATCH (n:TEMP:embeddings) WHERE n.id < 100 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G7',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+---- error
+Binder exception: Node n in the return clause of the filter query should have one label.
+-STATEMENT CALL project_graph('G9',{'embeddings': 'n.id < 100', 'TEMP': 'n.id<0'}, []);
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G9',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+---- error
+Binder exception: In vector filtered search, projected graph G9 must contain exactly one node table.
+
+-CASE Filtered8DimDotProduct2
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT CREATE NODE TABLE embeddings (id int64, vec FLOAT[8], PRIMARY KEY (id));
+---- ok
+-STATEMENT CALL threads=1;
+---- ok
+-STATEMENT COPY embeddings FROM "${KUZU_ROOT_DIRECTORY}/dataset/embeddings/embeddings-8-1k.csv" (deLim=',');
+---- ok
+-STATEMENT CALL CREATE_VECTOR_INDEX('embeddings', 'e_hnsw_index', 'vec', metric := 'dotproduct');
+---- ok
+-STATEMENT CALL project_graph_cypher('G1', 'MATCH (n:embeddings) WHERE n.id < 50 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500) RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+28
+0
+30
+-STATEMENT MATCH (n:embeddings) WHERE n.id < 50 WITH n.id as id, array_dot_product(n.vec, CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]')) AS dist RETURN id ORDER BY dist LIMIT 3;
+-CHECK_ORDER
+---- 3
+28
+0
+30
+
+-CASE Filtered8DimDotProduct3
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT CREATE NODE TABLE embeddings (id int64, vec FLOAT[8], PRIMARY KEY (id));
+---- ok
+-STATEMENT CALL threads=1;
+---- ok
+-STATEMENT COPY embeddings FROM "${KUZU_ROOT_DIRECTORY}/dataset/embeddings/embeddings-8-1k.csv" (deLim=',');
+---- ok
+-STATEMENT CALL CREATE_VECTOR_INDEX('embeddings', 'e_hnsw_index', 'vec', metric := 'dotproduct');
+---- ok
+-STATEMENT CALL project_graph_cypher('G1', 'MATCH (n:embeddings) WHERE n.id < 600 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+499
+581
+58
+-STATEMENT MATCH (n:embeddings) WHERE n.id < 600 WITH n.id as id, array_dot_product(n.vec, CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]')) AS dist RETURN id ORDER BY dist LIMIT 3;
+-CHECK_ORDER
+---- 3
+499
+581
+58
+
+-CASE Filtered8DimL2
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT CREATE NODE TABLE embeddings (id int64, vec FLOAT[8], PRIMARY KEY (id));
+---- ok
+-STATEMENT CALL threads=1;
+---- ok
+-STATEMENT COPY embeddings FROM "${KUZU_ROOT_DIRECTORY}/dataset/embeddings/embeddings-8-1k.csv" (deLim=',');
+---- ok
+-STATEMENT CALL CREATE_VECTOR_INDEX('embeddings', 'e_hnsw_index', 'vec', metric := 'l2');
+---- ok
+-STATEMENT CALL project_graph_cypher('G1', 'MATCH (n:embeddings) WHERE n.id < 100 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+37
+40
+52
+-STATEMENT MATCH (n:embeddings) WHERE n.id < 100 WITH n.id as id, array_distance(n.vec, CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]')) AS dist RETURN id ORDER BY dist LIMIT 3;
+-CHECK_ORDER
+---- 3
+37
+40
+52
+
+-CASE Filtered8DimL22
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT CREATE NODE TABLE embeddings (id int64, vec FLOAT[8], PRIMARY KEY (id));
+---- ok
+-STATEMENT CALL threads=1;
+---- ok
+-STATEMENT COPY embeddings FROM "${KUZU_ROOT_DIRECTORY}/dataset/embeddings/embeddings-8-1k.csv" (deLim=',');
+---- ok
+-STATEMENT CALL CREATE_VECTOR_INDEX('embeddings', 'e_hnsw_index', 'vec', metric := 'l2');
+---- ok
+-STATEMENT CALL project_graph_cypher('G1', 'MATCH (n:embeddings) WHERE n.id < 50 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500)
+    RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+37
+40
+43
+-STATEMENT MATCH (n:embeddings) WHERE n.id < 50 WITH n.id as id, array_distance(n.vec, CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]')) AS dist RETURN id ORDER BY dist LIMIT 3;
+-CHECK_ORDER
+---- 3
+37
+40
+43
+
+-CASE Filtered8DimL23
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT CREATE NODE TABLE embeddings (id int64, vec FLOAT[8], PRIMARY KEY (id));
+---- ok
+-STATEMENT CALL threads=1;
+---- ok
+-STATEMENT COPY embeddings FROM "${KUZU_ROOT_DIRECTORY}/dataset/embeddings/embeddings-8-1k.csv" (deLim=',');
+---- ok
+-STATEMENT CALL CREATE_VECTOR_INDEX('embeddings', 'e_hnsw_index', 'vec', metric := 'l2');
+---- ok
+-STATEMENT CALL project_graph_cypher('G1', 'MATCH (n:embeddings) WHERE n.id < 600 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500) RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+333
+444
+133
+-STATEMENT MATCH (n:embeddings) WHERE n.id < 600 WITH n.id as id, array_distance(n.vec, CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]')) AS dist RETURN id ORDER BY dist LIMIT 3;
+-CHECK_ORDER
+---- 3
+333
+444
+133
+
+-CASE Filtered8DimCos
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT CREATE NODE TABLE embeddings (id int64, vec FLOAT[8], PRIMARY KEY (id));
+---- ok
+-STATEMENT CALL threads=1;
+---- ok
+-STATEMENT COPY embeddings FROM "${KUZU_ROOT_DIRECTORY}/dataset/embeddings/embeddings-8-1k.csv" (deLim=',');
+---- ok
+-STATEMENT CALL CREATE_VECTOR_INDEX('embeddings', 'e_hnsw_index', 'vec');
+---- ok
+-STATEMENT CALL project_graph_cypher('G1', 'MATCH (n:embeddings) WHERE n.id < 100 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500) RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+37
+86
+40
+-STATEMENT MATCH (n:embeddings) WHERE n.id < 100 WITH n.id as id, 1-array_cosine_similarity(n.vec, CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]')) AS dist RETURN id ORDER BY dist LIMIT 3;
+-CHECK_ORDER
+---- 3
+37
+86
+40
+
+-CASE Filtered8DimCos2
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT CREATE NODE TABLE embeddings (id int64, vec FLOAT[8], PRIMARY KEY (id));
+---- ok
+-STATEMENT CALL threads=1;
+---- ok
+-STATEMENT COPY embeddings FROM "${KUZU_ROOT_DIRECTORY}/dataset/embeddings/embeddings-8-1k.csv" (deLim=',');
+---- ok
+-STATEMENT CALL CREATE_VECTOR_INDEX('embeddings', 'e_hnsw_index', 'vec');
+---- ok
+-STATEMENT CALL project_graph_cypher('G1', 'MATCH (n:embeddings) WHERE n.id < 50 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500) RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+37
+40
+43
+-STATEMENT MATCH (n:embeddings) WHERE n.id < 50 WITH n.id as id, 1-array_cosine_similarity(n.vec, CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]')) AS dist RETURN id ORDER BY dist LIMIT 3;
+-CHECK_ORDER
+---- 3
+37
+40
+43
+
+-CASE Filtered8DimCos3
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT CREATE NODE TABLE embeddings (id int64, vec FLOAT[8], PRIMARY KEY (id));
+---- ok
+-STATEMENT CALL threads=1;
+---- ok
+-STATEMENT COPY embeddings FROM "${KUZU_ROOT_DIRECTORY}/dataset/embeddings/embeddings-8-1k.csv" (deLim=',');
+---- ok
+-STATEMENT CALL CREATE_VECTOR_INDEX('embeddings', 'e_hnsw_index', 'vec');
+---- ok
+-STATEMENT CALL project_graph_cypher('G1', 'MATCH (n:embeddings) WHERE n.id < 600 RETURN n');
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX(
+    'G1',
+    'e_hnsw_index',
+    CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]'),
+    3,
+    efs := 500) RETURN node.id ORDER BY distance;
+-CHECK_ORDER
+---- 3
+333
+444
+146
+-STATEMENT MATCH (n:embeddings) WHERE n.id < 600 WITH n.id as id, 1-array_cosine_similarity(n.vec, CAST([0.1521,0.3021,0.5366,0.2774,0.5593,0.5589,0.1365,0.8557],'FLOAT[8]')) AS dist RETURN id ORDER BY dist LIMIT 3;
+-CHECK_ORDER
+---- 3
+333
+444
+146
+
+-CASE CopyAfterCreateIndexWithFilter
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT create node table tab(id uint64, vec float[2], primary key (id))
+---- ok
+-STATEMENT call create_vector_index('tab', 'tbl_hnsw_index', 'vec', metric := 'l2', ml := 60)
+---- ok
+-STATEMENT copy tab from (unwind range(1, 5000) as i return i, [1.0, cast(i, 'float')])
+---- ok
+-STATEMENT call query_vector_index("tab", "tbl_hnsw_index", [0.0, 1.0], 3) return node.id, distance order by distance asc, node.id asc
+---- 3
+1|1.000000
+2|1.414214
+3|2.236068
+
+-STATEMENT CALL PROJECT_GRAPH(
+        'filtered_tab',
+        {'tab': 'n.id >= 3'},
+        []
+    )
+---- ok
+-STATEMENT call query_vector_index("filtered_tab", "tbl_hnsw_index", [0.0, 1.0], 3) return node.id, distance order by distance
+---- 3
+3|2.236068
+4|3.162278
+5|4.123106
+
+-CASE Example
+-LOAD_DYNAMIC_EXTENSION vector
+-STATEMENT CREATE NODE TABLE Book(id SERIAL PRIMARY KEY, title STRING, title_embedding FLOAT[8], published_year INT64);
+---- ok
+-STATEMENT CREATE (:Book {title: "The Quantum World", title_embedding: [0.142300,0.484900,0.018000,0.231700,0.622700,0.022500,0.774400,0.020600], published_year: 2004});
+---- ok
+-STATEMENT CREATE (:Book {title: "Chronicles of the Universe", title_embedding: [0.666400,0.836000,0.370000,0.536400,0.333600,0.050900,0.282200,0.194400], published_year: 2022});
+---- ok
+-STATEMENT CREATE (:Book {title: "Learning Machines", title_embedding: [0.501300,0.859300,0.649300,0.387900,0.479300,0.695400,0.003300,0.395800], published_year: 2019});
+---- ok
+-STATEMENT CREATE (:Book {title: "Echoes of the Past", title_embedding: [0.595500,0.781900,0.135700,0.419500,0.782400,0.110600,0.076500,0.302400], published_year: 2010});
+---- ok
+-STATEMENT CREATE (:Book {title: "The Dragon's Call", title_embedding: [0.042200,0.668200,0.485900,0.067400,0.843900,0.154300,0.539200,0.693600], published_year: 2015});
+---- ok
+-STATEMENT CALL CREATE_VECTOR_INDEX('Book', 'book_title_index', 'title_embedding', metric := 'l2');
+---- ok
+-STATEMENT CALL PROJECT_GRAPH('filtered_book', {'Book': 'n.published_year > 2010'}, []);
+---- ok
+-STATEMENT CALL QUERY_VECTOR_INDEX('filtered_book', 'book_title_index', [0.451000,0.775600,0.844900,0.360400,0.070900,0.200700,0.250900,0.735800], 2) WITH node as n, distance AS dist RETURN n.title AS book, n.published_year AS year ORDER BY dist;
+---- 2
+Learning Machines|2019
+Chronicles of the Universe|2022

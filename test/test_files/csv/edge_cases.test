@@ -1,0 +1,131 @@
+-DATASET CSV csv-edge-case-tests
+-BUFFER_POOL_SIZE 2147483648
+
+--
+
+-CASE EdgeCases
+-STATEMENT MATCH (b:`bom-and-data`) RETURN b.*
+---- 2
+data|moredata
+abc|﻿﻿bomdata﻿
+
+-STATEMENT MATCH (b:`bom-and-header`) RETURN b.*
+---- 0
+
+-STATEMENT MATCH (b:`bom`) RETURN b.*
+---- 0
+
+-STATEMENT MATCH (c:`carriage-return-then-eof`) RETURN c.*
+---- 2
+abc|def
+ghi|jkl
+
+-STATEMENT MATCH (d:`delimiter-then-eof`) RETURN d.*
+---- 1
+abc
+
+-STATEMENT MATCH (e:`empty-first-line`) RETURN e.*
+---- 2
+abc|def
+ghi|jkl
+
+-STATEMENT MATCH (e:`empty-lines-multiple-columns`) RETURN e.*
+---- 2
+abc|def
+ghi|jkl
+
+-STATEMENT MATCH (e:`empty-lines-single-column`) RETURN e.B
+---- 3
+abc
+
+def
+
+-STATEMENT MATCH (e:`empty`) RETURN e.*
+---- 0
+
+-STATEMENT MATCH (e:`empty-with-header`) RETURN e.*
+---- 0
+
+-STATEMENT MATCH (e:`eof-after-unquote`) RETURN e.*
+---- 1
+abc|def
+
+-STATEMENT MATCH (e:`escapes-in-quote`) RETURN e.*
+---- 1
+abc\"
+
+-STATEMENT MATCH (e:`escapes-out-of-quote`) RETURN e.*
+---- 2
+a|b
+\|\
+
+-STATEMENT MATCH (m:`mixed-empty-lines-multiple-columns`) RETURN m.*
+---- 2
+abc|def
+ghi|jkl
+
+-STATEMENT MATCH (m:`mixed-empty-lines-single-column`) RETURN m.B
+---- 6
+abc
+
+def
+
+
+ghi
+
+-STATEMENT MATCH (m:`mixed-newlines`) RETURN m.*
+---- 3
+abc
+def
+ghi
+
+-STATEMENT MATCH (q:`quoted-values`) RETURN q.*
+---- 1
+abc|bcd
+
+-STATEMENT MATCH (t:`tab-as-delim`) RETURN t.*
+---- 2
+abc|def
+ghi|jkl
+
+-STATEMENT MATCH (u:`unquote-escape`) RETURN u.*
+---- 1
+abc"def
+
+-CASE SpecialDoubleLiterals
+-STATEMENT LOAD FROM "${KUZU_ROOT_DIRECTORY}/dataset/all_types/inf_nan_null.csv" RETURN *
+---- 1
+[42.000000,999.000000,inf,-inf,-42.000000]|[42.000000,nan,inf,-inf,,-42.000000]
+
+-CASE HeaderNumColumnsSmallerThanActual
+-STATEMENT create node table values(val1 int32, val2 int32, val3 string, val4 string, primary key(val1))
+---- ok
+-STATEMENT copy values from "${KUZU_ROOT_DIRECTORY}/dataset/csv-edge-case-tests/header-num-columns-mismatch.csv"(delim = ' ')
+---- error
+Binder exception: Number of columns mismatch. Expected 4 but got 6.
+
+-CASE EscapedQuoteInList
+-STATEMENT create node table test(id int64 primary key, f string[])
+---- ok
+-STATEMENT copy test from "${KUZU_ROOT_DIRECTORY}/dataset/csv-edge-case-tests/list-quote.csv"
+---- ok
+-STATEMENT match (a:test) return a.f, size(a.f)
+---- 15
+[ab\'c]|1
+[xyc"s]|1
+[qw\'e,a\',xh"zz]|3
+[ZCRB1:m7G(5")pppAm-c'apped]|1
+[a,b,c]|3
+[ca's,wqrqw''','qa',qwr'']|4
+[aqr"',"",q"w"r,x]|4
+['toronto','montr,eal']|2
+['tor""nto',"montr,'real"]|2
+[abc]|1
+[a'b']|1
+[ZCRB1:m7G(5')pppAm-capped]|1
+["ZCRB1:m7G(5')pppAm-capped"]|1
+[ZCRB1:m7G(5\')pppAm-capped]|1
+['test',qwerty,abc'xyz]|3
+-STATEMENT return cast("[ab\"cd]" as string[])
+---- 1
+[ab"cd]

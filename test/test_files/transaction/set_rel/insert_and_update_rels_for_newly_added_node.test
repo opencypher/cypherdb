@@ -1,0 +1,92 @@
+-DATASET CSV rel-update-tests
+-BUFFER_POOL_SIZE 268435456
+-TEST_FWD_ONLY_REL
+--
+
+-DEFINE_STATEMENT_BLOCK INSERT_AND_UPDATE_RELS_FOR_NEWLY_ADDED_NODE [
+-STATEMENT CREATE (p:person {ID: 2501})
+---- ok
+-STATEMENT MATCH (p1:person), (p2:person) WHERE p1.ID = 5 AND p2.ID = 8 create (p1)-[:knows {length: 10}]->(p2);
+---- ok
+-STATEMENT MATCH (p1:person), (p2:person) WHERE p1.ID = 7 AND p2.ID = 10 create (p1)-[:knows {length: 20}]->(p2);
+---- ok
+-STATEMENT MATCH (p1:person), (p2:person) WHERE p1.ID = 32 AND p2.ID = 51 create (p1)-[:knows {length: 30}]->(p2);
+---- ok
+-STATEMENT MATCH (p1:person)-[e:knows]->(p2:person) WHERE p1.ID = 5 AND p2.ID = 8 set e.length = 55;
+---- ok
+-STATEMENT MATCH (p1:person)-[e:knows]->(p2:person) WHERE p1.ID = 7 AND p2.ID = 10 set e.length = null;
+---- ok
+-STATEMENT MATCH (p1:person)-[e:knows]->(p2:person) WHERE p1.ID = 32 AND p2.ID = 51 set e.length = 201;
+---- ok
+]
+
+-CASE insertAndUpdateRelsForNewlyAddedNodeCommitNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK  INSERT_AND_UPDATE_RELS_FOR_NEWLY_ADDED_NODE
+-STATEMENT COMMIT
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) where p.ID > 4 return e.length
+---- 3
+
+55
+201
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertAndUpdateRelsForNewlyAddedNodeCommitRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK  INSERT_AND_UPDATE_RELS_FOR_NEWLY_ADDED_NODE
+-STATEMENT COMMIT
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) where p.ID > 4 return e.length
+---- 3
+
+55
+201
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertAndUpdateRelsForNewlyAddedNodeRollbackNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK  INSERT_AND_UPDATE_RELS_FOR_NEWLY_ADDED_NODE
+-STATEMENT Rollback
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) where p.ID > 4 return e.length
+---- 0
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertAndUpdateRelsForNewlyAddedNodeRollbackRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK  INSERT_AND_UPDATE_RELS_FOR_NEWLY_ADDED_NODE
+-STATEMENT ROLLBACK
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) where p.ID > 4 return e.length
+---- 0
+-STATEMENT COMMIT;
+---- ok

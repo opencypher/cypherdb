@@ -1,0 +1,37 @@
+-DATASET CSV empty
+--
+
+-CASE TSSeedRandomIntInsertions
+-SKIP_WASM
+-STATEMENT CREATE NODE TABLE test(id SERIAL, prop INT64, PRIMARY KEY(id));
+---- ok
+-SET seed current_timestamp()
+-LOG seed: ${seed}
+-SET _ random.set_seed(${seed})
+-LOOP i 1 1000
+-SET val random.randInt32(1000000)
+-STATEMENT CREATE (t:test {prop: ${val}});
+---- ok
+-ENDLOOP
+-STATEMENT MATCH (t:test) RETURN COUNT(*);
+---- 1
+1000
+
+-CASE FixedSeedRandomIntInsertions
+-SKIP_WASM
+-STATEMENT CREATE NODE TABLE test(id SERIAL, prop INT64, PRIMARY KEY(id));
+---- ok
+-SET seed 1234567890
+-LOG seed: ${seed}
+-SET _ random.set_seed(${seed})
+-LOOP i 1 1000
+-SET val random.randInt32(1000000)
+-STATEMENT CREATE (t:test {prop: ${val}});
+---- ok
+-ENDLOOP
+-STATEMENT MATCH (t:test) RETURN COUNT(*);
+---- 1
+1000
+-STATEMENT MATCH (t:test) RETURN sum(t.prop);
+---- 1
+502790265

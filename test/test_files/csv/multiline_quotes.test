@@ -1,0 +1,20 @@
+-DATASET CSV csv-multiline-quote-tests
+
+--
+
+-CASE MultilineQuotes
+-STATEMENT MATCH (b:basic) RETURN COUNT(*)
+---- 1
+1
+
+-STATEMENT MATCH (m:`mixed-newlines`) RETURN COUNT(*)
+---- 1
+1
+
+-STATEMENT LOAD FROM "${KUZU_ROOT_DIRECTORY}/dataset/csv-multiline-quote-tests/basic.csv" RETURN COUNT(*)
+---- error
+Copy exception: Error in file ${KUZU_ROOT_DIRECTORY}/dataset/csv-multiline-quote-tests/basic.csv on line 1: Quoted newlines are not supported in parallel CSV reader. Please specify PARALLEL=FALSE in the options. Line/record containing the error: '"abc'
+
+-STATEMENT LOAD FROM "${KUZU_ROOT_DIRECTORY}/dataset/csv-multiline-quote-tests/mixed-newlines.csv" RETURN COUNT(*)
+---- error
+Copy exception: Error in file ${KUZU_ROOT_DIRECTORY}/dataset/csv-multiline-quote-tests/mixed-newlines.csv on line 1: Quoted newlines are not supported in parallel CSV reader. Please specify PARALLEL=FALSE in the options. Line/record containing the error: '"abc'

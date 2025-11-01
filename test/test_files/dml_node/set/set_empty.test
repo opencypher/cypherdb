@@ -1,0 +1,161 @@
+-DATASET CSV empty
+# TODO(Guodong): This test currently needs more memory under different node group / page size setting, as the local wal consumes a large chunk of memory, which should be fixed.
+-BUFFER_POOL_SIZE 268435456
+--
+
+-CASE SetStructValueToNonNull
+-STATEMENT CREATE NODE TABLE test(id INT64, prop STRUCT(age INT64, name STRING), PRIMARY KEY(id));
+---- ok
+-STATEMENT CREATE (t:test {id:1, prop:{age:10, name:'Alice'}})
+---- ok
+-STATEMENT CREATE (t:test {id:2, prop:{age:20, name:'Bobdjiweknfwhuwiehfuw'}})
+---- ok
+-STATEMENT CREATE (t:test {id:3, prop:{age:30, name:'Delta'}})
+---- ok
+-STATEMENT MATCH (t:test) RETURN t.prop
+---- 3
+{age: 10, name: Alice}
+{age: 20, name: Bobdjiweknfwhuwiehfuw}
+{age: 30, name: Delta}
+-STATEMENT MATCH (t:test) WHERE t.id=1 SET t.prop={age:11, name:'Alicennewjfnwefwfw'}
+---- ok
+-STATEMENT MATCH (t:test) RETURN t.prop
+---- 3
+{age: 11, name: Alicennewjfnwefwfw}
+{age: 20, name: Bobdjiweknfwhuwiehfuw}
+{age: 30, name: Delta}
+
+-CASE SetStructValueWithWriteTransaction
+-STATEMENT CREATE NODE TABLE test(id INT64, prop STRUCT(age INT64, name STRING), PRIMARY KEY(id));
+---- ok
+-STATEMENT CREATE (t:test {id:1, prop:{age:10, name:'Alice'}})
+---- ok
+-STATEMENT CREATE (t:test {id:2, prop:{age:20, name:'Bobdjiweknfwhuwiehfuw'}})
+---- ok
+-STATEMENT CREATE (t:test {id:3, prop:{age:30, name:'Delta'}})
+---- ok
+-STATEMENT MATCH (t:test) RETURN t.prop
+---- 3
+{age: 10, name: Alice}
+{age: 20, name: Bobdjiweknfwhuwiehfuw}
+{age: 30, name: Delta}
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (t:test) WHERE t.id=1 SET t.prop={age:11, name:'Alicennewjfnwefwfw'}
+---- ok
+-STATEMENT MATCH (t:test) RETURN t.prop
+---- 3
+{age: 11, name: Alicennewjfnwefwfw}
+{age: 20, name: Bobdjiweknfwhuwiehfuw}
+{age: 30, name: Delta}
+-STATEMENT COMMIT
+---- ok
+
+-CASE SetStructValueToNull
+-STATEMENT CREATE NODE TABLE test(id INT64, prop STRUCT(age INT64, name STRING), PRIMARY KEY(id));
+---- ok
+-STATEMENT CREATE (t:test {id:1, prop:{age:10, name:'Alice'}})
+---- ok
+-STATEMENT CREATE (t:test {id:2, prop:{age:20, name:'Bobdjiweknfwhuwiehfuw'}})
+---- ok
+-STATEMENT CREATE (t:test {id:3, prop:{age:30, name:'Delta'}})
+---- ok
+-STATEMENT MATCH (t:test) RETURN t.prop
+---- 3
+{age: 10, name: Alice}
+{age: 20, name: Bobdjiweknfwhuwiehfuw}
+{age: 30, name: Delta}
+-STATEMENT MATCH (t:test) WHERE t.id=1 SET t.prop=NULL
+---- ok
+-STATEMENT MATCH (t:test) RETURN t.prop
+---- 3
+
+{age: 20, name: Bobdjiweknfwhuwiehfuw}
+{age: 30, name: Delta}
+
+-CASE SetWithSerialPK
+-STATEMENT CREATE NODE TABLE test(id SERIAL, name STRING, PRIMARY KEY(id));
+---- ok
+-STATEMENT CREATE (t:test {name:'Alice'})
+---- ok
+-STATEMENT MATCH (t:test) SET t.id=NULL
+---- error
+Binder exception: Cannot set property id in table test because it is used as primary key. Try delete and then insert.
+
+-CASE SetLongString
+-STATEMENT create node table person0 (ID STRING, p STRING, PRIMARY KEY (ID));
+---- ok
+-STATEMENT CREATE (:person0 {ID: "Foo"})
+---- ok
+-STATEMENT match (p:person0) return p.ID;
+---- 1
+Foo
+-SET STRING_EXCEEDS_PAGE ARANGE 0 5990
+-SET STRING_LARGE_BUT_FITS ARANGE 0 40000
+-SET STRING_EXCEEDS_LARGE_PAGE ARANGE 0 50000
+-STATEMENT match (p:person0) SET p.p=${STRING_EXCEEDS_PAGE}
+---- ok
+-STATEMENT match (p:person0) return p.p;
+---- 1
+${STRING_EXCEEDS_PAGE}
+-STATEMENT match (p:person0) SET p.p=${STRING_LARGE_BUT_FITS}
+---- ok
+-STATEMENT match (p:person0) return p.p;
+---- 1
+${STRING_LARGE_BUT_FITS}
+
+-CASE MultipleSet
+-STATEMENT CREATE NODE TABLE person(id INT64, name STRING, primary key(id));
+---- ok
+-STATEMENT CREATE (p:person {id:1, name:'Alice'})
+---- ok
+-STATEMENT CREATE (p:person {id:2, name:'Bob'})
+---- ok
+-STATEMENT CREATE (p:person {id:3, name:'Charlie'})
+---- ok
+-STATEMENT MATCH (p:person) RETURN p.name
+---- 3
+Alice
+Bob
+Charlie
+-STATEMENT MATCH (p:person) WHERE p.id=1 SET p.name='Alicenew'
+---- ok
+-STATEMENT MATCH (p:person) WHERE p.id=1 SET p.name='Alicenewnew'
+---- ok
+-STATEMENT MATCH (p:person) WHERE p.id=2 SET p.name='Bobnew'
+---- ok
+-STATEMENT MATCH (p:person) WHERE p.id=3 SET p.name='Charlienew'
+---- ok
+-STATEMENT MATCH (p:person) RETURN p.name
+---- 3
+Alicenewnew
+Bobnew
+Charlienew
+
+-CASE MixedCreateAndSet
+-STATEMENT CREATE NODE TABLE person(id SERIAL, prop INT64, primary key(id));
+---- ok
+-STATEMENT UNWIND range(1, 200000) AS i CREATE (:person {prop: i})
+---- ok
+-STATEMENT MATCH (p:person) WHERE p.id % 2 = 0 SET p.prop=p.prop+1000000
+---- ok
+-STATEMENT MATCH (p:person) WHERE p.id % 2 = 0 AND p.prop>=1000000 RETURN COUNT(*)
+---- 1
+100000
+
+-CASE RandUpdateInt
+-STATEMENT CREATE NODE TABLE test(id INT64, prop INT64, PRIMARY KEY(id));
+---- ok
+-STATEMENT UNWIND range(0, 200000) AS i CREATE (:test {id: i, prop: i})
+---- ok
+-SET seed current_timestamp()
+-LOG seed: ${seed}
+-SET _ random.set_seed(${seed})
+-LOOP i 1 1000
+-SET val random.randInt32(200000)
+-STATEMENT MATCH (t:test) WHERE t.id=${val} SET t.prop = t.prop + 200001
+---- ok
+-ENDLOOP
+-STATEMENT MATCH (t:test) WHERE t.prop<200000 RETURN COUNT(*);
+---- 1
+199000

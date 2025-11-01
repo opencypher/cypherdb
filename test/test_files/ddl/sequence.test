@@ -1,0 +1,257 @@
+-DATASET CSV empty
+
+--
+
+-CASE CreateDrop
+-STATEMENT CREATE NODE TABLE test(id INT64, PRIMARY KEY(id));
+---- ok
+-STATEMENT CREATE SEQUENCE test;
+---- ok
+-STATEMENT CREATE SEQUENCE test;
+---- error
+Binder exception: test already exists in catalog.
+-STATEMENT CREATE SEQUENCE IF NOT EXISTS test start 5;
+---- ok
+-STATEMENT RETURN nextval('test');
+---- 1
+1
+-STATEMENT DROP TABLE test;
+---- 1
+Table test has been dropped.
+-STATEMENT DROP SEQUENCE test;
+---- 1
+Sequence test has been dropped.
+
+-CASE CreateOptions
+-STATEMENT CREATE SEQUENCE a;
+           CREATE SEQUENCE b START 10;
+           CREATE SEQUENCE c START WITH 20;
+           CREATE SEQUENCE d INCREMENT 10;
+           CREATE SEQUENCE e INCREMENT BY -5;
+           CREATE SEQUENCE f NO MINVALUE;
+           CREATE SEQUENCE g NO MAXVALUE;
+           CREATE SEQUENCE h MINVALUE 100;
+           CREATE SEQUENCE i MAXVALUE 100;
+           CREATE SEQUENCE j NO CYCLE;
+           CREATE SEQUENCE k CYCLE;
+           CREATE SEQUENCE l START 10 INCREMENT 5 MINVALUE -100 MAXVALUE 100 CYCLE;
+---- ok
+---- ok
+---- ok
+---- ok
+---- ok
+---- ok
+---- ok
+---- ok
+---- ok
+---- ok
+---- ok
+---- ok
+
+-STATEMENT CALL SHOW_SEQUENCES() RETURN * ORDER BY name;
+---- 12
+a|local(kuzu)|1|1|1|9223372036854775807|False
+b|local(kuzu)|10|1|1|9223372036854775807|False
+c|local(kuzu)|20|1|1|9223372036854775807|False
+d|local(kuzu)|1|10|1|9223372036854775807|False
+e|local(kuzu)|-1|-5|-9223372036854775808|-1|False
+f|local(kuzu)|1|1|1|9223372036854775807|False
+g|local(kuzu)|1|1|1|9223372036854775807|False
+h|local(kuzu)|100|1|100|9223372036854775807|False
+i|local(kuzu)|1|1|1|100|False
+j|local(kuzu)|1|1|1|9223372036854775807|False
+k|local(kuzu)|1|1|1|9223372036854775807|True
+l|local(kuzu)|10|5|-100|100|True
+
+-CASE ExpectedError
+-STATEMENT CREATE SEQUENCE err START 9223372036854775808;
+---- error
+Binder exception: Out of bounds: SEQUENCE accepts integers within INT64.
+-STATEMENT CREATE SEQUENCE err START -9223372036854775809;
+---- error
+Binder exception: Out of bounds: SEQUENCE accepts integers within INT64.
+-STATEMENT CREATE SEQUENCE err MINVALUE 10 MAXVALUE -10;
+---- error
+Binder exception: SEQUENCE MAXVALUE should be greater than or equal to MINVALUE.
+-STATEMENT CREATE SEQUENCE err START -1;
+---- error
+Binder exception: SEQUENCE START value should be between MINVALUE and MAXVALUE.
+-STATEMENT CREATE SEQUENCE err START WITH 1 INCREMENT -1;
+---- error
+Binder exception: SEQUENCE START value should be between MINVALUE and MAXVALUE.
+
+-CASE ExpectedFunctionError
+-STATEMENT CREATE SEQUENCE err;
+---- ok
+-STATEMENT RETURN currval('err');
+---- error
+Catalog exception: currval: sequence "err" is not yet defined. To define the sequence, call nextval first.
+
+-CASE BasicIncDec
+-STATEMENT CREATE SEQUENCE inc;
+---- ok
+-STATEMENT CREATE SEQUENCE dec INCREMENT -1;
+---- ok
+-STATEMENT RETURN nextval('inc');
+---- 1
+1
+-STATEMENT RETURN nextval('dec');
+---- 1
+-1
+-STATEMENT RETURN currval('inc');
+---- 1
+1
+-STATEMENT RETURN currval('dec');
+---- 1
+-1
+
+-CASE EdgesNoCycle
+-STATEMENT CREATE SEQUENCE overflowMax START 9223372036854775807 INCREMENT 1;
+---- ok
+-STATEMENT CREATE SEQUENCE overflowMin START -9223372036854775808 INCREMENT -1;
+---- ok
+-STATEMENT CREATE SEQUENCE edgeMax START 10 INCREMENT 1 MAXVALUE 10;
+---- ok
+-STATEMENT CREATE SEQUENCE edgeMin START -10 INCREMENT -1 MINVALUE -10;
+---- ok
+-STATEMENT RETURN nextval('overflowMax');
+---- 1
+9223372036854775807
+-RELOADDB
+-STATEMENT RETURN nextval('overflowMin');
+---- 1
+-9223372036854775808
+-STATEMENT RETURN nextval('overflowMax');
+---- error
+Catalog exception: nextval: reached maximum value of sequence "overflowMax" 9223372036854775807
+-STATEMENT RETURN nextval('overflowMin');
+---- error
+Catalog exception: nextval: reached minimum value of sequence "overflowMin" -9223372036854775808
+-STATEMENT RETURN nextval('edgeMax');
+---- 1
+10
+-STATEMENT RETURN nextval('edgeMax');
+---- error
+Catalog exception: nextval: reached maximum value of sequence "edgeMax" 10
+-STATEMENT RETURN nextval('edgeMin');
+---- 1
+-10
+-STATEMENT RETURN nextval('edgeMin');
+---- error
+Catalog exception: nextval: reached minimum value of sequence "edgeMin" -10
+
+-CASE EdgesCycle
+-STATEMENT CREATE SEQUENCE overflowMax START 9223372036854775807 INCREMENT 1 CYCLE;
+---- ok
+-STATEMENT CREATE SEQUENCE overflowMin START -9223372036854775808 INCREMENT -1 CYCLE;
+---- ok
+-STATEMENT CREATE SEQUENCE edgeMax START 10 INCREMENT 1 MAXVALUE 10 CYCLE;
+---- ok
+-STATEMENT CREATE SEQUENCE edgeMin START -10 INCREMENT -1 MINVALUE -10 CYCLE;
+---- ok
+-STATEMENT RETURN nextval('overflowMax');
+---- 1
+9223372036854775807
+-STATEMENT RETURN nextval('overflowMin');
+---- 1
+-9223372036854775808
+-STATEMENT RETURN nextval('edgeMax');
+---- 1
+10
+-STATEMENT RETURN nextval('edgeMin');
+---- 1
+-10
+-STATEMENT RETURN nextval('overflowMax');
+---- 1
+1
+-STATEMENT RETURN nextval('overflowMin');
+---- 1
+-1
+-STATEMENT RETURN nextval('edgeMax');
+---- 1
+1
+-STATEMENT RETURN nextval('edgeMin');
+---- 1
+-1
+
+-CASE CreateTableDefaultSequence
+-STATEMENT CREATE SEQUENCE test;
+---- ok
+-STATEMENT CREATE NODE TABLE test(id INT64, seq INT64 DEFAULT nextval('test'), PRIMARY KEY(id));
+---- ok
+-STATEMENT CREATE (t:test {id:0});
+---- ok
+-STATEMENT MATCH (t:test) RETURN t.*;
+---- 1
+0|1
+
+-CASE CreateTableDefaultSequencePKey
+-STATEMENT CREATE SEQUENCE test;
+---- ok
+-STATEMENT CREATE NODE TABLE test(id INT64 DEFAULT nextval('test'), PRIMARY KEY(id));
+---- ok
+-STATEMENT CREATE (t:test);
+---- ok
+-STATEMENT MATCH (t:test) RETURN t.*;
+---- 1
+1
+
+-CASE CycleSequencePKey
+-STATEMENT CREATE SEQUENCE test START 1 MAXVALUE 3;
+---- ok
+-STATEMENT CREATE NODE TABLE test(id INT64 DEFAULT nextval('test'), PRIMARY KEY(id));
+---- ok
+-STATEMENT CREATE (t:test);
+           CREATE (t:test);
+           CREATE (t:test);
+---- ok
+---- ok
+---- ok
+-STATEMENT CREATE (t:test);
+---- error
+Catalog exception: nextval: reached maximum value of sequence "test" 3
+
+-CASE AddPropertySequence
+-STATEMENT CREATE SEQUENCE test;
+---- ok
+-STATEMENT CREATE SEQUENCE test2;
+---- ok
+-STATEMENT create node table Comment (id int64, PRIMARY KEY (id));
+---- ok
+-STATEMENT create rel table replyOf (FROM Comment TO Comment, MANY_ONE);
+---- ok
+-STATEMENT copy Comment from '${KUZU_ROOT_DIRECTORY}/dataset/lsqb-sf01/Comment.csv' (HEADER=true);
+---- ok
+-STATEMENT copy replyOf from '${KUZU_ROOT_DIRECTORY}/dataset/lsqb-sf01/Comment_replyOf_Comment.csv' (HEADER=true);
+---- ok
+-STATEMENT alter table Comment add propx int64 default nextval('test');
+---- ok
+-STATEMENT MATCH (c:Comment) RETURN SUM(c.propx);
+---- 1
+23217646816
+-STATEMENT alter table replyOf add propx int64 default nextval('test2');
+---- error
+Runtime exception: Cannot set a non-constant default value when adding columns on REL tables.
+
+-CASE DefaultSharedSequence
+-STATEMENT CREATE SEQUENCE shared;
+---- ok
+-STATEMENT CREATE NODE TABLE tba(id INT64, seq INT64 DEFAULT nextval('shared'), PRIMARY KEY(id));
+---- ok
+-STATEMENT CREATE NODE TABLE tbb(id INT64 DEFAULT nextval('shared'), PRIMARY KEY(id));
+---- ok
+-STATEMENT CREATE (t:tba {id:0});
+---- ok
+-STATEMENT CREATE (t:tbb);
+---- ok
+-STATEMENT MATCH (t:tba) RETURN t.*;
+---- 1
+0|1
+-STATEMENT MATCH (t:tbb) RETURN t.*;
+---- 1
+2
+
+-CASE DropInvalidSequence
+-STATEMENT DROP SEQUENCE if exists univers;
+---- 1
+Sequence univers does not exist.

@@ -1,0 +1,83 @@
+-DATASET CSV rel-update-tests
+-TEST_FWD_ONLY_REL
+--
+
+-DEFINE_STATEMENT_BLOCK INSERT_RELS_TO_MANY_TO_ONE_REL_TABLE [
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=704 and b.ID=2103 CREATE (a)-[e:teaches{length: 50}]->(b)
+---- ok
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=970 and b.ID=1765 CREATE (a)-[e:teaches{length: 1000}]->(b)
+---- ok
+-STATEMENT MATCH (a:person),(b:person) WHERE a.ID=444 and b.ID=1432 CREATE (a)-[e:teaches{}]->(b)
+---- ok
+]
+
+-CASE insertRelsToManyToOneRelTableCommitNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_MANY_TO_ONE_REL_TABLE
+-STATEMENT COMMIT
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:teaches]->(:person) WHERE a.ID > 200 RETURN e.length
+---- 3
+
+1000
+50
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertRelsToManyToOneRelTableCommitRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_MANY_TO_ONE_REL_TABLE
+-STATEMENT COMMIT
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:teaches]->(:person) WHERE a.ID > 200 RETURN e.length
+---- 3
+
+1000
+50
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertRelsToManyToOneRelTableRollbackNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_MANY_TO_ONE_REL_TABLE
+-STATEMENT Rollback
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:teaches]->(:person) WHERE a.ID > 200 RETURN e.length
+---- 0
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE insertRelsToManyToOneRelTableRollbackRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-INSERT_STATEMENT_BLOCK INSERT_RELS_TO_MANY_TO_ONE_REL_TABLE
+-STATEMENT ROLLBACK
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:teaches]->(:person) WHERE a.ID > 200 RETURN e.length
+---- 0
+-STATEMENT COMMIT;
+---- ok

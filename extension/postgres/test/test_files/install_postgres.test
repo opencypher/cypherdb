@@ -1,0 +1,11 @@
+-DATASET CSV empty
+
+--
+
+-CASE InstallOfficialExtension
+-SKIP
+-SKIP_STATIC_LINK
+-STATEMENT FORCE INSTALL postgres FROM 'http://localhost/extension/repo/'
+---- ok
+-STATEMENT load extension postgres
+---- ok

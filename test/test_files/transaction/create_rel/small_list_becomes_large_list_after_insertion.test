@@ -1,0 +1,76 @@
+-DATASET CSV rel-update-tests
+-TEST_FWD_ONLY_REL
+--
+
+-CASE smallListBecomesLargeListAfterInsertionCommitNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-BATCH_STATEMENTS <FILE:>small_list_becomes_large_list_after_insertion.cypher
+---- ok
+-STATEMENT COMMIT
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID = 1 RETURN e.length, e.place, e.tag
+---- 1501
+<FILE>:small_list_becomes_large_list_after_insertion_commit.txt
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE smallListBecomesLargeListAfterInsertionCommitRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-BATCH_STATEMENTS <FILE:>small_list_becomes_large_list_after_insertion.cypher
+---- ok
+-STATEMENT COMMIT
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID = 1 RETURN e.length, e.place, e.tag
+---- 1501
+<FILE>:small_list_becomes_large_list_after_insertion_commit.txt
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE smallListBecomesLargeListAfterInsertionRollbackNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-BATCH_STATEMENTS <FILE:>small_list_becomes_large_list_after_insertion.cypher
+---- ok
+-STATEMENT Rollback
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID = 1 RETURN e.length, e.place, e.tag
+---- 51
+<FILE>:small_list_becomes_large_list_after_insertion_rollback.txt
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE smallListBecomesLargeListAfterInsertionRollbackRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-BATCH_STATEMENTS <FILE:>small_list_becomes_large_list_after_insertion.cypher
+---- ok
+-STATEMENT ROLLBACK
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (a:person)-[e:knows]->(b:person) WHERE a.ID = 1 RETURN e.length, e.place, e.tag
+---- 51
+<FILE>:small_list_becomes_large_list_after_insertion_rollback.txt
+-STATEMENT COMMIT;
+---- ok

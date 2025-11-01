@@ -1,0 +1,76 @@
+-DATASET CSV rel-update-tests
+-TEST_FWD_ONLY_REL
+--
+
+-CASE deleteRelsFromLargeListCommitNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-BATCH_STATEMENTS <FILE:>delete_rels_from_large_list.cypher
+---- ok
+-STATEMENT COMMIT
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) WHERE p.ID  = 0 RETURN e.length
+---- 2199
+<FILE>:delete_rels_from_large_list_commit.txt
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE deleteRelsFromLargeListCommitRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-BATCH_STATEMENTS <FILE:>delete_rels_from_large_list.cypher
+---- ok
+-STATEMENT COMMIT
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) WHERE p.ID  = 0 RETURN e.length
+---- 2199
+<FILE>:delete_rels_from_large_list_commit.txt
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE deleteRelsFromLargeListRollbackNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-BATCH_STATEMENTS <FILE:>delete_rels_from_large_list.cypher
+---- ok
+-STATEMENT Rollback
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) WHERE p.ID  = 0 RETURN e.length
+---- 2300
+<FILE>:delete_rels.txt
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE deleteRelsFromLargeListRollbackRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-BATCH_STATEMENTS <FILE:>delete_rels_from_large_list.cypher
+---- ok
+-STATEMENT ROLLBACK
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p:person)-[e:knows]->(:person) WHERE p.ID  = 0 RETURN e.length
+---- 2300
+<FILE>:delete_rels.txt
+-STATEMENT COMMIT;
+---- ok

@@ -1,0 +1,134 @@
+-DATASET CSV tinysnb
+
+--
+
+-CASE OmitUseDefaultBoolean
+
+
+-STATEMENT create node table person2 (ID INt64, fName StRING, gender INT64, PRIMARY KEY (ID));
+---- ok
+
+-STATEMENT copy person2 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (header);
+---- ok
+
+-STATEMENT MATCH (a:person2) RETURN a.*;
+---- 5
+0|Alice|1
+2|Bob|2
+3|Carol|1
+5|Dan|2
+7|Elizabeth|1
+
+-CASE CopyUseSpaceAsAssignmentOperator
+
+-STATEMENT create node table person3 (ID INt64, fName StRING, gender INT64, PRIMARY KEY (ID));
+---- ok
+
+-STATEMENT copy person3 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (header true);
+---- ok
+
+-STATEMENT MATCH (a:person3) RETURN a.*;
+---- 5
+0|Alice|1
+2|Bob|2
+3|Carol|1
+5|Dan|2
+7|Elizabeth|1
+
+-CASE CopyUseTruewithDifferentCases
+
+-STATEMENT create node table person4 (ID INt64, fName StRING, gender INT64, PRIMARY KEY (ID));
+---- ok
+
+-STATEMENT copy person4 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (header TrUe);
+---- ok
+
+-STATEMENT MATCH (a:person4) RETURN a.*;
+---- 5
+0|Alice|1
+2|Bob|2
+3|Carol|1
+5|Dan|2
+7|Elizabeth|1
+
+-CASE CopyUse1AsTrue
+
+-STATEMENT create node table person5 (ID INt64, fName StRING, gender INT64, PRIMARY KEY (ID));
+---- ok
+
+-STATEMENT copy person5 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (header 1);
+---- ok
+
+-STATEMENT MATCH (a:person5) RETURN a.*;
+---- 5
+0|Alice|1
+2|Bob|2
+3|Carol|1
+5|Dan|2
+7|Elizabeth|1
+
+-CASE CopyUse0AsFalse
+
+-STATEMENT create node table person6 (ID INt64, fName StRING, gender INT64, PRIMARY KEY (ID));
+---- ok
+
+-STATEMENT copy person6 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (header 0);
+---- error
+Copy exception: Error in file ${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv on line 1: Conversion exception: Cast failed. Could not convert "id" to INT64. Line/record containing the error: 'id...'
+
+-CASE CopyUseFaLsEwithdifferentCases
+
+-STATEMENT create node table person7 (ID INt64, fName StRING, gender INT64, PRIMARY KEY (ID));
+---- ok
+
+-STATEMENT copy person7 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (header FaLSe);
+---- error
+Copy exception: Error in file ${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv on line 1: Conversion exception: Cast failed. Could not convert "id" to INT64. Line/record containing the error: 'id...'
+
+-CASE NewKeyWordDELIMITER
+
+-STATEMENT create node table person8 (ID INt64, fName StRING, gender INT64, PRIMARY KEY (ID));
+---- ok
+
+-STATEMENT copy person8 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (DELIMITER "|", header);
+---- error
+Copy exception: Error in file ${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv on line 1: expected 3 values per row, but got 1. Line/record containing the error: 'id,fname,Gender'
+
+-STATEMENT copy person8 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (DELIMITER ",", header);
+---- ok
+
+-STATEMENT MATCH (a:person8) RETURN a.*;
+---- 5
+0|Alice|1
+2|Bob|2
+3|Carol|1
+5|Dan|2
+7|Elizabeth|1
+
+-CASE HybridTABandSpace
+
+-STATEMENT create node table person9 (ID INt64, fName StRING, gender INT64, PRIMARY KEY (ID));
+---- ok
+
+-STATEMENT copy person9 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (DELIMITER       "|", header);
+---- error
+Copy exception: Error in file ${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv on line 1: expected 3 values per row, but got 1. Line/record containing the error: 'id,fname,Gender'
+
+-STATEMENT copy person9 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (DELIMITER        ",", header);
+---- ok
+
+-STATEMENT MATCH (a:person9) RETURN a.*;
+---- 5
+0|Alice|1
+2|Bob|2
+3|Carol|1
+5|Dan|2
+7|Elizabeth|1
+
+-CASE HybridQuotesSigns
+
+-STATEMENT create node table person10 (ID INt64, fName StRING, gender INT64, PRIMARY KEY (ID));
+---- ok
+-STATEMENT copy person10 from '${KUZU_ROOT_DIRECTORY}/dataset/tinysnb/vPerson_less_col.csv' (DELIMITER        ",', header =  '1");
+---- error
+Binder exception: Copy csv option value must be a single character with an optional escape character.

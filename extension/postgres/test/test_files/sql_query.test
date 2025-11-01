@@ -1,0 +1,145 @@
+-DATASET CSV empty
+
+--
+
+-CASE SqlQueryInPG
+-SKIP
+-LOAD_DYNAMIC_EXTENSION postgres
+-STATEMENT ATTACH 'dbname=pgscan user=ci host=localhost' as tinysnb (dbtype POSTGRES);
+---- ok
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select * from person') RETURN *
+---- 8
+0|Alice|1|True|False|35|5.000000|1900-01-01|2011-08-20 11:25:30|3 years 2 days 13:02:00|[10,5]|[Aida]|1.731000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+10|Hubert Blaine Wolfeschlegelsteinhausenbergerdorff|2|False|True|83|4.900000|1990-11-27|2023-02-21 13:25:30|3 years 2 days 13:02:00|[10,11,12,3,4,5,6,7]|[Ad,De,Hi,Kye,Orlan]|1.323000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18
+2|Bob|2|True|False|30|5.100000|1900-01-01|2008-11-03 15:25:30.000526|10 years 5 months 13:00:00.000024|[12,8]|[Bobby]|0.990000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12
+3|Carol|1|False|True|45|5.000000|1940-06-22|1911-08-20 02:32:21|48:24:11|[4,5]|[Carmen,Fred]|1.000000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13
+5|Dan|2|False|True|20|4.800000|1950-07-23|2031-11-30 12:25:30|10 years 5 months 13:00:00.000024|[1,9]|[Wolfeschlegelstein,Daniel]|1.300000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14
+7|Elizabeth|1|False|True|20|4.700000|1980-10-26|1976-12-23 11:21:42|48:24:11|[2]|[Ein]|1.463000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15
+8|Farooq|2|True|False|25|4.500000|1980-10-26|1972-07-31 13:22:30.678559|00:18:00.024|[3,4,5,6,7]|[Fesdwe]|1.510000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16
+9|Greg|2|False|False|40|4.900000|1980-10-26|1976-12-23 11:21:42|10 years 5 months 13:00:00.000024|[1]|[Grad]|1.600000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17
+-STATEMENT create node table person_copy (ID INt64, fName StRING, gender INT64, isStudent BoOLEAN, isWorker BOOLEAN, age INT64, eyeSight DOUBLE, birthdate DATE, registerTime TIMESTAMP, lastJobDuration interval, workedHours INT64[], usedNames STRING[], height double, u UUID, PRIMARY KEY (ID));
+---- ok
+-STATEMENT COPY person_copy FROM (CALL SQL_QUERY('tinysnb', 'select * from person') RETURN *);
+---- ok
+-STATEMENT MATCH (p:person_copy) return p.*;
+---- 8
+0|Alice|1|True|False|35|5.000000|1900-01-01|2011-08-20 11:25:30|3 years 2 days 13:02:00|[10,5]|[Aida]|1.731000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+10|Hubert Blaine Wolfeschlegelsteinhausenbergerdorff|2|False|True|83|4.900000|1990-11-27|2023-02-21 13:25:30|3 years 2 days 13:02:00|[10,11,12,3,4,5,6,7]|[Ad,De,Hi,Kye,Orlan]|1.323000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18
+2|Bob|2|True|False|30|5.100000|1900-01-01|2008-11-03 15:25:30.000526|10 years 5 months 13:00:00.000024|[12,8]|[Bobby]|0.990000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12
+3|Carol|1|False|True|45|5.000000|1940-06-22|1911-08-20 02:32:21|48:24:11|[4,5]|[Carmen,Fred]|1.000000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13
+5|Dan|2|False|True|20|4.800000|1950-07-23|2031-11-30 12:25:30|10 years 5 months 13:00:00.000024|[1,9]|[Wolfeschlegelstein,Daniel]|1.300000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14
+7|Elizabeth|1|False|True|20|4.700000|1980-10-26|1976-12-23 11:21:42|48:24:11|[2]|[Ein]|1.463000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15
+8|Farooq|2|True|False|25|4.500000|1980-10-26|1972-07-31 13:22:30.678559|00:18:00.024|[3,4,5,6,7]|[Fesdwe]|1.510000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16
+9|Greg|2|False|False|40|4.900000|1980-10-26|1976-12-23 11:21:42|10 years 5 months 13:00:00.000024|[1]|[Grad]|1.600000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select name from organisation') RETURN *
+---- 3
+ABFsUni
+CsWork
+DEsWork
+-LOG FilterPushDownTest
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select * from organisation') RETURN name, orgcode
+---- 3
+ABFsUni|325
+CsWork|934
+DEsWork|824
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select name,history,score,mark from organisation') yield name as uname,history as len,score,mark return uname, mark
+---- 3
+ABFsUni|3.700000
+CsWork|4.100000
+DEsWork|4.100000
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select score,mark from organisation') where score > 4 yield score,mark as math return score, math
+---- 1
+7|4.100000
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select organisation.name, person.fname from organisation INNER JOIN person ON organisation.id = person.id + 1') RETURN *
+---- 3
+ABFsUni|Alice
+CsWork|Carol
+DEsWork|Dan
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select organisation.name, person.fname from organisation INNER JOIN person ON organisation.id = person.id') RETURN *
+---- 0
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select organisation.id, organisation.name, person.fname from organisation LEFT JOIN person ON organisation.id = person.id + 3') RETURN id, name, fname
+---- 3
+1|ABFsUni|
+4|CsWork|
+6|DEsWork|Carol
+-STATEMENT create node table person_copy_from (ID INt64, fName StRING, gender INT64, isStudent BoOLEAN, isWorker BOOLEAN, age INT64, eyeSight DOUBLE, birthdate DATE, registerTime TIMESTAMP, lastJobDuration interval, workedHours INT64[], usedNames STRING[], height double, u UUID, PRIMARY KEY (ID));
+---- ok
+-STATEMENT COPY person_copy_from FROM SQL_QUERY('tinysnb', 'select * from person');
+---- ok
+-STATEMENT MATCH (p:person_copy_from) return p.*;
+---- 8
+0|Alice|1|True|False|35|5.000000|1900-01-01|2011-08-20 11:25:30|3 years 2 days 13:02:00|[10,5]|[Aida]|1.731000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+10|Hubert Blaine Wolfeschlegelsteinhausenbergerdorff|2|False|True|83|4.900000|1990-11-27|2023-02-21 13:25:30|3 years 2 days 13:02:00|[10,11,12,3,4,5,6,7]|[Ad,De,Hi,Kye,Orlan]|1.323000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18
+2|Bob|2|True|False|30|5.100000|1900-01-01|2008-11-03 15:25:30.000526|10 years 5 months 13:00:00.000024|[12,8]|[Bobby]|0.990000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12
+3|Carol|1|False|True|45|5.000000|1940-06-22|1911-08-20 02:32:21|48:24:11|[4,5]|[Carmen,Fred]|1.000000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13
+5|Dan|2|False|True|20|4.800000|1950-07-23|2031-11-30 12:25:30|10 years 5 months 13:00:00.000024|[1,9]|[Wolfeschlegelstein,Daniel]|1.300000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14
+7|Elizabeth|1|False|True|20|4.700000|1980-10-26|1976-12-23 11:21:42|48:24:11|[2]|[Ein]|1.463000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15
+8|Farooq|2|True|False|25|4.500000|1980-10-26|1972-07-31 13:22:30.678559|00:18:00.024|[3,4,5,6,7]|[Fesdwe]|1.510000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16
+9|Greg|2|False|False|40|4.900000|1980-10-26|1976-12-23 11:21:42|10 years 5 months 13:00:00.000024|[1]|[Grad]|1.600000|a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17
+
+-CASE SqlQueryError
+-SKIP
+-LOAD_DYNAMIC_EXTENSION postgres
+-STATEMENT ATTACH 'dbname=pgscan user=ci host=localhost' as tinysnb (dbtype POSTGRES);
+---- ok
+-STATEMENT CALL SQL_QUERY('tinysnb', 'create table tep(id int)') RETURN *
+---- error
+Binder Error: No fields returned by query "create table tep(id int)" - the query must be a SELECT statement that returns at least one column
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select organisation.name, person.fname as name from organisation, person') RETURN *
+---- error
+Binder Error: table "postgres_query" has duplicate column name "name"
+-STATEMENT CALL SQL_QUERY('tinysnb', 'INSERT INTO PERSON VALUES(5)') RETURN *
+---- error
+Binder Error: No fields returned by query "INSERT INTO PERSON VALUES(5)" - the query must be a SELECT statement that returns at least one column
+-STATEMENT CALL SQL_QUERY('tinysnb', 'SELECT * PERSON') RETURN *
+---- error
+Binder Error: Failed to prepare query "SELECT * PERSON": ERROR:  syntax error at or near "PERSON"
+LINE 1: SELECT * PERSON
+                 ^
+-LOAD_DYNAMIC_EXTENSION postgres
+-STATEMENT ATTACH '${KUZU_ROOT_DIRECTORY}/extension/sqlite/test/sqlite_database/tinysnb' as sqlitets (dbtype sqlite);
+---- 1
+Attached database successfully.
+-STATEMENT CALL SQL_QUERY('sqlitets', "SELECT * FROM PERSON") RETURN *
+---- error
+Binder exception: sql queries can only be executed in attached postgres.
+
+-CASE SqlQueryInPGWithQuote
+-SKIP
+-LOAD_DYNAMIC_EXTENSION postgres
+-STATEMENT ATTACH 'dbname=pgscan user=ci host=localhost' as tinysnb (dbtype POSTGRES);
+---- ok
+-STATEMENT CALL SQL_QUERY('tinysnb', "select * from person where fName = 'Alice'") RETURN fname
+---- 1
+Alice
+-STATEMENT CALL SQL_QUERY('tinysnb', "select regexp_match(fname, '\\w') from person") RETURN *
+---- 8
+[A]
+[B]
+[C]
+[D]
+[E]
+[F]
+[G]
+[H]
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select regexp_match(fname, \'\\w\') from person') RETURN *
+---- 8
+[A]
+[B]
+[C]
+[D]
+[E]
+[F]
+[G]
+[H]
+-STATEMENT CALL SQL_QUERY('tinysnb', 'select regexp_match(fname, \'Alice\') from person') RETURN *
+---- 8
+[Alice]
+
+
+
+
+
+
+
+

@@ -1,0 +1,502 @@
+name: Build and Deploy
+on:
+  # schedule:
+  #   - cron: "0 8 * * *"
+
+  workflow_dispatch:
+    inputs:
+      isDeploy:
+        description: "Whether the build should be deployed?"
+        type: boolean
+        required: true
+        default: false
+      skipBinaries:
+        description: "Skip building precompiled binaries?"
+        type: boolean
+        required: true
+        default: false
+      skipJava:
+        description: "Skip building Java?"
+        type: boolean
+        required: true
+        default: false
+      skipNodejs:
+        description: "Skip building Node.js?"
+        type: boolean
+        required: true
+        default: false
+      skipWasm:
+        description: "Skip building WebAssembly?"
+        type: boolean
+        required: true
+        default: false
+      skipPython:
+        description: "Skip building Python?"
+        type: boolean
+        required: true
+        default: false
+      skipRust:
+        description: "Skip building Rust?"
+        type: boolean
+        required: true
+        default: false
+      skipExtensions:
+        description: "Skip building extensions?"
+        type: boolean
+        required: true
+        default: false
+      isNightly:
+        description: "Whether the build is a nightly build?"
+        type: boolean
+        required: true
+        default: false
+env:
+  PIP_BREAK_SYSTEM_PACKAGES: 1
+
+jobs:
+  get-nightly-version:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update nightly version
+        run: |
+          python3 -m pip install packaging
+          python3 update-nightly-build-version.py | grep "New Python dev version:" | awk -F'New Python dev version: ' '{print $2}' | sed 's/\.$//' > version.txt
+          cat version.txt
+        working-directory: scripts
+      
+      - name: Upload version
+        uses: actions/upload-artifact@v4
+        with:
+          name: version
+          path: scripts/version.txt
+
+  build-extension:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipExtensions != 'true' }}
+    uses: ./.github/workflows/build-and-deploy-extension.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  build-java-mac:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipJava != 'true' }}
+    uses: ./.github/workflows/mac-java-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  build-java-linux:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipJava != 'true' }}
+    uses: ./.github/workflows/linux-java-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  build-java-windows:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipJava != 'true' }}
+    uses: ./.github/workflows/windows-java-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  deploy-java:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipJava != 'true' }}
+    needs: [build-java-mac, build-java-linux, build-java-windows]
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_ACTOR: ${{ github.actor }}
+      GPG_SIGNING_KEY: ${{ secrets.PGP_PRIVATE_KEY }}
+      GPG_SIGNING_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+      SKIP_CMAKE_BUILD: true
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update nightly version
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+        run: |
+          python3 -m pip install packaging
+          python3 update-nightly-build-version.py
+        working-directory: scripts
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: java-lib-osx-x86_64
+          path: tools/java_api/src/main/resources
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: java-lib-osx-arm64
+          path: tools/java_api/src/main/resources
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: java-lib-linux-aarch64
+          path: tools/java_api/src/main/resources
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: java-lib-linux-x86_64
+          path: tools/java_api/src/main/resources
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: java-lib-win-x86_64
+          path: tools/java_api/src/main/resources
+        
+      - uses: actions/download-artifact@v4
+        with:
+          name: java-lib-android-armv8a
+          path: tools/java_api/src/main/resources
+
+      - name: Create Java JAR
+        working-directory: tools/java_api
+        run: |
+          ./gradlew build
+
+      - name: Upload Java JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: kuzu-java-multiplatform-jar
+          path: tools/java_api/build/libs/kuzu*.jar
+
+      - name: Create Maven Central bundle
+        working-directory: tools/java_api
+        run: |
+            ORIGINAL_PWD=$(pwd)
+            ./gradlew publishMavenJavaToLocalRepo -i
+            cd build/repo
+            zip -r kuzu-java-bundle.zip com
+            mv kuzu-java-bundle.zip $ORIGINAL_PWD
+      
+      - name: Upload Maven Central bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: kuzu-java-multiplatform-bundle
+          path: tools/java_api/kuzu-java-bundle.zip
+      
+      - name: Deploy to Maven Central
+        if: ${{ github.event.inputs.isDeploy == 'true' && github.event.inputs.isNightly != 'true' }}
+        working-directory: tools/java_api
+        run: |
+          curl --request POST \
+          --verbose \
+          --header 'Authorization: Bearer ${{ secrets.MAVEN_CENTRAL_PORTAL_TOKEN }}' \
+          --form bundle=@kuzu-java-bundle.zip \
+          https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC
+        
+      - name: Publish to GitHub Packages
+        if: ${{ github.event.inputs.isDeploy == 'true' || github.event_name == 'schedule' }}
+        working-directory: tools/java_api
+        run: |
+          ./gradlew publish -i
+
+  build-nodejs-mac:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipNodejs != 'true' }}
+    uses: ./.github/workflows/mac-nodejs-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  build-nodejs-linux:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipNodejs != 'true' }}
+    uses: ./.github/workflows/linux-nodejs-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  build-nodejs-windows:
+    if: ${{ github.event_name == 'schedule' ||  github.event.inputs.skipNodejs != 'true' }}
+    uses: ./.github/workflows/windows-nodejs-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  deploy-nodejs:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipNodejs != 'true' }}
+    needs: [build-nodejs-mac, build-nodejs-linux, build-nodejs-windows]
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_JS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update nightly version
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+        run: |
+          pip3 install packaging
+          python3 update-nightly-build-version.py
+        working-directory: scripts
+
+      - name: Create prebuilt folder
+        run: mkdir -p tools/nodejs_api/prebuilt
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: mac-nodejs-module-arm64
+          path: tools/nodejs_api/prebuilt
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: mac-nodejs-module-x86_64
+          path: tools/nodejs_api/prebuilt
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-nodejs-module-x86_64
+          path: tools/nodejs_api/prebuilt
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-nodejs-module-aarch64
+          path: tools/nodejs_api/prebuilt
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-nodejs-module
+          path: tools/nodejs_api/prebuilt
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Package Node.js API with prebuilt binaries
+        run: node package
+        working-directory: tools/nodejs_api
+
+      - name: Show tarball contents
+        run: tar -tvf kuzu-source.tar.gz
+        working-directory: tools/nodejs_api
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: kuzu-deploy-nodejs
+          path: tools/nodejs_api/kuzu-source.tar.gz
+
+      - name: Deploy to npm.js dry run
+        if: ${{ github.event_name != 'schedule' && github.event.inputs.isDeploy != 'true' }}
+        run: npm publish kuzu-source.tar.gz --access public --dry-run
+        working-directory: tools/nodejs_api
+
+      - name: Deploy nightly to npm.js
+        if: ${{ github.event_name == 'schedule' || (github.event.inputs.isDeploy == 'true' && github.event.inputs.isNightly == 'true') }}
+        run: npm publish kuzu-source.tar.gz --access public --tag next
+        working-directory: tools/nodejs_api
+
+      - name: Deploy to npm.js
+        if: ${{ github.event.inputs.isDeploy == 'true' && github.event.inputs.isNightly != 'true' }}
+        run: npm publish kuzu-source.tar.gz --access public --tag latest
+        working-directory: tools/nodejs_api
+  
+  build-wasm:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipWasm != 'true' }}
+    uses: ./.github/workflows/wasm-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+  
+  deploy-wasm:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipWasm != 'true' }}
+    needs: [build-wasm]
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_JS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: kuzu-deploy-wasm
+          path: tools/wasm
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Show tarball contents
+        run: tar -tvf kuzu-wasm.tar.gz
+        working-directory: tools/wasm
+
+      - name: Deploy to npm.js dry run
+        if: ${{ github.event_name != 'schedule' && github.event.inputs.isDeploy != 'true' }}
+        run: npm publish kuzu-wasm.tar.gz --access public --dry-run
+        working-directory: tools/wasm
+
+      - name: Deploy nightly to npm.js
+        if: ${{ github.event_name == 'schedule' || (github.event.inputs.isDeploy == 'true' && github.event.inputs.isNightly == 'true') }}
+        run: npm publish kuzu-wasm.tar.gz --access public --tag next
+        working-directory: tools/wasm
+
+      - name: Deploy to npm.js
+        if: ${{ github.event.inputs.isDeploy == 'true' && github.event.inputs.isNightly != 'true' }}
+        run: npm publish kuzu-wasm.tar.gz --access public --tag latest
+        working-directory: tools/wasm
+
+  build-wheel-mac:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipPython != 'true' }}
+    uses: ./.github/workflows/mac-wheel-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  build-wheel-linux:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipPython != 'true' }}
+    uses: ./.github/workflows/linux-wheel-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  build-wheel-windows:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipPython != 'true' }}
+    uses: ./.github/workflows/windows-wheel-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  package-python-sdist:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipPython != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update nightly version
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+        run: |
+          pip3 install packaging
+          python3 update-nightly-build-version.py
+        working-directory: scripts
+
+      - name: Package Python sdist
+        run: python package_tar.py
+        working-directory: scripts/pip-package
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-sdist
+          path: scripts/pip-package/*.tar.gz
+
+  deploy-python:
+    permissions:
+      id-token: write
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipPython != 'true' }}
+    needs:
+      [
+        build-wheel-mac,
+        build-wheel-linux,
+        build-wheel-windows,
+        package-python-sdist,
+      ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-wheels-arm64
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-wheels-x86_64
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-wheels-x86_64
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-wheels-aarch64
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-wheels
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-sdist
+          path: dist
+
+      - name: List wheels
+        run: ls -l
+        working-directory: dist
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: kuzu-deploy-wheels
+          path: dist/*
+
+      - name: Deploy to PyPI test
+        if: ${{ github.event_name != 'schedule' && github.event.inputs.isDeploy != 'true' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+      - name: Deploy to PyPI
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.isDeploy == 'true' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        
+  deploy-rust:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipRust != 'true' }}
+    runs-on: kuzu-self-hosted-testing
+    env:
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update nightly version
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+        run: |
+          pip3 install packaging
+          python3 update-nightly-build-version.py
+        working-directory: scripts
+
+      - name: Update Cargo.toml version
+        run: python3 update_version.py
+        working-directory: tools/rust_api
+
+      - name: Deploy crate to Crates.io
+        run: cargo publish --allow-dirty
+        if: ${{ github.event.inputs.isDeploy == 'true' }}
+        working-directory: tools/rust_api
+
+      - name: Test publishing crate
+        run: cargo publish --dry-run --allow-dirty
+        if: ${{ github.event.inputs.isDeploy != 'true' }}
+        working-directory: tools/rust_api
+
+      - name: Upload crate
+        uses: actions/upload-artifact@v4
+        with:
+          name: kuzu-deploy-crate
+          path: tools/rust_api/target/package/*.crate
+
+  build-precompiled-bin-mac:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipBinaries != 'true' }}
+    uses: ./.github/workflows/mac-precompiled-bin-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  build-precompiled-bin-linux:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipBinaries != 'true' }}
+    uses: ./.github/workflows/linux-precompiled-bin-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit
+
+  build-precompiled-bin-windows:
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.skipBinaries != 'true' }}
+    uses: ./.github/workflows/windows-precompiled-bin-workflow.yml
+    with:
+      isNightly: ${{ github.event_name == 'schedule' || github.event.inputs.isNightly == 'true' }}
+    secrets: inherit

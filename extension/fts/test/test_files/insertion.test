@@ -1,0 +1,76 @@
+-DATASET CSV fts-basic
+
+--
+
+-CASE Basic
+-LOAD_DYNAMIC_EXTENSION fts
+-STATEMENT CALL CREATE_FTS_INDEX('Book', 'book_index', ['abstract', 'author', 'title'], stemmer := 'porter');
+---- ok
+-STATEMENT CREATE (b:Book {title: 'Alice wonderland', author: 'newton', abstract: 'machine'})
+---- ok
+-STATEMENT CALL QUERY_FTS_INDEX('Book', 'book_index', 'a quantum machine') RETURN node.title,score;
+---- 3
+Alice wonderland|0.549301
+Learning Machines|0.599514
+The Quantum World|0.931796
+-STATEMENT CREATE (b:Book {title: 'Alice w', author: 'newton', abstract: 'not exist'})
+---- ok
+-STATEMENT CALL QUERY_FTS_INDEX('Book', 'book_index', 'a quantum machine') RETURN node.title,score;
+---- 3
+Alice wonderland|0.605243
+Learning Machines|0.659085
+The Quantum World|0.987801
+
+-CASE consecutiveInsertions
+-LOAD_DYNAMIC_EXTENSION fts
+-STATEMENT CALL CREATE_FTS_INDEX('Book', 'book_index', ['abstract', 'author', 'title'], stemmer := 'porter');
+---- ok
+-STATEMENT CREATE (b:Book {title: 'Shadows of Tomorrow', author: 'Lena Frost', abstract: 'A sci-fi exploration of a dystopian future.'})
+---- ok
+-STATEMENT CREATE (b:Book {title: 'The Mind Machine', author: 'Carlos Vega', abstract: 'A psychological thriller about AI and control.'})
+---- ok
+-STATEMENT CREATE (b:Book {title: 'Whispers in Code', author: 'Dana S.', abstract: 'Mystery novel involving encrypted secrets and espionage.'})
+---- ok
+-STATEMENT CREATE (b:Book {title: 'Beyond the Rift', author: 'Terry Nolan', abstract: 'Humanity’s first journey into an alien dimension.'})
+---- ok
+-STATEMENT CREATE (b:Book {title: 'Gardens of Mars', author: 'Aisha Karim', abstract: 'Terraforming efforts and survival on the red planet.'})
+---- ok
+-STATEMENT CREATE (b:Book {title: 'Fractal Dreams', author: 'Nathan Cross', abstract: 'A philosophical dive into simulated realities.'})
+---- ok
+-STATEMENT CREATE (b:Book {title: 'Storm Weaver', author: 'Isla Moon', abstract: 'An elemental mage struggles to control the storm within.'})
+---- ok
+-STATEMENT CREATE (b:Book {title: 'Digital Shadows', author: 'Reid Thompson', abstract: 'Cybercrime and identity theft in the digital age.'})
+---- ok
+-STATEMENT CALL QUERY_FTS_INDEX('Book', 'book_index', 'shadow') RETURN node.title,score;
+---- 2
+Digital Shadows|0.720636
+Shadows of Tomorrow|0.720636
+-STATEMENT CALL QUERY_FTS_INDEX('Book', 'book_index', 'digital') RETURN node.title,score;
+---- 1
+Digital Shadows|1.299639
+-STATEMENT CALL QUERY_FTS_INDEX('Book', 'book_index', 'machine mage') RETURN node.title,score;
+---- 3
+Learning Machines|1.036935
+Storm Weaver|0.934315
+The Mind Machine|0.756869
+-STATEMENT ALTER TABLE Book DROP abstract
+---- error
+Binder exception: Cannot drop property abstract in table Book because it is used in one or more indexes. Please remove the associated indexes before attempting to drop this property.
+
+-CASE DeleteAndReCopy
+-LOAD_DYNAMIC_EXTENSION fts
+-STATEMENT CALL CREATE_FTS_INDEX('Book', 'book_index', ['abstract', 'author', 'title'], stemmer := 'porter');
+---- ok
+-STATEMENT MATCH (b:Book) DELETE b;
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT CREATE (b:Book {title: 'Alice wonderland', author: 'newton', abstract: 'machine'})
+---- ok
+-STATEMENT COPY Book FROM '${KUZU_ROOT_DIRECTORY}/dataset/fts-basic/Book.csv';
+---- ok
+-STATEMENT CALL QUERY_FTS_INDEX('Book', 'book_index', 'a quantum machine') RETURN node.title, score;
+---- 3
+Alice wonderland|0.549301
+Learning Machines|0.599514
+The Quantum World|0.931796

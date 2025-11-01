@@ -1,0 +1,45 @@
+-DATASET CSV empty
+
+--
+
+-CASE OverLargeStringProp
+-STATEMENT CREATE NODE TABLE person(id SERIAL, prop STRING, PRIMARY KEY(id));
+---- ok
+-STATEMENT COPY person FROM '${KUZU_ROOT_DIRECTORY}/dataset/over-large-string/nodes.csv';
+---- ok
+-STATEMENT MATCH (p:person) RETURN SIZE(p.prop);
+---- 10
+271653
+345005
+387503
+393858
+404368
+426712
+497845
+505914
+510770
+521435
+-STATEMENT MATCH (p:person) RETURN p.prop ORDER BY p.prop;
+---- 10
+<FILE>:over_large_string.csv
+
+-CASE OverLargeStringPK
+-STATEMENT CREATE NODE TABLE person(id STRING, PRIMARY KEY(id));
+---- ok
+-STATEMENT COPY person FROM '${KUZU_ROOT_DIRECTORY}/dataset/over-large-string/nodes.csv';
+---- ok
+-STATEMENT MATCH (p:person) RETURN SIZE(p.id);
+---- 10
+271653
+345005
+387503
+393858
+404368
+426712
+497845
+505914
+510770
+521435
+-STATEMENT MATCH (p:person) RETURN p.id;
+---- 10
+<FILE>:over_large_string.csv

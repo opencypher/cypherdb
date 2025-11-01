@@ -1,0 +1,100 @@
+-DATASET CSV rel-update-tests
+-TEST_FWD_ONLY_REL
+--
+
+-CASE deleteRelsFromManyToOneTableCommitNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p1:person)-[t:teaches]->(p2:person) WHERE p1.ID = 11 AND p2.ID = 1 delete t;
+---- ok
+-STATEMENT MATCH (p1:person)-[t:teaches]->(p2:person) WHERE p1.ID = 31 AND p2.ID = 3 delete t;
+---- ok
+-STATEMENT COMMIT
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (:person)-[t:teaches]->(:person) return t.length
+---- 4
+21
+22
+32
+33
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE deleteRelsFromManyToOneTableCommitRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p1:person)-[t:teaches]->(p2:person) WHERE p1.ID = 11 AND p2.ID = 1 delete t;
+---- ok
+-STATEMENT MATCH (p1:person)-[t:teaches]->(p2:person) WHERE p1.ID = 31 AND p2.ID = 3 delete t;
+---- ok
+-STATEMENT COMMIT
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (:person)-[t:teaches]->(:person) return t.length
+---- 4
+21
+22
+32
+33
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE deleteRelsFromManyToOneTableRollbackNormalExecution
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p1:person)-[t:teaches]->(p2:person) WHERE p1.ID = 11 AND p2.ID = 1 delete t;
+---- ok
+-STATEMENT MATCH (p1:person)-[t:teaches]->(p2:person) WHERE p1.ID = 31 AND p2.ID = 3 delete t;
+---- ok
+-STATEMENT Rollback
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (:person)-[t:teaches]->(:person) return t.length
+---- 6
+11
+21
+22
+31
+32
+33
+-STATEMENT COMMIT;
+---- ok
+
+
+-CASE deleteRelsFromManyToOneTableRollbackRecovery
+-STATEMENT CALL auto_checkpoint=false
+---- ok
+-STATEMENT CHECKPOINT;
+---- ok
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (p1:person)-[t:teaches]->(p2:person) WHERE p1.ID = 11 AND p2.ID = 1 delete t;
+---- ok
+-STATEMENT MATCH (p1:person)-[t:teaches]->(p2:person) WHERE p1.ID = 31 AND p2.ID = 3 delete t;
+---- ok
+-STATEMENT ROLLBACK
+---- ok
+-RELOADDB
+-STATEMENT BEGIN TRANSACTION
+---- ok
+-STATEMENT MATCH (:person)-[t:teaches]->(:person) return t.length
+---- 6
+11
+21
+22
+31
+32
+33
+-STATEMENT COMMIT;
+---- ok
