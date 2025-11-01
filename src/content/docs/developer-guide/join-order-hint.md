@@ -25,7 +25,7 @@ For experimental purposes, or when the optimizer provides a sub-optimal plan, yo
 by using the `HINT` clause and writing a join order. This works as follows:
 - Join hints work within the scope of a single `MATCH` pattern.
 - The pattern must be connected, e.g., it cannot be `MATCH (a:Person), (b:Person) RETURN *;` where there are 2 disconnected components.
-- Every node/relationship variable must be named and appear in the join order exactly once. Relationship variables can be [recursive](https://kuzudb.github.io/docs/cypher/query-clauses/match/#match-variable-lengthrecursive-relationships), e.g., `-[e*1..3]->` or `-[e* SHORTEST]->`.
+- Every node/relationship variable must be named and appear in the join order exactly once. Relationship variables can be [recursive](https://opencypher.github.io/docs/cypher/query-clauses/match/#match-variable-lengthrecursive-relationships), e.g., `-[e*1..3]->` or `-[e* SHORTEST]->`.
 - The join order is a binary tree, expressed through the structure of the parentheses inside the `HINT` clause. Every sub-tree in the plan specified by `HINT` must be connected.
 
 As an example, the below hint enforces a query plan that scans edges using backward adjacency lists from `b`:
@@ -53,7 +53,7 @@ same plan because such joins are compiled as scanning node tables followed by sc
 
 ### MULTI_JOIN clause: Worst-case optimal join plans
 
-CypherDB plans can use a combination of binary join operators and [worst-case optimal join (WCOJ)](https://kuzudb.github.io/blog/post/wcoj/) operators.
+CypherDB plans can use a combination of binary join operators and [worst-case optimal join (WCOJ)](https://opencypher.github.io/blog/post/wcoj/) operators.
 WCOJ operators are useful if your `MATCH` pattern contains cycles, e.g., when finding triangles or larger cliques of nodes in your databases.
 Using HINT, you can also force the optimizer to use a WCOJ operator as follows:
 

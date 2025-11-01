@@ -5,7 +5,7 @@ description: Developer guide for building CypherDB from source code with CMake, 
 
 :::caution[Note]
 This page is intended for developers who want to build CypherDB from source. If you are a user of CypherDB,
-please refer to the [installation guide](https://kuzudb.github.io/docs/installation) for downloading pre-built binaries for your platform.
+please refer to the [installation guide](https://opencypher.github.io/docs/installation) for downloading pre-built binaries for your platform.
 :::
 
 To build from source code, CypherDB requires CMake (`>=3.15`), Python (`>=3.9`), and a compiler that supports C++20. The minimum supported versions of C++ compilers are GCC 12, Clang 18, and MSVC 19.20. The preferred compiler on Linux is GCC; on macOS, Apple Clang; and on Windows, MSVC. On Linux, Clang is also tested. Other compilers that support C++20 may also work, but are not tested.
