@@ -1,4 +1,0 @@
--NAME q17
--QUERY MATCH (comment:Comment) WHERE comment.length < comment.ID % 10 RETURN count(*)
----- 1
-70616461

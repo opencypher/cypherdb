@@ -1,4 +1,0 @@
--NAME q6
--QUERY MATCH (h:hits) RETURN COUNT(DISTINCT h.SearchPhrase);
----- 1
-6019102

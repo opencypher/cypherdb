@@ -1,2 +1,0 @@
-CREATE NODE TABLE account(ID INT64 PRIMARY KEY);
-CREATE REL TABLE follows(FROM account TO account);

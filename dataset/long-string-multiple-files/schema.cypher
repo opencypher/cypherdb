@@ -1,1 +1,0 @@
-CREATE NODE TABLE person(name STRING, PRIMARY KEY (name))

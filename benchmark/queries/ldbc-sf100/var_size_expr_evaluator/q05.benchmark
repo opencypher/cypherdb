@@ -1,4 +1,0 @@
--NAME q05
--QUERY MATCH (comment:Comment) RETURN MIN(upper(comment.browserUsed))
----- 1
-CHROME

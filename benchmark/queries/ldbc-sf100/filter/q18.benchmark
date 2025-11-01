@@ -1,4 +1,0 @@
--NAME q18
--QUERY MATCH (comment:Comment) WHERE substr(comment.browserUsed, 1, 2) = 'Ch' RETURN count(*)
----- 1
-61911128

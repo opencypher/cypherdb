@@ -1,4 +1,0 @@
--NAME q2
--QUERY MATCH (h:hits) WHERE h.AdvEngineID <> 0 RETURN COUNT(*);
----- 1
-630500

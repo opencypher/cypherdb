@@ -1,4 +1,0 @@
--NAME q06
--QUERY MATCH (comment:Comment) RETURN MIN(comment.browserUsed contains 'ed')
----- 1
-False

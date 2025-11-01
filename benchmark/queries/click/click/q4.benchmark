@@ -1,5 +1,0 @@
-# Skipped due to OOM
--NAME q4
--QUERY MATCH (h:hits) RETURN AVG(h.UserID);
----- 1
-2528953029789715968.000000

@@ -1,2 +1,0 @@
-CREATE NODE TABLE person (ID INT64 PRIMARY KEY,fName STRING);
-CREATE REL TABLE follows(FROM person TO org, year INT64);

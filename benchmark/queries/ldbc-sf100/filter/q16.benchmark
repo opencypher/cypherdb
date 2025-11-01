@@ -1,4 +1,0 @@
--NAME q16
--QUERY MATCH (comment:Comment) WHERE comment.length < 5 or comment.length > 100 RETURN count(*)
----- 1
-93614401

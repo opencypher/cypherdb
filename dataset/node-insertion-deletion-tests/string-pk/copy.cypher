@@ -1,1 +1,0 @@
-COPY person FROM "dataset/node-insertion-deletion-tests/string-pk/vPerson.csv"

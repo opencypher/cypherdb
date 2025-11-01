@@ -1,3 +1,0 @@
--NAME zonemap-node-null
--QUERY MATCH (c:Comment) WHERE c.length IS NULL RETURN *;
----- 0

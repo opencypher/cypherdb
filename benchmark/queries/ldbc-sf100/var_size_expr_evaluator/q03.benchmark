@@ -1,4 +1,0 @@
--NAME q03
--QUERY MATCH (comment:Comment) RETURN MIN(concat(comment.browserUsed, 'hh'))
----- 1
-Chromehh

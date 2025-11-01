@@ -1,4 +1,0 @@
--NAME q5
--QUERY MATCH (h:hits) RETURN COUNT(DISTINCT h.UserID);
----- 1
-17630976

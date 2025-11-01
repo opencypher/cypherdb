@@ -1,4 +1,0 @@
--NAME q19
--QUERY MATCH (comment:Comment) RETURN MIN(comment.browserUsed)
----- 1
-Chrome

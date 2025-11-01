@@ -1,4 +1,0 @@
--NAME q01
--QUERY MATCH (comment:Comment) WHERE comment.length < 10 RETURN MIN(comment.ID)
----- 1
-4198

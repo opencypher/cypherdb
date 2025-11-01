@@ -1,4 +1,0 @@
--NAME q11
--QUERY MATCH (comment:Comment) RETURN MIN(comment.length % 111)
----- 1
-0

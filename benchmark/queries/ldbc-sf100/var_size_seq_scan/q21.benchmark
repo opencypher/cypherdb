@@ -1,4 +1,0 @@
--NAME q21
--QUERY MATCH (comment:Comment) RETURN SIZE(MIN(comment.content))
----- 1
-1756

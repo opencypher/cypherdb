@@ -1,1 +1,0 @@
-COPY person FROM "dataset/empty-db/vPerson.csv"
