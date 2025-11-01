@@ -55,7 +55,7 @@ The above query counts only the rows where the `age` column is greater than 25.
 │ 3            │
 └──────────────┘
 ```
-Note that when scanning from CSV files, Kuzu will attempt to auto-cast the data to the correct type
+Note that when scanning from CSV files, CypherDB will attempt to auto-cast the data to the correct type
 when possible. For example, the `age` column is cast to an `INT64` type.
 
 You can reorder the columns by simply returning them in the order you want. The `LIMIT` keyword
@@ -85,6 +85,6 @@ on how to use the `LOAD FROM` clause.
 
 <LinkCard
   title="LOAD (Scan)"
-  description="Explore the options for the LOAD clause in Kuzu"
+  description="Explore the options for the LOAD clause in CypherDB"
   href="/cypher/query-clauses/load-from"
 />

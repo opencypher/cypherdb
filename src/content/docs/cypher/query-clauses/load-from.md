@@ -35,7 +35,7 @@ RETURN *
 
 
 Below we give examples of using `LOAD FROM` to scan data from each of these formats. We assume `WITH HEADERS`
-is not used in the examples below, so we discuss how Kuzu infers the variable names and data types of
+is not used in the examples below, so we discuss how CypherDB infers the variable names and data types of
 that bind to the scanned tuples.
 
 ### CSV
@@ -47,7 +47,7 @@ See the
 The configurations documented in those pages can also be specified after the `LOAD FROM` statement inside `()` when scanning
 CSV files. For example, you can indicate that the first line should
 be interpreted as a header line by setting `(headers = true)` or that the CSV delimiter is '|' by setting `(DELIM="|")`.
-Some of these configurations are also by default [automatically detected](/import/csv#csv-configurations) by Kuzu when scanning CSV files.
+Some of these configurations are also by default [automatically detected](/import/csv#csv-configurations) by CypherDB when scanning CSV files.
 These configurations determine the names and data types of the
 variables that bind to the fields scanned from CSV files.
 This page does not document those options in detail. We refer you to [CSV Configurations](/import/csv#csv-configurations) and
@@ -70,7 +70,7 @@ Karissa,40
 Zhang,50
 ```
 
-Then if you run the following query, Kuzu will infer the column names `name` and `age` from the first line of the CSV:
+Then if you run the following query, CypherDB will infer the column names `name` and `age` from the first line of the CSV:
 
 ```cypher
 LOAD FROM "user.csv" (header = true) RETURN *;
@@ -112,7 +112,7 @@ LOAD FROM "user.csv" (header = false) RETURN *;
 
 ### Parquet
 
-Since Parquet files contain schema information in their metadata, Kuzu will always use the available
+Since Parquet files contain schema information in their metadata, CypherDB will always use the available
 schema information when loading from Parquet files (except again
 if `LOAD WITH HEADERS (...) FROM` is used). Suppose we have a Parquet file `user.parquet` with two columns `f0` and `f1`
 and the same content as in the `user.csv` file above. Then the query below will scan the Parquet file and output the following:
@@ -133,7 +133,7 @@ LOAD FROM "user.parquet" RETURN *;
 
 ### Pandas
 
-Kuzu allows zero-copy access to Pandas DataFrames. The variable names and data types of scanned columns
+CypherDB allows zero-copy access to Pandas DataFrames. The variable names and data types of scanned columns
 within a Pandas DataFrame will be
 inferred from the schema information of the data frame. Here is an example:
 
@@ -163,12 +163,12 @@ Here, `name` and `age` have string and integer types in the defined Pandas DataF
 contains two columns with the same names and data types.
 
 :::note[Note]
-Pandas can use either a NumPy or Arrow backend - Kuzu can natively scan from either backend.
+Pandas can use either a NumPy or Arrow backend - CypherDB can natively scan from either backend.
 :::
 
 ### Polars
 
-Kuzu can also scan Polars DataFrames via the underlying PyArrow layer. The rules for determining the
+CypherDB can also scan Polars DataFrames via the underlying PyArrow layer. The rules for determining the
 variable names and data types is identical to scanning Pandas data frames. Here is an example:
 
 ```python
@@ -230,7 +230,7 @@ age: [[30,40,50]]
 
 ### JSON files
 
-Kuzu can scan directly scan JSON files `LOAD FROM`, but it requires installing the JSON extension.
+CypherDB can scan directly scan JSON files `LOAD FROM`, but it requires installing the JSON extension.
 Say you have a JSON file with the following contents:
 
 ```json
@@ -286,8 +286,8 @@ The JSON extension provides the `json_structure` function for this use case (see
 As an example, let's say we have the same JSON object as shown above in the JSON file example,
 but this time, we obtain the JSON object on the fly from a REST API. We can use the client language
 to return a _string_ representation of the JSON object, and then use the `json_structure` function
-in Kuzu's JSON extension to read the JSON string and convert its contents into the types needed
-for the Kuzu table.
+in CypherDB's JSON extension to read the JSON string and convert its contents into the types needed
+for the CypherDB table.
 
 ```js
 // This is the JSON string we get from the REST API
@@ -302,7 +302,7 @@ for the Kuzu table.
 └───────────────────────────────────────┘
 ```
 
-Alternatively. you can handle the JSON string in your client language and pass it to Kuzu.
+Alternatively. you can handle the JSON string in your client language and pass it to CypherDB.
 Here's how you would do it in Python:
 
 ```python
@@ -320,7 +320,7 @@ for row in response:
 ['STRUCT(name STRING, age UINT8)[]']
 ```
 
-Once you have the JSON structure, you can handle query the properties as structs using the dot notation in Kuzu.
+Once you have the JSON structure, you can handle query the properties as structs using the dot notation in CypherDB.
 
 ## Basic usage
 
@@ -401,7 +401,7 @@ RETURN age, name LIMIT 3;
 
 ### Bound variable names and data types
 
-By default, Kuzu will infer the column names and data types from the scan source automatically.
+By default, CypherDB will infer the column names and data types from the scan source automatically.
 - For Parquet, Pandas, Polars and PyArrow, column names and data types are always available in the data source
 - For CSV: The behavior is determined by the [CSV scanning configuration](/import/csv#csv-configurations), which are specified at the end of `LOAD FROM`,  inside `()`, similar
 to `COPY FROM` statements. We review the details of this behavior [below](#csv).
@@ -430,8 +430,8 @@ RETURN name, age;
 
 :::caution[Note]
 If `WITH HEADERS` is specified manually:
-- Kuzu will throw an exception if the given number of columns in `WITH HEADERS` does not the match number of columns in the file.
-- Kuzu will always try to cast to the type specified header. An exception will be thrown if the
+- CypherDB will throw an exception if the given number of columns in `WITH HEADERS` does not the match number of columns in the file.
+- CypherDB will always try to cast to the type specified header. An exception will be thrown if the
 casting operation fails.
 :::
 

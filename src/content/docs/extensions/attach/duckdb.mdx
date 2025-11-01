@@ -3,7 +3,7 @@ title: DuckDB extension
 description: Attach to DuckDB databases for seamless data scanning and importing with comprehensive type mapping support.
 ---
 
-The `duckdb` extension allows you to [attach](/extensions/attach/rdbms) DuckDB databases to Kuzu.
+The `duckdb` extension allows you to [attach](/extensions/attach/rdbms) DuckDB databases to CypherDB.
 
 ## Usage
 
@@ -36,13 +36,13 @@ ATTACH
 ```
 
 - `DB_PATH`: Path to the DuckDB database instance (can be a relative, absolute, https or S3 path)
-- `alias`: Database alias to use in Kuzu. If not provided, the database name from DuckDB will be used.
+- `alias`: Database alias to use in CypherDB. If not provided, the database name from DuckDB will be used.
   When attaching multiple databases, we recommend using aliases.
-- `skip_unsupported_table`: A boolean flag to indicate whether Kuzu should exit with an error or skip
+- `skip_unsupported_table`: A boolean flag to indicate whether CypherDB should exit with an error or skip
    tables with unsupported data types. Defaults to `False`.
-- `schema`: The name of the schema in DuckDB to attach. Kuzu attaches to the `main` schema of DuckDB by default.
+- `schema`: The name of the schema in DuckDB to attach. CypherDB attaches to the `main` schema of DuckDB by default.
 
-For example, the `university.db` DuckDB database can be attached to Kuzu using the alias `uw`:
+For example, the `university.db` DuckDB database can be attached to CypherDB using the alias `uw`:
 
 ```cypher
 ATTACH 'university.db' AS uw (dbtype duckdb);
@@ -70,11 +70,11 @@ LOAD FROM station.stations RETURN count(*);
 └──────────────┘
 ```
 
-### DuckDB to Kuzu type mapping
+### DuckDB to CypherDB type mapping
 
-The following table shows the mapping from DuckDB's data types to Kuzu's data types:
+The following table shows the mapping from DuckDB's data types to CypherDB's data types:
 
-| Data type in DuckDB          | Corresponding data type in Kuzu   |
+| Data type in DuckDB          | Corresponding data type in CypherDB   |
 |------------------------------|-----------------------------------|
 | `BIGINT`                     | `INT64`                           |
 | `BIT`                        | Unsupported                       |
@@ -140,15 +140,15 @@ RETURN *;
 
 ### Copy data from DuckDB tables
 
-You can use the `COPY FROM` statement to import data from a DuckDB table into Kuzu.
+You can use the `COPY FROM` statement to import data from a DuckDB table into CypherDB.
 
-First, create a `Person` table in Kuzu, with the same schema as the one defined in DuckDB:
+First, create a `Person` table in CypherDB, with the same schema as the one defined in DuckDB:
 
 ```cypher
 CREATE NODE TABLE Person (name STRING PRIMARY KEY, age INT32);
 ```
 
-When the schemas are the same, you can copy the data from the external DBMS table to the Kuzu table simply as:
+When the schemas are the same, you can copy the data from the external DBMS table to the CypherDB table simply as:
 
 ```cypher
 COPY Person FROM uw.person;
@@ -178,7 +178,7 @@ MATCH (p:Person) RETURN p.*;
 
 ### Clear the schema cache
 
-To avoid redundantly retrieving schema information from attached databases, Kuzu maintains a schema cache
+To avoid redundantly retrieving schema information from attached databases, CypherDB maintains a schema cache
 including table names and their respective columns and types. Should modifications occur in the schema
 via an alternate connection to attached RDBMSs, such as creation or deletion of tables, the cached
 schema data may become obsolete. You can use the `clear_attached_db_cache()` function to refresh cached

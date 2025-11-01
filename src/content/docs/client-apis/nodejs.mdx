@@ -1,6 +1,6 @@
 ---
 title: Node.js API
-description: "Use Kuzu embedded graph database in Node.js applications with the official Node.js API"
+description: "Use CypherDB embedded graph database in Node.js applications with the official Node.js API"
 ---
 
 import { LinkCard } from '@astrojs/starlight/components';
@@ -15,14 +15,14 @@ See the following link for the full documentation of the Node.js API.
 
 ## Sync and Async APIs
 
-Kuzu provides both a sync and an async Node.js API. The async API is the default
-and is more commonly used when building Kuzu applications in Node.js.
+CypherDB provides both a sync and an async Node.js API. The async API is the default
+and is more commonly used when building CypherDB applications in Node.js.
 
 <Tabs syncKey="sync">
 
 <TabItem label="Async API">
 
-The asynchronous API is commonly used when writing Kuzu applications in Node.js.
+The asynchronous API is commonly used when writing CypherDB applications in Node.js.
 
 ```js
 const kuzu = require("kuzu");
@@ -60,8 +60,8 @@ const kuzu = require("kuzu");
 
 <TabItem label="Sync API">
 
-In addition to the standard async Node.js API, Kuzu also provides a synchronous Node.js API.
-This is useful for running Kuzu in a synchronous context, such as debugging or applications
+In addition to the standard async Node.js API, CypherDB also provides a synchronous Node.js API.
+This is useful for running CypherDB in a synchronous context, such as debugging or applications
 where async operations are not desired.
 
 ```js

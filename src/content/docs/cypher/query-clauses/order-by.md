@@ -4,8 +4,8 @@ description: ORDER BY is the clause where you define the order in which you want
 ---
 
 Order by is the clause where you define the order in which you want the query results to be displayed
-or sort a set of tuples you computed up to a point in your query.  Kuzu currently supports two
-sorting orders: `ASC`, `DESC`. By default if no sorting order is specified, Kuzu sorts
+or sort a set of tuples you computed up to a point in your query.  CypherDB currently supports two
+sorting orders: `ASC`, `DESC`. By default if no sorting order is specified, CypherDB sorts
 rows in ascending order and NULLs are placed first.
 
 We will use the example database for demonstration, whose schema and data import commands are given [here](/cypher/query-clauses/example-database).

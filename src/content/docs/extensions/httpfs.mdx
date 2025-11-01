@@ -3,20 +3,20 @@ title: HTTP file system extension
 description: "The HTTPFS extension allows you to read from files hosted on remote file systems"
 ---
 
-The `httpfs` extension extends the Kuzu file system by allowing reading from or writing to files hosted on
+The `httpfs` extension extends the CypherDB file system by allowing reading from or writing to files hosted on
 remote file systems. The `httpfs` extension provides support for the following remote file systems:
 
 - This extension: Plain HTTP(S) file systems
 - [S3 extension](/extensions/s3): Object storage via the AWS S3 API
 - [GCS extension](/extensions/gcs): Object storage via the Google Cloud Storage (GCS) API
 
-If you're looking to use Kuzu with Azure Blob Storage, see the [Azure extension](/extensions/azure).
+If you're looking to use CypherDB with Azure Blob Storage, see the [Azure extension](/extensions/azure).
 
 :::note[Note]
 The S3 and GCS extensions are implemented as _features_ of the `httpfs` extension.
 
-- Over plain HTTP(S), Kuzu only supports reading files.
-- For object storage via the S3 or GCS API, Kuzu supports reading, writing, and globbing files.
+- Over plain HTTP(S), CypherDB only supports reading files.
+- For object storage via the S3 or GCS API, CypherDB supports reading, writing, and globbing files.
 :::
 
 ## Usage
@@ -44,7 +44,7 @@ Guelph|75000
 Remote file system calls can be expensive and highly dependent on your network conditions (bandwidth, latency).
 Queries involving a large number of file operations (read, write, glob) can be slow.
 To expedite such queries, we introduce a new option: `HTTP_CACHE_FILE`.
-A local file cache is initialized when Kuzu requests the file for the first time.
+A local file cache is initialized when CypherDB requests the file for the first time.
 Subsequent remote file operations will be translated as local file operation on the cache file.
 
 The example below shows how to enable the local cache for remote files.
@@ -58,7 +58,7 @@ Cached files are visible per transaction. Therefore, if you have set HTTP_CACHE_
 a remote file, say `LOAD FROM "https://example.com/city.csv" RETURN *;`, then this file will be downloaded first and then scanned
 locally from the downloaded file. If you run the same `LOAD FROM` statement again, it will be downloaded again from the remote URL.
 This is because the second statement is executed as a separate transaction and we do not know if the already downloaded remote
-file has changed since the last time Kuzu downloaded it.
+file has changed since the last time CypherDB downloaded it.
 :::
 
 If you need to scan the same remote file multiple times and benefit from caching across multiple scans, you

@@ -7,7 +7,7 @@ This extension adds the ability to directly scan from delta tables registered in
 
 :::caution[Note]
 This is an experimental extension that is a starting point towards a larger integration
-of Kuzu with the lakehouse ecosystem. It may have unresolved issues. To help us address these
+of CypherDB with the lakehouse ecosystem. It may have unresolved issues. To help us address these
 issues or to discuss your use case, please reach out to us on GitHub or Discord.
 :::
 
@@ -31,18 +31,18 @@ ATTACH [CATALOG_NAME] AS [alias] (dbtype UC_CATALOG)
 ```
 
 - `CATALOG_NAME`: The catalog name to attach to in the Unity Catalog
-- `alias`: Database alias to use in Kuzu. If not provided, the catalog name will be used.
+- `alias`: Database alias to use in CypherDB. If not provided, the catalog name will be used.
   When attaching multiple databases, it's recommended to use aliases.
 
 :::note[Note]
-Kuzu attaches to the `default` schema under the given catalog name. Specifying the schema to attach is not currently supported.
+CypherDB attaches to the `default` schema under the given catalog name. Specifying the schema to attach is not currently supported.
 :::
 
-### Unity Catalog to Kuzu type mapping
+### Unity Catalog to CypherDB type mapping
 
-The table below shows the mapping from Unity Catalog types to Kuzu types:
+The table below shows the mapping from Unity Catalog types to CypherDB types:
 
-| Data type in Unity Catalog         | Corresponding data type in Kuzu |
+| Data type in Unity Catalog         | Corresponding data type in CypherDB |
 |-----------------------------|----------------------------------|
 | `BOOLEAN`                     | `BOOLEAN`                           |
 | `BYTE`                        | Unsupported                          |
@@ -92,7 +92,7 @@ RETURN *
 ```
 
 :::caution[Note]
-Currently, Kuzu only supports scanning from Delta Lake tables registered in the Unity Catalog.
+Currently, CypherDB only supports scanning from Delta Lake tables registered in the Unity Catalog.
 :::
 
 ### Use a default Unity Catalog name
@@ -108,17 +108,17 @@ LOAD FROM numbers
 RETURN *
 ```
 
-### Copy a Unity Catalog table into Kuzu
+### Copy a Unity Catalog table into CypherDB
 
-You can use the `COPY FROM` statement to import data from a Unity Catalog table into Kuzu.
+You can use the `COPY FROM` statement to import data from a Unity Catalog table into CypherDB.
 
-First, create a `numbers` table in Kuzu with the same schema as the one defined in the Unity Catalog.
+First, create a `numbers` table in CypherDB with the same schema as the one defined in the Unity Catalog.
 
 ```cypher
 CREATE NODE TABLE numbers (id INT32 PRIMARY KEY, score DOUBLE);
 ```
 
-Then, copy the data from the external Unity Catalog table to the Kuzu table.
+Then, copy the data from the external Unity Catalog table to the CypherDB table.
 
 ```cypher
 copy numbers from unity.numbers;

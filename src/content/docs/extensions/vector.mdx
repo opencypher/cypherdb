@@ -6,7 +6,7 @@ description: "Native disk-based HNSW index for fast similarity search over vecto
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 The `vector` extension provides a *native disk-based* [HNSW](https://en.wikipedia.org/wiki/Hierarchical_navigable_small_world) vector index
-for accelerating similarity search over vector embeddings (32-bit and 64-bit float arrays) stored in Kuzu.
+for accelerating similarity search over vector embeddings (32-bit and 64-bit float arrays) stored in CypherDB.
 
 :::note[Note]
 Currently, indexing is only supported for vectors stored as node table properties.
@@ -28,7 +28,7 @@ Please see [Install an extension](/extensions#install-an-extension) and [Load an
 ### Example dataset
 
 Below is an example demonstrating two ways in which such a dataset can be created. The first is to use some external
-library, such as `sentence_transformers` in Python to create the embeddings. Alternatively, you can use Kuzu's [`llm`](/extensions/llm)
+library, such as `sentence_transformers` in Python to create the embeddings. Alternatively, you can use CypherDB's [`llm`](/extensions/llm)
 extension to directly create the embeddings using Cypher.
 
 <Tabs syncKey="vector">
@@ -160,7 +160,7 @@ for title, publisher in zip(titles, publishers):
 </Tabs>
 
 The embeddings are generated on the title properties of each `Book` and
-ingested into the Kuzu database.
+ingested into the CypherDB database.
 
 ### Creating a vector index
 
@@ -411,7 +411,7 @@ Example output:
 ```
 
 ## Filtered vector search
-Kuzu allows you to combine vector search with filter predicates by using [projected graphs](/extensions/algo#projected-graphs).
+CypherDB allows you to combine vector search with filter predicates by using [projected graphs](/extensions/algo#projected-graphs).
 
 For example, we can search for books similar to "quantum world", but only those that were published after 2010.
 

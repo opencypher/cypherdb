@@ -1,6 +1,6 @@
 ---
 title: Settings Panel
-description: Configure Kuzu Explorer display options, graph layout settings, and visualization preferences.
+description: Configure CypherDB Explorer display options, graph layout settings, and visualization preferences.
 ---
 
 The Settings Panel, which you can access by clicking `Settings` in the top right corner,

@@ -21,17 +21,17 @@ export default defineConfig({
         sitemap(),
         starlight({
             favicon: '/img/favicon.ico',
-            title: 'Kuzu',
+            title: 'CypherDB',
             logo: {
-                light: '/src/assets/logo/kuzu-logo.png',
-                dark: '/src/assets/logo/kuzu-logo-inverse.png',
+                light: '/src/assets/logo/cypherdb-logo.png',
+                dark: '/src/assets/logo/cypherdb-logo-inverse.png',
                 replacesTitle: true,
             },
             social: {
-                github: 'https://github.com/kuzudb/kuzu',
+                github: 'https://github.com/opencypher/cypherdb',
             },
             editLink: {
-                baseUrl: 'https://github.com/kuzudb/kuzu-docs/edit/main',
+                baseUrl: 'https://github.com/opencypher/cypherdb/edit/gh-pages',
             },
             customCss: ['./src/styles/custom.css'],
             expressiveCode: {
@@ -53,46 +53,17 @@ export default defineConfig({
                 },
                 {
                     tag: 'meta',
-                    attrs: { property: 'og:title', content: 'Kuzu - Graph Database' },
+                    attrs: { property: 'og:title', content: 'CypherDB - Graph Database' },
                 },
                 {
                     tag: 'meta',
-                    attrs: { property: 'og:description', content: 'Documentation for Kuzu, an open source, embedded graph database' },
+                    attrs: { property: 'og:description', content: 'Documentation for CypherDB, an open source, embedded graph database' },
                 },
                 {
                     tag: 'meta',
                     attrs: { property: 'og:image', content: site + '/img/og.png' },
                 },
 
-                // Twitter specific tags
-                {
-                    tag: 'meta',
-                    attrs: { name: 'twitter:card', content: 'summary_large_image' },
-                },
-                {
-                    tag: 'meta',
-                    attrs: { property: 'twitter:domain', content: 'docs.kuzudb.com' },
-                },
-                {
-                    tag: 'meta',
-                    attrs: { property: 'twitter:url', content: site },
-                },
-                {
-                    tag: 'meta',
-                    attrs: { name: 'twitter:title', content: 'Kuzu - Graph Database' },
-                },
-                {
-                    tag: 'meta',
-                    attrs: { name: 'twitter:description', content: 'Documentation for Kuzu, an open source, embedded graph database' },
-                },
-                {
-                    tag: 'meta',
-                    attrs: { name: 'twitter:image', content: site + '/img/og.png' },
-                },
-                {
-                    tag: "script",
-                    attrs: { src: "/remove-prompt.js", type: "text/javascript" }
-                },
 
             ],
             components: {
@@ -108,10 +79,10 @@ export default defineConfig({
                     link: '/',
                 },
                 {
-                    label: 'Install Kuzu',
+                    label: 'Install CypherDB',
                     collapsed: true,
                     items: [
-                        { label: 'Install Kuzu', link: '/installation', },
+                        { label: 'Install CypherDB', link: '/installation', },
                         { label: 'System requirements', link: '/system-requirements'},
                     ]
                 },
@@ -177,10 +148,10 @@ export default defineConfig({
                     collapsed: true,
                     items: [
                         {
-                            label: 'Kuzu Explorer',
+                            label: 'CypherDB Explorer',
                             collapsed: true,
                             items: [
-                                { label: 'Intro to Kuzu Explorer', link: '/visualization/kuzu-explorer'},
+                                { label: 'Intro to CypherDB Explorer', link: '/visualization/kuzu-explorer'},
                                 { label: 'Query panel', link: '/visualization/kuzu-explorer/query-panel'},
                                 { label: 'Schema panel', link: '/visualization/kuzu-explorer/schema-panel' },
                                 { label: 'Import panel', link: '/visualization/kuzu-explorer/import-panel' },
@@ -236,13 +207,13 @@ export default defineConfig({
                         { label: 'Nim', link: '/client-apis/nim', badge: { text: 'Community', variant: 'caution'}},
                     ],
                 },
-                { label: 'Kuzu-Wasm', link: '/client-apis/wasm' },
+                { label: 'CypherDB-Wasm', link: '/client-apis/wasm' },
                 { label: 'Connections & concurrency', link: '/concurrency' },
                 {
                     label: 'Developer guide',
                     collapsed: true,
                     items: [
-                        { label: 'Build Kuzu from source', link: '/developer-guide' },
+                        { label: 'Build CypherDB from source', link: '/developer-guide' },
                         { label: 'Performance debugging', link: '/developer-guide/performance-debugging' },
                         { label: 'Testing framework', link: '/developer-guide/testing-framework' },
                         { label: 'Join order hints', link: '/developer-guide/join-order-hint' },
@@ -272,7 +243,7 @@ export default defineConfig({
                                 { label: 'Microsoft Azure', link: '/extensions/azure', badge: { text: 'New' }},
                             ]
                         },
-                        { label: 'External Kuzu databases', link: '/extensions/attach/kuzu' },
+                        { label: 'External CypherDB databases', link: '/extensions/attach/kuzu' },
                         { label: 'Full-text search', link: '/extensions/full-text-search' },
                         {
                             label: 'Graph algorithms',

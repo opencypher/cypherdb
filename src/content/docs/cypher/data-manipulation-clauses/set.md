@@ -44,7 +44,7 @@ RETURN u.*;
 ```
 
 ### Set multi label node properties
-Kuzu also supports updating node properties with multi-label nodes.
+CypherDB also supports updating node properties with multi-label nodes.
 ```cypher
 MATCH (u)
 SET u.population = 0

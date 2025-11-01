@@ -1,10 +1,10 @@
 ---
 title: Import Parquet
-description: Bulk import data from Apache Parquet columnar files into Kuzu node and relationship tables using COPY FROM.
+description: Bulk import data from Apache Parquet columnar files into CypherDB node and relationship tables using COPY FROM.
 ---
 
 [Apache Parquet](https://Parquet.apache.org/docs/) is an open source, column-oriented persistent storage format
-designed for efficient data storage and retrieval. Kuzu supports bulk data import from Parquet files
+designed for efficient data storage and retrieval. CypherDB supports bulk data import from Parquet files
 using the `COPY FROM` command. You can use `COPY FROM` to import data into an empty table or to append data to an existing table.
 
 :::caution[Notes]
@@ -64,7 +64,7 @@ COPY Follows FROM "follows.Parquet";
 ## Import multiple files to a single table
 
 It is common practice to divide large Parquet files into several smaller files for cleaner data management.
-Kuzu can read multiple files with the same structure, consolidating their data into a single node or relationship table.
+CypherDB can read multiple files with the same structure, consolidating their data into a single node or relationship table.
 You can specify that multiple files are loaded in the following ways:
 
 ### Glob pattern

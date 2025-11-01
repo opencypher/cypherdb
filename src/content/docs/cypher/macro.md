@@ -3,7 +3,7 @@ title: Create macros
 description: "Define reusable Cypher expressions with parameters and default values using macros"
 ---
 
-Kuzu allows you to define macros via custom C++ code in the catalog using the `create macro` statement.
+CypherDB allows you to define macros via custom C++ code in the catalog using the `create macro` statement.
 The process of creating macros involves using the `CREATE MACRO` keyword followed by the macro's name.
 You can optionally include parameters with optional default value within parentheses after the name.
 The `AS` keyword comes next, followed by the actual Cypher expression of the macro. It's important to

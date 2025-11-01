@@ -24,7 +24,7 @@ unzip iceberg_tables.zip
 ### Scan Iceberg tables
 
 `LOAD FROM` is a Cypher query that scans a file or object element by element, but doesn’t actually
-copy the data into a Kuzu table.
+copy the data into a CypherDB table.
 
 ```cypher
 LOAD FROM
@@ -48,13 +48,13 @@ RETURN *;
 
 :::note[Notes]
 - The `file_format` parameter is required here to explicitly specify the file format of the given path.
-Kuzu is currently not capable of autodetecting Iceberg tables.
+CypherDB is currently not capable of autodetecting Iceberg tables.
 - The `allow_moved_paths` option ensures that proper path resolution is performed, which allows scanning
 Iceberg tables that are moved from their original location.
 :::
 
-### Copy Iceberg tables into Kuzu
-You can use a `COPY FROM` statement to copy the contents of an Iceberg table into Kuzu.
+### Copy Iceberg tables into CypherDB
+You can use a `COPY FROM` statement to copy the contents of an Iceberg table into CypherDB.
 
 ```cypher
 CREATE NODE TABLE university (name STRING PRIMARY KEY, age INT64);
@@ -117,7 +117,7 @@ CALL ICEBERG_SNAPSHOTS('/tmp/iceberg_tables/lineitem_iceberg') RETURN *;
 
 ### Access Iceberg tables hosted on S3
 
-Kuzu also supports scanning and copying Iceberg tables hosted on S3.
+CypherDB also supports scanning and copying Iceberg tables hosted on S3.
 
 #### Configure the S3 connection
 
@@ -150,7 +150,7 @@ LOAD FROM
 RETURN *;
 ```
 
-#### Copy Iceberg tables from S3 into Kuzu
+#### Copy Iceberg tables from S3 into CypherDB
 
 ```cypher
 CREATE NODE TABLE student (ID INT64 PRIMARY KEY, name STRING);
@@ -221,5 +221,5 @@ RETURN *;
 
 Currently, the `iceberg` extension does not support:
 
-- Exporting to Iceberg tables from Kuzu is not supported.
+- Exporting to Iceberg tables from CypherDB is not supported.
 - Scanning/copying nested data (i.e., of type `STRUCT`) in Iceberg table columns is not supported.

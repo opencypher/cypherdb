@@ -1,15 +1,15 @@
 ---
 title: "Run graph algorithms"
-description: "Execute graph algorithms in Kuzu using the algo extension or NetworkX integration"
+description: "Execute graph algorithms in CypherDB using the algo extension or NetworkX integration"
 ---
 
 Network analysis is a field of data science and graph theory focused on understanding the connections and interactions between entities in a graph. By examining the structure and dynamics of these networks, analysts can reveal important properties such as influential nodes, community structures, and information flow. Applications of network analysis span diverse areas, including identifying key players in social networks, detecting fraud in financial systems, optimizing transportation routes, and mapping the spread of diseases in healthcare.
 
-When working with Kuzu, you can run graph algorithms in one of two ways:
+When working with CypherDB, you can run graph algorithms in one of two ways:
 
-1. `algo` extension: Run graph algorithms natively in Kuzu via the [algo extension](/extensions/algo).
+1. `algo` extension: Run graph algorithms natively in CypherDB via the [algo extension](/extensions/algo).
 2. `networkx`: Use the [NetworkX](https://networkx.org/documentation/stable/reference/index.html) library
-in Python to run almost any graph algorithm on a Kuzu subgraph.
+in Python to run almost any graph algorithm on a CypherDB subgraph.
 
 ## Prepare the dataset
 
@@ -30,7 +30,7 @@ uv add kuzu polars pyarrow networkx numpy scipy
 
 ## Create the graph
 
-First, initialize a connection to a new Kuzu database named `example.kuzu`:
+First, initialize a connection to a new CypherDB database named `example.kuzu`:
 
 ```py
 from pathlib import Path
@@ -63,7 +63,7 @@ conn.execute(
 conn.execute("CREATE REL TABLE MENTORED(FROM Scholar TO Scholar);")
 ```
 
-The node data can be ingested into Kuzu using `MERGE` commands as follows:
+The node data can be ingested into CypherDB using `MERGE` commands as follows:
 ```py
 res = conn.execute(
     """
@@ -98,16 +98,16 @@ Merged 3384 scholar nodes into the database
 Merged 5657 mentorship relationships into the database
 ```
 
-The resulting graph can be visualized using [Kuzu Explorer](/visualization/kuzu-explorer),
+The resulting graph can be visualized using [CypherDB Explorer](/visualization/kuzu-explorer),
 and shows rich connections between scholars who mentored one another.
 
 <img src="/img/graph-algorithms/mentorship-graph.png" />
 
 Now that you've loaded the mentorship graph, you're ready to run graph algorithms on it!
 
-## Method 1: Kuzu `algo` extension
+## Method 1: CypherDB `algo` extension
 
-The first method to run a graph algorithm natively in Kuzu is using the `algo` extension.
+The first method to run a graph algorithm natively in CypherDB is using the `algo` extension.
 
 #### Install and load the extension
 
@@ -119,13 +119,13 @@ db_path = "example.kuzu"
 db = kuzu.Database(db_path)
 conn = kuzu.Connection(db)
 
-# Install and load the Kuzu algo extension
+# Install and load the CypherDB algo extension
 conn.execute("INSTALL algo; LOAD algo;")
 ```
 
 #### Project a subgraph
 
-When using the `algo` extension in Kuzu, graph algorithms run
+When using the `algo` extension in CypherDB, graph algorithms run
 on a [projected subgraph](/extensions/algo/#projected-graphs).
 
 ```py
@@ -146,9 +146,9 @@ res = conn.execute(
 pagerank_df = res.get_as_pl()
 ```
 
-#### Write results to Kuzu
+#### Write results to CypherDB
 
-The above steps computed the PageRank metrics for the nodes, but didn't persist them to the Kuzu database.
+The above steps computed the PageRank metrics for the nodes, but didn't persist them to the CypherDB database.
 To do this, you can use the `pagerank_df` DataFrame to write the PageRank scores to the `Scholar` node table.
 
 To ingest the data back in, first run `ALTER TABLE` to add a new column
@@ -170,10 +170,10 @@ conn.execute(
     SET s.pagerank = pagerank;
     """
 )
-print("Finished adding graph algorithm metric scores to Kuzu database")
+print("Finished adding graph algorithm metric scores to CypherDB database")
 ```
 
-You can test that the results were ingested correctly in Kuzu by running the
+You can test that the results were ingested correctly in CypherDB by running the
 following query:
 
 ```py
@@ -202,7 +202,7 @@ print(res.get_as_pl())
 └────────────────────────┴────────────┘
 ```
 
-You can also run the following query in Kuzu Explorer to visualize the tree structure that led to the
+You can also run the following query in CypherDB Explorer to visualize the tree structure that led to the
 person with the highest PageRank score:
 
 ```py
@@ -224,14 +224,14 @@ Niels Bohr, Ernest Rutherford, J.J. Thomson, Edward Teller, and Linus Pauling.
 
 ## Method 2: NetworkX
 
-You can also run graph algorithms via NetworkX. This involves transforming a Kuzu subgraph into
-a NetworkX graph object, running the algorithm on it, and then writing the results back to Kuzu.
+You can also run graph algorithms via NetworkX. This involves transforming a CypherDB subgraph into
+a NetworkX graph object, running the algorithm on it, and then writing the results back to CypherDB.
 
 :::note[Note]
-Running a graph algorithm in NetworkX will be slower than using Kuzu's `algo` extension, due to
+Running a graph algorithm in NetworkX will be slower than using CypherDB's `algo` extension, due to
 additional overhead in dealing with Python objects, but NetworkX can be a useful fallback when
-you want to run a graph algorithm that's not yet supported in Kuzu. It's trivial to transform
-a NetworkX algorithm result into a Pandas/Polars DataFrame and write it back to Kuzu.
+you want to run a graph algorithm that's not yet supported in CypherDB. It's trivial to transform
+a NetworkX algorithm result into a Pandas/Polars DataFrame and write it back to CypherDB.
 :::
 
 First, obtain a connection to the existing `example.kuzu` database:
@@ -247,10 +247,10 @@ conn = kuzu.Connection(db)
 
 #### Create a NetworkX graph
 
-The first step is to extract a subgraph from Kuzu and convert it to a NetworkX graph object.
+The first step is to extract a subgraph from CypherDB and convert it to a NetworkX graph object.
 
 ```py
-# Convert a Kuzu subgraph to a NetworkX graph
+# Convert a CypherDB subgraph to a NetworkX graph
 res = conn.execute(
     """
     MATCH (a:Scholar)-[b:MENTORED]->(c:Scholar)
@@ -268,16 +268,16 @@ import polars as pl
 
 pageranks = nx.pagerank(nx_graph)
 # NetworkX prefixes the node label to the results
-# This step cleans up the naming so that we can import it back into Kuzu
+# This step cleans up the naming so that we can import it back into CypherDB
 pagerank_df = (
     pl.DataFrame({"name": k, "metric": v} for k, v in pageranks.items())
     .with_columns(pl.col("name").str.replace("Scholar_", "").alias("name"))
 )
 ```
 The results from NetworkX are transformed into a Polars DataFrame and the columns
-are renamed appropriately, to match with the node table's columns in Kuzu.
+are renamed appropriately, to match with the node table's columns in CypherDB.
 
-#### Write NetworkX results to Kuzu
+#### Write NetworkX results to CypherDB
 
 To ingest the data back in, first run `ALTER TABLE` to add a new column
 `pagerank` to the `Scholar` node table. Then, scan the data from the Polars
@@ -294,10 +294,10 @@ conn.execute(
     SET s.pagerank = metric;
     """
 )
-print("Finished adding graph algorithm metric scores to Kuzu database")
+print("Finished adding graph algorithm metric scores to CypherDB database")
 ```
 
-We can test that the results were ingested correctly in Kuzu by running the
+We can test that the results were ingested correctly in CypherDB by running the
 following Cypher query:
 
 ```py
@@ -335,7 +335,7 @@ of the betweenness centrality algorithm run on the same graph.
 # Run betweenness centrality
 bc_results = nx.betweenness_centrality(nx_graph)
 # NetworkX prefixes the node label to the results
-# This step cleans up the naming so that we can import it back into Kuzu
+# This step cleans up the naming so that we can import it back into CypherDB
 betweenness_centrality_df = (
     pl.DataFrame({"name": k, "metric": v} for k, v in bc_results.items())
     .with_columns(pl.col("name").str.replace("Scholar_", "").alias("name"))
@@ -346,7 +346,7 @@ The following command adds a new column `betweenness_centrality` to the `Scholar
 ```py
 conn.execute("ALTER TABLE Scholar ADD IF NOT EXISTS betweenness_centrality DOUBLE DEFAULT 0.0;")
 ```
-Then, write the results back to the Kuzu database as before:
+Then, write the results back to the CypherDB database as before:
 ```py
 conn.execute(
     """
@@ -355,7 +355,7 @@ conn.execute(
     SET s.betweenness_centrality = metric;
     """
 )
-print("Finished adding graph algorithm metric scores to Kuzu database")
+print("Finished adding graph algorithm metric scores to CypherDB database")
 ```
 
 The query below shows the top 5 Physics laureates with the highest betweenness centrality scores and
@@ -404,7 +404,7 @@ By using centrality metrics like PageRank and betweenness centrality to analyze 
 the data. This demonstrates the power of graph algorithms and network analysis in uncovering insights from
 complex data.
 
-For performance and scalability, it's recommended to use Kuzu's native `algo` extension if your algorithm of choice
+For performance and scalability, it's recommended to use CypherDB's native `algo` extension if your algorithm of choice
 is available. If not, you can always fall back to using NetworkX, which has a far more extensive suite of
 graph algorithms.
 

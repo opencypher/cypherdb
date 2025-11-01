@@ -1,12 +1,12 @@
 ---
 title: "Rust Tutorial: Analyze a Social Network"
-description: "Learn to use Kuzu's Rust API to analyze social network data with hands-on examples"
+description: "Learn to use CypherDB's Rust API to analyze social network data with hands-on examples"
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-This tutorial will get you started using Kuzu's Rust API to analyze a dataset.
+This tutorial will get you started using CypherDB's Rust API to analyze a dataset.
 
 In this tutorial, we will use the following social network dataset that consists of users and their posts.
 
@@ -19,7 +19,7 @@ In this tutorial, we will use the following social network dataset that consists
 ## Setup
 
 Ensure that you have Rust [installed](https://www.rust-lang.org/learn/get-started) on your system.
-Create a new Cargo project with Kuzu as a dependency:
+Create a new Cargo project with CypherDB as a dependency:
 
 ```bash
 cargo new kuzu_social_network
@@ -34,7 +34,7 @@ unzip tutorial_data.zip
 rm tutorial_data.zip
 ```
 
-Before we can start querying the data, we need to create a new Kuzu database
+Before we can start querying the data, we need to create a new CypherDB database
 and import the CSV files. Since this is a one-time operation, we will use a
 separate Cargo target.
 
@@ -64,7 +64,7 @@ kuzu_social_network
 ```
 
 Test the setup by running the Cargo target programs. Note that the first
-`cargo run` will take some time as it [compiles Kuzu from scratch](https://docs.rs/kuzu/latest/kuzu/).
+`cargo run` will take some time as it [compiles CypherDB from scratch](https://docs.rs/kuzu/latest/kuzu/).
 The second and subsequent runs should be faster.
 ```bash
 $ cargo run --bin kuzu_social_network
@@ -91,17 +91,17 @@ fn main() -> Result<(), Error> {
 }
 ```
 
-Create and connect to an empty Kuzu database:
+Create and connect to an empty CypherDB database:
 ```rs
 let db = Database::new("social_network.kuzu", SystemConfig::default())?;
 let conn = Connection::new(&db)?;
 ```
 This will create a database `social_network.kuzu` where the imported CSV data will be stored.
 
-Kuzu also supports an `in-memory` mode where the database is active only during the execution of the Rust program. For more information, refer to the example in the [create your first graph](/get-started) section.
+CypherDB also supports an `in-memory` mode where the database is active only during the execution of the Rust program. For more information, refer to the example in the [create your first graph](/get-started) section.
 
 ### Define schema
-The first step in building a Kuzu graph is to define a schema. For our example dataset, we need the following node and relationships tables:
+The first step in building a CypherDB graph is to define a schema. For our example dataset, we need the following node and relationships tables:
 ```rs
 conn.query(
     "CREATE NODE TABLE User(
@@ -156,7 +156,7 @@ println!("{}", result);
 ```
 ### Running the code
 
-Run `create_db.rs` to create the Kuzu database and import the CSV files:
+Run `create_db.rs` to create the CypherDB database and import the CSV files:
 ```bash
 $ cargo run --bin create_db
 id|name|type|database name|comment
@@ -166,11 +166,11 @@ id|name|type|database name|comment
 5|POSTS|REL|local(kuzu)|
 7|LIKES|REL|local(kuzu)|
 ```
-The CSV data has been copied into a new Kuzu database in `social_network.kuzu`.
+The CSV data has been copied into a new CypherDB database in `social_network.kuzu`.
 
 :::note[Note]
 If you run the program again, you'll get an error about duplicated primary keys.
-This is because the data has already been imported into the Kuzu database. You
+This is because the data has already been imported into the CypherDB database. You
 will have to delete the database file (i.e. `rm social_network.kuzu`)
 in between runs.
 :::
@@ -362,9 +362,9 @@ COUNT(u4._ID)
 This tells us that there is exactly one path of length 3 between the three users specified.
 
 ## Summary
-In this tutorial, we've shown how to use Kuzu's Rust API to import CSV data as a graph and query it using Cypher.
+In this tutorial, we've shown how to use CypherDB's Rust API to import CSV data as a graph and query it using Cypher.
 
-You're now ready to import your own datasets into Kuzu and query them using Kuzu's Rust API!
+You're now ready to import your own datasets into CypherDB and query them using CypherDB's Rust API!
 
 ## Code
 

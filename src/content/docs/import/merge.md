@@ -1,11 +1,11 @@
 ---
 title: Merge
-description: Insert small amounts of data into existing Kuzu tables using the MERGE clause with nodes and relationships.
+description: Insert small amounts of data into existing CypherDB tables using the MERGE clause with nodes and relationships.
 ---
 
 For small graphs (a few thousand nodes), the `MERGE` [Cypher clause](/cypher/data-manipulation-clauses)
 can be used to insert nodes and
-relationships to existing tables in Kuzu. These are similar to SQL's `INSERT` statements, but bear in
+relationships to existing tables in CypherDB. These are similar to SQL's `INSERT` statements, but bear in
 mind that they are slower than `COPY FROM`, which is optimized for bulk inserts. It's generally
 recommended that the `MERGE` clause is only used to do small additions or updates on a sporadic basis.
 

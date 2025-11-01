@@ -347,7 +347,7 @@ RETURN b.name, properties(nodes(e), 'name'), properties(rels(e), '_ID');
 ```
 
 By default, recursive relationship follows a `WALK` semantic, in which nodes and relationships can be visited repeatedly. 
-Kuzu also supports `TRAIL` and `ACYCLIC` semantics, which can be specified inside the recursive pattern after `*`.
+CypherDB also supports `TRAIL` and `ACYCLIC` semantics, which can be specified inside the recursive pattern after `*`.
 
 A `TRAIL` is a walk in which all relationships are distinct.
 
@@ -432,13 +432,13 @@ RETURN b.name, COUNT(*);
 └─────────┴──────────────┘
 ```
 
-Our filter grammar is similar to that used by [Memgraph](https://memgraph.com/docs/memgraph/reference-guide/built-in-graph-algorithms). For example, in Cypher list comprehensions. The first variable represents intermediate relationships and the second one represents intermediate nodes. Currently Kuzu only supports predicates that can be evaluated just on node (`n.age > 45`) or just on relationship (`r.since < 2022`) or conjunctive of such predicates (`n.age > 45 AND r.since < 2022`). Complex predicates that involves both node and relationship (`n.age > 45 OR r.since < 2022`) is not supported.
+Our filter grammar is similar to that used by [Memgraph](https://memgraph.com/docs/memgraph/reference-guide/built-in-graph-algorithms). For example, in Cypher list comprehensions. The first variable represents intermediate relationships and the second one represents intermediate nodes. Currently CypherDB only supports predicates that can be evaluated just on node (`n.age > 45`) or just on relationship (`r.since < 2022`) or conjunctive of such predicates (`n.age > 45 AND r.since < 2022`). Complex predicates that involves both node and relationship (`n.age > 45 OR r.since < 2022`) is not supported.
 
 ### Project properties of intermediate nodes/relationships
 You can project a subset of properties for the intermediate nodes and relationships that bind within a recursive
 relationship. You can define the projection list of intermediate nodes and relationships within two curly brackets `{}` `{}` at 
 the end of the recursive relationship. The first `{}` is used for projecting relationship properties and the second `{}` for 
-node properties. Currently, Kuzu only supports directly projecting properties and not of expressions using
+node properties. Currently, CypherDB only supports directly projecting properties and not of expressions using
 the properties. Projecting properties of intermediate nodes and relationships can improve both performance and memory footprint.
 
 Below is an example that projects only the `since` property of the intermediate relationship and the `name` property of the 
@@ -599,14 +599,14 @@ RETURN properties(nodes(p), 'name'), cost(e);
 ```
 
 :::note[Note]
-To avoid ambiguity, Kuzu forces the lower bound of shortest path to be 1.
+To avoid ambiguity, CypherDB forces the lower bound of shortest path to be 1.
 There are two interpretations when the lower bound is greater than 1:
 - Compute shortest path and then return the path whose length is greater than the lower bound.
 - Compute the path with length greater than lower bound and then return the shortest path.
 :::
 
 ## Named paths
-Kuzu treats paths as first-class citizens. You can assign a named variable to a path (i.e., connected graph) and use it later on.
+CypherDB treats paths as first-class citizens. You can assign a named variable to a path (i.e., connected graph) and use it later on.
 
 The following query returns all paths between `Adam` and `Karissa`.
 ```cypher

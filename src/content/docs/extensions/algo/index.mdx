@@ -1,11 +1,11 @@
 ---
 title: Algo extension
-description: Extension for running native graph algorithms in Kuzu
+description: Extension for running native graph algorithms in CypherDB
 ---
 
 The `algo` extension allows you to run common graph algorithms such as PageRank,
-Connected Components, and Louvain on the graph stored in Kuzu. The algorithms are exposed as
-Cypher functions and execute directly inside Kuzu.
+Connected Components, and Louvain on the graph stored in CypherDB. The algorithms are exposed as
+Cypher functions and execute directly inside CypherDB.
 
 Currently, the `algo` extension provides the following algorithms:
 - [K-Core Decomposition](/extensions/algo/kcore)
@@ -20,7 +20,7 @@ Please see [Install an extension](/extensions#install-an-extension) and [Load an
 
 ## Projected graphs
 
-The graph algorithms run on _projected graphs_ instead of operating directly on Kuzu database tables.
+The graph algorithms run on _projected graphs_ instead of operating directly on CypherDB database tables.
 
 A projected graph contains only the nodes and relationships that are relevant for
 the algorithm you want to run, and is created by matching on a given table name and predicates. 
@@ -163,7 +163,7 @@ A projected graph is kept alive until:
 - The connection is closed.
 
 A projected graph is evaluated _only_ when an algorithm is executed.
-Kuzu does not materialize projected graphs in memory, and the corresponding data
+CypherDB does not materialize projected graphs in memory, and the corresponding data
 is scanned from disk on the fly.
 
 :::caution[Note]
@@ -181,6 +181,6 @@ This is a known limitation and will be addressed in a future release.
 
 ## Edge direction
 
-In Kuzu, both the base graph and projected graphs are directed. For algorithms that are only
+In CypherDB, both the base graph and projected graphs are directed. For algorithms that are only
 well-defined on undirected graphs, such as Weakly Connected Components,
 the graph is treated as undirected by ignoring the edge direction.

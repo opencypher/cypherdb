@@ -5,7 +5,7 @@ description: Scan and copy from Delta Lake tables using the delta extension with
 
 The `delta` extension adds support for scanning/copying from the [`Delta Lake format`](https://delta.io/).
 Delta Lake is an open-source storage framework that enables building a format-agnostic lakehouse architecture.
-Using this extension, you can interact with Delta tables directly within Kuzu using the `LOAD FROM` and `COPY FROM` clauses.
+Using this extension, you can interact with Delta tables directly within CypherDB using the `LOAD FROM` and `COPY FROM` clauses.
 
 ## Usage
 
@@ -34,7 +34,7 @@ write_deltalake(f"/tmp/student", pd.DataFrame.from_dict(student))
 ### Scan Delta tables
 
 `LOAD FROM` is a Cypher clause that scans a file or object element by element, but doesn’t actually
-copy the data into a Kuzu table.
+copy the data into a CypherDB table.
 To scan the Delta table created above, you can do the following:
 
 ```cypher
@@ -52,11 +52,11 @@ LOAD FROM '/tmp/student' (file_format='delta') RETURN *;
 ```
 :::note[Note]
 The `file_format` parameter is required here to explicitly specify the file format of the given path.
-Kuzu is currently not capable of autodetecting Delta tables.
+CypherDB is currently not capable of autodetecting Delta tables.
 :::
 
-### Copy Delta tables into Kuzu
-You can use a `COPY FROM` statement to copy the contents of a Delta table into Kuzu.
+### Copy Delta tables into CypherDB
+You can use a `COPY FROM` statement to copy the contents of a Delta table into CypherDB.
 
 ```cypher
 CREATE NODE TABLE student (ID INT64 PRIMARY KEY, name STRING);
@@ -72,7 +72,7 @@ COPY student FROM '/tmp/student' (file_format='delta');
 ```
 
 ### Access Delta tables hosted on S3
-Kuzu also supports scanning and copying Delta tables hosted on S3.
+CypherDB also supports scanning and copying Delta tables hosted on S3.
 
 #### Configure the S3 connection
 
@@ -103,7 +103,7 @@ LOAD FROM 's3://kuzu-sample/sample-delta' (file_format='delta')
 RETURN *;
 ```
 
-#### Copy Delta tables from S3 into Kuzu
+#### Copy Delta tables from S3 into CypherDB
 
 ```cypher
 CREATE NODE TABLE student (ID INT64 PRIMARY KEY, name STRING);
@@ -112,4 +112,4 @@ COPY student FROM 's3://kuzu-sample/student-delta' (file_format='delta');
 
 ## Limitations
 
-The `delta` extension currently does not support exporting data from Kuzu to Delta files.
+The `delta` extension currently does not support exporting data from CypherDB to Delta files.

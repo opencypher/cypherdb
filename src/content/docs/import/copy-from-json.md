@@ -1,11 +1,11 @@
 ---
 title: "Copy from JSON"
-description: Bulk import data from JSON files into Kuzu node and relationship tables using the JSON extension.
+description: Bulk import data from JSON files into CypherDB node and relationship tables using the JSON extension.
 ---
 
 ## JSON files
 
-You can copy from JSON files directly into Kuzu using the `COPY FROM` command. To use this feature,
+You can copy from JSON files directly into CypherDB using the `COPY FROM` command. To use this feature,
 you have to install the `JSON` extension using the instructions shown [here](/extensions/json).
 
 Consider the following JSON file:
@@ -143,7 +143,7 @@ See the [`JSON`](/extensions/json) extension documentation for more related feat
 
 ### Ignoring erroneous rows
 
-Like for CSV files, Kuzu can skip rows when some types of errors are encountered when importing from JSON.
+Like for CSV files, CypherDB can skip rows when some types of errors are encountered when importing from JSON.
 However, not every error type that is skippable by the CSV reader can be skipped by the JSON reader.
 See the [Ignore erroneous rows](/import#ignore-erroneous-rows) section for more details.
 

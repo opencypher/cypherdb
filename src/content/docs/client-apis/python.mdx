@@ -1,12 +1,12 @@
 ---
 title: Python API
-description: "Use Kuzu embedded graph database in Python applications with the official Python API"
+description: "Use CypherDB embedded graph database in Python applications with the official Python API"
 ---
 
 import { LinkCard } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Kuzu provides a Python package that you can install via PyPI. A full list of the available functions and classes
+CypherDB provides a Python package that you can install via PyPI. A full list of the available functions and classes
 can be found in the Python API documentation, linked below.
 
 <LinkCard
@@ -16,23 +16,23 @@ can be found in the Python API documentation, linked below.
 
 ## Sync and Async APIs
 
-Kuzu provides both a synchronous and an asynchronous Python API. The synchronous API is the default
+CypherDB provides both a synchronous and an asynchronous Python API. The synchronous API is the default
 and is more convenient to use.
 
-Download the [CSV files](https://github.com/kuzudb/kuzu/tree/master/dataset/demo-db/csv) used in the examples below:
+Download the [CSV files](https://github.com/opencypher/cypherdb/tree/master/dataset/demo-db/csv) used in the examples below:
 ```bash
 mkdir ./data/
-curl -L -o ./data/city.csv https://raw.githubusercontent.com/kuzudb/kuzu/refs/heads/master/dataset/demo-db/csv/city.csv
-curl -L -o ./data/user.csv https://raw.githubusercontent.com/kuzudb/kuzu/refs/heads/master/dataset/demo-db/csv/user.csv
-curl -L -o ./data/follows.csv https://raw.githubusercontent.com/kuzudb/kuzu/refs/heads/master/dataset/demo-db/csv/follows.csv
-curl -L -o ./data/lives-in.csv https://raw.githubusercontent.com/kuzudb/kuzu/refs/heads/master/dataset/demo-db/csv/lives-in.csv
+curl -L -o ./data/city.csv https://raw.githubusercontent.com/opencypher/cypherdb/refs/heads/master/dataset/demo-db/csv/city.csv
+curl -L -o ./data/user.csv https://raw.githubusercontent.com/opencypher/cypherdb/refs/heads/master/dataset/demo-db/csv/user.csv
+curl -L -o ./data/follows.csv https://raw.githubusercontent.com/opencypher/cypherdb/refs/heads/master/dataset/demo-db/csv/follows.csv
+curl -L -o ./data/lives-in.csv https://raw.githubusercontent.com/opencypher/cypherdb/refs/heads/master/dataset/demo-db/csv/lives-in.csv
 ```
 
 <Tabs syncKey="sync">
 
 <TabItem label="Sync API">
 
-The synchronous API is the default and is a common way to work with Kuzu in Python.
+The synchronous API is the default and is a common way to work with CypherDB in Python.
 
 ```python
 import kuzu
@@ -74,8 +74,8 @@ if __name__ == "__main__":
 
 <TabItem label="Async API">
 
-The asynchronous API is useful for running Kuzu in an async context,
-such as in web frameworks like FastAPI or cases where you need to concurrently run queries in Kuzu.
+The asynchronous API is useful for running CypherDB in an async context,
+such as in web frameworks like FastAPI or cases where you need to concurrently run queries in CypherDB.
 
 ```python
 import asyncio
@@ -172,7 +172,7 @@ for response in responses:
 
 ## DataFrames and Arrow Tables
 
-In Python, Kuzu supports the use of Pandas and Polars DataFrames, as well as PyArrow Tables. This
+In Python, CypherDB supports the use of Pandas and Polars DataFrames, as well as PyArrow Tables. This
 allows you to leverage the data manipulation capabilities of these libraries in your graph workflows.
 
 ### Output query results
@@ -306,8 +306,8 @@ p.age: [[30,40,50]]
 
 ### LOAD FROM
 
-You can scan a Pandas DataFrame, Polars DataFrame, or PyArrow Table in Kuzu using the `LOAD FROM` clause.
-Scanning a DataFrame or Table does *not* copy the data into Kuzu, it only reads the data.
+You can scan a Pandas DataFrame, Polars DataFrame, or PyArrow Table in CypherDB using the `LOAD FROM` clause.
+Scanning a DataFrame or Table does *not* copy the data into CypherDB, it only reads the data.
 
 <Tabs syncKey="python">
 
@@ -402,7 +402,7 @@ age: [[30,40,50]]
 
 <TabItem label="Pandas">
 
-Copy from a Pandas DataFrame into a Kuzu table using the `COPY FROM` command:
+Copy from a Pandas DataFrame into a CypherDB table using the `COPY FROM` command:
 
 ```py
 import kuzu
@@ -433,7 +433,7 @@ print(result.get_as_df())
 
 <TabItem label="Polars">
 
-Copy from a Polars DataFrame into a Kuzu table using the `COPY FROM` command:
+Copy from a Polars DataFrame into a CypherDB table using the `COPY FROM` command:
 
 ```py
 import kuzu
@@ -470,7 +470,7 @@ shape: (3, 2)
 
 <TabItem label="Arrow Table">
 
-Copy from a PyArrow Table into a Kuzu table using the `COPY FROM` command:
+Copy from a PyArrow Table into a CypherDB table using the `COPY FROM` command:
 
 ```py
 import kuzu
@@ -507,10 +507,10 @@ p.age: [[30,40,50]]
 
 ## Type notation
 
-This section summarizes the type notation used in Kuzu's Python API. Below is a table from Python
-types to a Kuzu `LogicalTypeID`, which will be used to infer types via Python type annotations.
+This section summarizes the type notation used in CypherDB's Python API. Below is a table from Python
+types to a CypherDB `LogicalTypeID`, which will be used to infer types via Python type annotations.
 
-|Python type|Kuzu `LogicalTypeID`|
+|Python type|CypherDB `LogicalTypeID`|
 |---|---|
 |`bool`|`BOOL`|
 |`int`|`INT64`|
@@ -525,13 +525,13 @@ types to a Kuzu `LogicalTypeID`, which will be used to infer types via Python ty
 
 ## UDF
 
-Kuzu's Python API also supports the registration of User Defined Functions (UDFs),
+CypherDB's Python API also supports the registration of User Defined Functions (UDFs),
 allowing you to define custom functions in Python and use them in your Cypher queries. This can allow
-you to quickly extend Kuzu with new functions you need in your Python applications.
+you to quickly extend CypherDB with new functions you need in your Python applications.
 
 :::caution[Note]
 There are performance implications of writing UDFs in Python. Before writing your own UDF, it's
-recommended to check if an equivalent Cypher function in Kuzu exists, as native functions run faster
+recommended to check if an equivalent Cypher function in CypherDB exists, as native functions run faster
 than UDFs.
 :::
 
@@ -561,7 +561,7 @@ conn.create_function("difference", difference, parameters, return_type)
 ```
 
 Note that in the example above, we explicitly declared the expected types of the parameters and the
-return value in Kuzu, prior to registering the UDF. 
+return value in CypherDB, prior to registering the UDF. 
 
 Alternatively, you can simply use Python type annotations to denote the type signature of the
 parameters and return value.
@@ -623,7 +623,7 @@ conn.remove_function("difference")
 
 When working with UDFs, you can also specify nested or complex types, though in this case, there are some differences
 from the examples shown above. With these additional types, a string representation should be given
-for the parameters which are then manually casted to the respective Kuzu type.
+for the parameters which are then manually casted to the respective CypherDB type.
 
 Some examples of where this is relevant are listed below:
 
@@ -666,6 +666,6 @@ print(result.get_as_df())
 0    90.00      100.00
 ```
 
-The second parameter is a built-in native type in Kuzu, i.e., `kuzu.Type.BOOL`. For the first parameter,
-we need to specify a string, i.e. `DECIMAL(7,2)` that is then parsed and used by Kuzu
+The second parameter is a built-in native type in CypherDB, i.e., `kuzu.Type.BOOL`. For the first parameter,
+we need to specify a string, i.e. `DECIMAL(7,2)` that is then parsed and used by CypherDB
 to map to the internal decimal representation.

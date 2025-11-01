@@ -1,6 +1,6 @@
 ---
 title: "Create your first graph"
-description: "Get started with Kuzu by creating your first graph database and running basic queries"
+description: "Get started with CypherDB by creating your first graph database and running basic queries"
 ---
 
 <div class="font-nunito">
@@ -41,7 +41,7 @@ let package = Package(
         .iOS(.v14),
     ],
     dependencies: [
-        .package(url: "https://github.com/kuzudb/kuzu-swift/", branch: "${version}"),
+        .package(url: "https://github.com/opencypher/cypherdb-swift/", branch: "${version}"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -49,7 +49,7 @@ let package = Package(
         .executableTarget(
             name: "kuzu-swift-example",
             dependencies: [
-                .product(name: "Kuzu", package: "kuzu-swift"),
+                .product(name: "CypherDB", package: "kuzu-swift"),
             ]
         ),
     ]
@@ -57,7 +57,7 @@ let package = Package(
 
 }
 
-Kuzu implements a **structured property graph model** and requires a pre-defined schema.
+CypherDB implements a **structured property graph model** and requires a pre-defined schema.
 
 - Schema definition involves node and relationship tables and their associated properties.
 - Each property key is strongly typed and these types must be explicitly declared.
@@ -66,13 +66,13 @@ Kuzu implements a **structured property graph model** and requires a pre-defined
 
 ## Persistence
 
-Kuzu supports both **on-disk** and **in-memory** modes of operation. The mode is determined
+CypherDB supports both **on-disk** and **in-memory** modes of operation. The mode is determined
 at the time of creating the database, as explained below.
 
 ### On-disk database
 
-If you specify a database path when initializing a database, such as `example.kuzu`, Kuzu
-will operate in the **on-disk** mode. In this mode, Kuzu persists all data to disk at the given
+If you specify a database path when initializing a database, such as `example.kuzu`, CypherDB
+will operate in the **on-disk** mode. In this mode, CypherDB persists all data to disk at the given
 path. All transactions are logged to a Write-Ahead Log (WAL) and updates are periodically merged into the
 database files during checkpoints.
 
@@ -82,7 +82,7 @@ On-disk databases allow you to process larger-than-memory workloads, provide tra
 
 ### In-memory database
 
-If you omit the database path, by specifying it as `""` or `:memory:`, Kuzu will operate in the **in-memory** mode.
+If you omit the database path, by specifying it as `""` or `:memory:`, CypherDB will operate in the **in-memory** mode.
 In this mode, there are **no writes** to the WAL, and no data is persisted to disk. All data is lost when the process finishes.
 
 :::note[When do I need an in-memory database?]
@@ -92,22 +92,22 @@ and analysis on small datasets, without persisting the data to disk.
 
 ## Quick start
 
-Ensure that you have [installed](/installation) Kuzu using the CLI or your preferred client API.
-Also download the example CSV files [from our GitHub repo](https://github.com/kuzudb/kuzu/tree/master/dataset/demo-db/csv).
+Ensure that you have [installed](/installation) CypherDB using the CLI or your preferred client API.
+Also download the example CSV files [from our GitHub repo](https://github.com/opencypher/cypherdb/tree/master/dataset/demo-db/csv).
 
 ```bash
 mkdir ./data/
-curl -L -o ./data/city.csv https://raw.githubusercontent.com/kuzudb/kuzu/refs/heads/master/dataset/demo-db/csv/city.csv
-curl -L -o ./data/user.csv https://raw.githubusercontent.com/kuzudb/kuzu/refs/heads/master/dataset/demo-db/csv/user.csv
-curl -L -o ./data/follows.csv https://raw.githubusercontent.com/kuzudb/kuzu/refs/heads/master/dataset/demo-db/csv/follows.csv
-curl -L -o ./data/lives-in.csv https://raw.githubusercontent.com/kuzudb/kuzu/refs/heads/master/dataset/demo-db/csv/lives-in.csv
+curl -L -o ./data/city.csv https://raw.githubusercontent.com/opencypher/cypherdb/refs/heads/master/dataset/demo-db/csv/city.csv
+curl -L -o ./data/user.csv https://raw.githubusercontent.com/opencypher/cypherdb/refs/heads/master/dataset/demo-db/csv/user.csv
+curl -L -o ./data/follows.csv https://raw.githubusercontent.com/opencypher/cypherdb/refs/heads/master/dataset/demo-db/csv/follows.csv
+curl -L -o ./data/lives-in.csv https://raw.githubusercontent.com/opencypher/cypherdb/refs/heads/master/dataset/demo-db/csv/lives-in.csv
 ```
 
 In this example, we will create a graph with two node types, `User` and `City`, and two relationship types, `Follows` and `LivesIn`.
 
-Because Kuzu is an embedded database, there are no servers to set up. You can simply import the
+Because CypherDB is an embedded database, there are no servers to set up. You can simply import the
 `kuzu` module in your code and run queries on the database. The examples for different client APIs
-below demonstrate how to create a graph schema and import data into an on-disk Kuzu database.
+below demonstrate how to create a graph schema and import data into an on-disk CypherDB database.
 
 <Tabs syncKey="client-apis">
 
@@ -312,11 +312,11 @@ const kuzu = require("kuzu");
 
 <TabItem label="Java">
 
-Kuzu's Java client library is available on [Maven Central](https://central.sonatype.com/artifact/com.kuzudb/kuzu). You can add the following snippet to your `pom.xml` to get it installed:
+CypherDB's Java client library is available on [Maven Central](https://central.sonatype.com/artifact/com.opencypher/cypherdb). You can add the following snippet to your `pom.xml` to get it installed:
 
 <Code code={CODE_BLOCKS.java.maven} lang="xml"/>
 
-Alternatively, if you are using Gradle, you can add the following snippet to your build.gradle file to include Kuzu's Java client library:
+Alternatively, if you are using Gradle, you can add the following snippet to your build.gradle file to include CypherDB's Java client library:
 
 For Groovy DSL:
 <Code code={CODE_BLOCKS.java.groovy} lang="groovy"/>
@@ -393,7 +393,7 @@ Zhang|2022|Noura
 
 <TabItem label="Rust">
 
-When installing the `kuzu` crate via Cargo, it will by default build and statically link Kuzu's C++
+When installing the `kuzu` crate via Cargo, it will by default build and statically link CypherDB's C++
 library from source. You can also link against the dynamic release libraries (see the Rust
 [crate docs](https://docs.rs/kuzu/latest/kuzu/) for details).
 
@@ -539,7 +539,7 @@ This configuration sets the minimum deployment target and adds the `kuzu-swift` 
 Next, replace the contents of `Sources/main.swift`:
 
 ```swift
-import Kuzu
+import CypherDB
 
 // Create an empty on-disk database and connect to it
 let db = try! Database("example.kuzu")
@@ -602,7 +602,7 @@ You should see the following output:
 
 <TabItem label="C++">
 
-The Kuzu C++ client is distributed as `so`/`dylib`/`dll+lib` library files along with a header file (`kuzu.hpp`).
+The CypherDB C++ client is distributed as `so`/`dylib`/`dll+lib` library files along with a header file (`kuzu.hpp`).
 Once you've downloaded and extracted the C++ files into a directory, they are ready to use without
 any additional installation. You just need to specify the library and include file search paths.
 
@@ -742,7 +742,7 @@ Zhang | 2022 | Noura
 
 <TabItem label="C">
 
-The Kuzu C API shares the same `so`/`dylib` library files with the C++ API and can be used by
+The CypherDB C API shares the same `so`/`dylib` library files with the C++ API and can be used by
 including the C header file (`kuzu.h`).
 
 In this example, we assume that the `so`/`dylib`, the header file, the CSV files, and the C code file
@@ -874,7 +874,7 @@ Zhang follows Noura since 2022
 
 <TabItem label="Shell">
 
-When using the Kuzu CLI's shell, you can create an on-disk database by specifying a path after
+When using the CypherDB CLI's shell, you can create an on-disk database by specifying a path after
 the `kuzu` command in the terminal.
 
 ```bash
@@ -939,7 +939,7 @@ The following result is obtained:
 ---
 
 :::tip[Congratulations]
-You've now created and queried your first graph in Kuzu!
+You've now created and queried your first graph in CypherDB!
 :::
 
 </div>

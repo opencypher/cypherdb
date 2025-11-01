@@ -3,13 +3,13 @@ title: Command Line Interface (CLI)
 description: Through the CLI, you can issue Cypher queries or call shell commands.
 ---
 
-Kuzu provides a CLI shell through which you can issue Cypher queries or `CALL` commands to query
+CypherDB provides a CLI shell through which you can issue Cypher queries or `CALL` commands to query
 metadata. See the [installation](/installation) docs for instructions on how
 to install the CLI and the [quick start](/get-started) page for its basic usage.
 
 ## Start the shell
 
-Kuzu supports on-disk, as well as in-memory databases. The functionality of the CLI is identical for both on-disk and in-memory modes.
+CypherDB supports on-disk, as well as in-memory databases. The functionality of the CLI is identical for both on-disk and in-memory modes.
 
 ### On-disk database
 
@@ -49,7 +49,7 @@ section. List all available shell commands by running `kuzu -h`.
 $ kuzu -h
   kuzu [databasePath] {OPTIONS}
 
-    KuzuDB Shell
+    CypherDBDB Shell
 
   OPTIONS:
 
@@ -69,8 +69,8 @@ $ kuzu -h
 ```
 
 :::caution[Note on memory usage]
-By default, Kuzu's CLI is launched with a maximum buffer pool size of 80% of the available memory.
-If you want to launch the Kuzu CLI with a different buffer pool size, you can do so by setting the
+By default, CypherDB's CLI is launched with a maximum buffer pool size of 80% of the available memory.
+If you want to launch the CypherDB CLI with a different buffer pool size, you can do so by setting the
 `--defaultbpsize` or `-d` flag to the desired value in megabytes.
 :::
 
@@ -83,7 +83,7 @@ kuzu --defaultbpsize 4096
 
 
 #### `:help`
-Show built-in command list within the Kuzu shell.
+Show built-in command list within the CypherDB shell.
 
 ```
 kuzu> :help

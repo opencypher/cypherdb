@@ -1,6 +1,6 @@
 ---
 title: C API
-description: "Use Kuzu embedded graph database in C applications with the official C API"
+description: "Use CypherDB embedded graph database in C applications with the official C API"
 ---
 
 import { LinkCard } from '@astrojs/starlight/components';
@@ -10,7 +10,7 @@ import { Code } from 'astro-expressive-code/components';
 export const CMAKE_CONTENT =`cmake_minimum_required(VERSION 3.11)
 project(example LANGUAGES C)
 ExternalProject_Add(kuzu-prebuilt
-    URL https://github.com/kuzudb/kuzu/releases/download/v${version}/libkuzu-linux-x86_64.tar.gz
+    URL https://github.com/opencypher/cypherdb/releases/download/v${version}/libkuzu-linux-x86_64.tar.gz
 )
 ExternalProject_Get_Property(kuzu-prebuilt SOURCE_DIR)
 add_library(kuzu SHARED IMPORTED)
@@ -36,7 +36,7 @@ See [Installation](/installation) and [Get Started](/get-started) for simple man
 Alternatively, here is an example configuration for integrating the pre-built library into a CMake project (substitute `URL` and `URL_HASH` and `libkuzu.so` as appropriate for your platform).
 <Code code={CMAKE_CONTENT} lang="cmake"/>
 
-### Linking against Kuzu when built from source
+### Linking against CypherDB when built from source
 
 See the requirements in https://kuzudb.github.io/docs/developer-guide/.
 It's recommended that you use CMake if you want to link to the kuzu static library as shown in the example below.
@@ -50,7 +50,7 @@ project(example LANGUAGES C CXX)
 set(BUILD_SHELL FALSE)
 include(FetchContent)
 FetchContent_Declare(kuzu
-    URL https://github.com/kuzudb/kuzu/archive/refs/tags/v0.5.0.zip
+    URL https://github.com/opencypher/cypherdb/archive/refs/tags/v0.5.0.zip
     URL_HASH SHA256=47ff308079cbbfeccc38eeb1c5f455a8c00f9294034141b9084387518f0bbed9
 )
 FetchContent_MakeAvailable(kuzu)
@@ -75,9 +75,9 @@ And then link against `<install-dest>/libkuzu.so` (or `libkuzu.dylib`/`libkuzu.l
 
 
 The static library is more complicated (as noted above, it's recommended that you use CMake to handle the details) and is not installed by default, but all static libraries will be available in the build directory.
-You need to define `KUZU_STATIC_DEFINE`, and link against the static Kuzu library in `build/src`, as well as `antlr4_cypher`, `antlr4_runtime`, `brotlidec`, `brotlicommon`, `utf8proc`, `re2`, `serd`, `fastpfor`, `miniparquet`, `zstd`, `miniz`, `mbedtls`, `lz4` (all of which can be found in the third_party subdirectory of the CMake build directory. E.g. `build/third_party/zstd/libzstd.a`) and whichever standard library you're using.
+You need to define `KUZU_STATIC_DEFINE`, and link against the static CypherDB library in `build/src`, as well as `antlr4_cypher`, `antlr4_runtime`, `brotlidec`, `brotlicommon`, `utf8proc`, `re2`, `serd`, `fastpfor`, `miniparquet`, `zstd`, `miniz`, `mbedtls`, `lz4` (all of which can be found in the third_party subdirectory of the CMake build directory. E.g. `build/third_party/zstd/libzstd.a`) and whichever standard library you're using.
 
-## Handling Kuzu output using `kuzu_query_result_get_next()`
+## Handling CypherDB output using `kuzu_query_result_get_next()`
 
 For the examples in this section we will be using the following schema:
 ```cypher

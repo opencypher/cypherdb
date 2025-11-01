@@ -4,7 +4,7 @@ description: Casting is the act of converting a value that is of one particular 
 ---
 
 Casting refers to the operation of converting a value that is of one particular data type, to another data type.
-This is done in Kuzu using the `CAST` function.
+This is done in CypherDB using the `CAST` function.
 
 There are two ways to utilize the `CAST` function. The syntax for either approach is below:
 

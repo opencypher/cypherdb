@@ -3,8 +3,8 @@ title: Syntax
 description: Basics of the Cypher query language syntax
 ---
 
-In this page, we list the syntactic features of Cypher as implemented in Kuzu. As described in the
-[overview](/cypher) page, Cypher is a declarative graph query language, and Kuzu's implementation is
+In this page, we list the syntactic features of Cypher as implemented in CypherDB. As described in the
+[overview](/cypher) page, Cypher is a declarative graph query language, and CypherDB's implementation is
 based on [openCypher](https://opencypher.org/resources/).
 
 ## Parsing
@@ -149,7 +149,7 @@ Parameters in Cypher queries are placeholders for values that are provided at ru
 Parameters are prefixed with a dollar sign `$` and can be used in any part of a query. They are useful for
 preventing Cypher injection attacks, and for reusing query templates with different values.
 
-See the [prepared statements](/get-started/prepared-statements) guide for more information on how to use parameters in Kuzu.
+See the [prepared statements](/get-started/prepared-statements) guide for more information on how to use parameters in CypherDB.
 
 ## Reserved keywords
 

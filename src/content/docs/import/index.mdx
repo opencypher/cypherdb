@@ -1,11 +1,11 @@
 ---
 title: Import data
-description: Guide to importing data into Kuzu using COPY FROM commands for CSV, Parquet, JSON, NumPy, and DataFrame sources.
+description: Guide to importing data into CypherDB using COPY FROM commands for CSV, Parquet, JSON, NumPy, and DataFrame sources.
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-There are multiple ways to import data in Kuzu. The only prerequisite for inserting data
+There are multiple ways to import data in CypherDB. The only prerequisite for inserting data
 into a database is that you first create a graph schema, i.e., the structure of your node and relationship tables.
 
 For small graphs (a few thousand nodes), the `CREATE` and `MERGE` [Cypher clauses](/cypher/data-manipulation-clauses)
@@ -15,7 +15,7 @@ options shown below. The `CREATE`/`MERGE` clauses are intended to do small addit
 
 In general, the recommended approach is to use `COPY FROM` (rather than creating or
 merging nodes one by one), for larger graphs of millions of nodes and beyond.
-This is the fastest way to bulk insert data into Kuzu.
+This is the fastest way to bulk insert data into CypherDB.
 
 The following sections show how to bulk import data using `COPY FROM` on various data formats.
 
@@ -56,7 +56,7 @@ The following sections show how to bulk import data using `COPY FROM` on various
 :::caution[Note]
 Similar to the [LOAD FROM](/cypher/query-clauses/load-from) clause, the `COPY FROM` clause determines the file format based on the file extension if the `file_format` option is not provided. Alternatively, the `file_format` option can be used in the `COPY FROM` clause to explicitly specify the file format.
 
-Example: To copy from a file ending with an arbitrary extension like `.dsv`, use the `file_format = 'csv'` option to explicitly tell Kuzu to treat the file as a `CSV` file.
+Example: To copy from a file ending with an arbitrary extension like `.dsv`, use the `file_format = 'csv'` option to explicitly tell CypherDB to treat the file as a `CSV` file.
 ```cypher
 COPY person FROM 'person.dsv' (file_format = 'csv')
 ```
@@ -64,9 +64,9 @@ COPY person FROM 'person.dsv' (file_format = 'csv')
 
 ## Bulk insert from a subset
 
-In certain cases, you may only want to partially fill your Kuzu table using the data from your input
+In certain cases, you may only want to partially fill your CypherDB table using the data from your input
 source. This is common in cases where you want to create extra columns during DDL that will hold
-a default value, and only a subset of the Kuzu table's columns are filled during the `COPY` operation.
+a default value, and only a subset of the CypherDB table's columns are filled during the `COPY` operation.
 
 This is better illustrated with an example. Consider a case where you have a CSV file `person.csv`
 that has 3 columns: `id`, `name` and `age`.
@@ -100,7 +100,7 @@ lead to a Runtime error because of a column number mismatch.
 
 ## Bulk insert into relationship table with multiple FROM-TO connections 
 
-Given a relationship table with multiple from-to connections, internally Kuzu will create a child table per connection.
+Given a relationship table with multiple from-to connections, internally CypherDB will create a child table per connection.
 
 Consider the following statement
 ```cypher
@@ -129,7 +129,7 @@ COPY Knows_User_City FROM 'knows_user_city.csv';
 Importing large relationship tables from external files (100M+ scale) can use significant amounts of memory.
 If the memory used to prepare the
 imported relationship table data comes close to exceeding the buffer pool size,
-Kuzu will spill some of this data to a `.tmp` file in the local directory.
+CypherDB will spill some of this data to a `.tmp` file in the local directory.
 You can disable spilling to disk by `CALL spill_to_disk=false`.
 
 This feature is disabled for in-memory or read-only databases.
@@ -146,7 +146,7 @@ to duplicate primary keys if the clause was COPY FROM. We support skipping over 
 of errors for different files, which are documented [below](#skippable-errors-by-source).
 
 :::caution[Note]
-When `IGNORE_ERRORS` is set to `true`, Kuzu will skip any rows that have errors and continue loading the rest of the rows.
+When `IGNORE_ERRORS` is set to `true`, CypherDB will skip any rows that have errors and continue loading the rest of the rows.
 This has some performance costs, so if you think your input files are clean, we recommend keeping `IGNORE_ERRORS` as `false`.
 :::
 
@@ -228,7 +228,7 @@ CALL show_warnings() RETURN *;
 └──────────┴─────────┴───────────┴─────────────┴────────────────────────┘
 ```
 
-By default, Kuzu stores a limited number of warnings per connection, determined by the `warning_limit` connection configuration parameter.
+By default, CypherDB stores a limited number of warnings per connection, determined by the `warning_limit` connection configuration parameter.
 You can change this configuration as follows (see the [Connection Configuration](/cypher/configuration#connection-configuration) section for more details):
 ```cypher
 CALL warning_limit=1024;

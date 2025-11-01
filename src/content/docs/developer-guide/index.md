@@ -1,23 +1,23 @@
 ---
-title: Build Kuzu from source
-description: Developer guide for building Kuzu from source code with CMake, Python, and C++20 compiler requirements.
+title: Build CypherDB from source
+description: Developer guide for building CypherDB from source code with CMake, Python, and C++20 compiler requirements.
 ---
 
 :::caution[Note]
-This page is intended for developers who want to build Kuzu from source. If you are a user of Kuzu,
+This page is intended for developers who want to build CypherDB from source. If you are a user of CypherDB,
 please refer to the [installation guide](https://kuzudb.github.io/docs/installation) for downloading pre-built binaries for your platform.
 :::
 
-To build from source code, Kuzu requires CMake (`>=3.15`), Python (`>=3.9`), and a compiler that supports C++20. The minimum supported versions of C++ compilers are GCC 12, Clang 18, and MSVC 19.20. The preferred compiler on Linux is GCC; on macOS, Apple Clang; and on Windows, MSVC. On Linux, Clang is also tested. Other compilers that support C++20 may also work, but are not tested.
+To build from source code, CypherDB requires CMake (`>=3.15`), Python (`>=3.9`), and a compiler that supports C++20. The minimum supported versions of C++ compilers are GCC 12, Clang 18, and MSVC 19.20. The preferred compiler on Linux is GCC; on macOS, Apple Clang; and on Windows, MSVC. On Linux, Clang is also tested. Other compilers that support C++20 may also work, but are not tested.
 
-Below are the instructions for building Kuzu on Ubuntu, AlmaLinux, Arch Linux, macOS, and Windows. These instructions should also work for other similar platforms:
+Below are the instructions for building CypherDB on Ubuntu, AlmaLinux, Arch Linux, macOS, and Windows. These instructions should also work for other similar platforms:
 
 - For other Debian-based Linux distributions, such as *Debian*, *Linux Mint*, and *Pop!_OS*, the instructions should be similar to Ubuntu.
 - For other Red Hat-based Linux distributions, such as *Red Hat Enterprise Linux (RHEL)*, *CentOS*, *Fedora*, *Rocky Linux*, and *Oracle Linux*, the instructions should be similar to AlmaLinux.
 - For other Arch-based Linux distributions, such as *Manjaro*, the instructions should be similar to Arch Linux.
 
 :::note[Tip]
-You can refer to our [multi-platform GitHub Actions workflow](https://github.com/kuzudb/kuzu/blob/master/.github/workflows/multiplatform-build-test.yml) for the exact commands we use on different platforms.
+You can refer to our [multi-platform GitHub Actions workflow](https://github.com/opencypher/cypherdb/blob/master/.github/workflows/multiplatform-build-test.yml) for the exact commands we use on different platforms.
 :::
 
 ## Building Instructions
@@ -91,7 +91,7 @@ choco install -y python3 make ninja
 
 Follow the instructions at [Microsoft's documentation](https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line).
 
-#### Build Kuzu
+#### Build CypherDB
 
 ```powershell
 make release NUM_THREADS=$env:NUMBER_OF_PROCESSORS

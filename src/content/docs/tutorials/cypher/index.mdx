@@ -5,9 +5,9 @@ description: Interactive Cypher query language tutorial covering graph patterns,
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-If you're new to Cypher and just getting started with Kuzu, you're in the right place! This tutorial will guide you through the basics of
+If you're new to Cypher and just getting started with CypherDB, you're in the right place! This tutorial will guide you through the basics of
 Cypher, including how to create nodes and relationships, and how to scan, copy and query your data
-that's in a Kuzu database.
+that's in a CypherDB database.
 
 See the link below for the example dataset used in this tutorial.
 
@@ -20,12 +20,12 @@ See the link below for the example dataset used in this tutorial.
 The dataset is a social network dataset of users and posts. [Download the dataset](/tutorials/example-database#download-the-data) and unzip it
 in your current working directory.
 
-## Working with the Kuzu CLI
+## Working with the CypherDB CLI
 
-Kuzu's command line interface (CLI) is a great way to get started with Kuzu. It allows you to
+CypherDB's command line interface (CLI) is a great way to get started with CypherDB. It allows you to
 interact with your database in a terminal and quickly test out your ideas in Cypher.
 
-Let's start by running the Kuzu CLI shell. [Install](/installation/#command-line-shell) the Kuzu CLI
+Let's start by running the CypherDB CLI shell. [Install](/installation/#command-line-shell) the CypherDB CLI
 and then run the following command to start the CLI.
 
 ```bash
@@ -34,13 +34,13 @@ kuzu
 ```
 ## Define a schema
 
-The first step in getting your data into Kuzu is creating node and relationship tables. This step
+The first step in getting your data into CypherDB is creating node and relationship tables. This step
 is called _schema definition_. Follow the steps in the [example database](/tutorials/example-database) 
 to create the node and relationship tables.
 
 ## Ingest the data
 
-The `COPY FROM` command is used to ingest data from various file formats into Kuzu. In this case,
+The `COPY FROM` command is used to ingest data from various file formats into CypherDB. In this case,
 the data is stored in CSV format, in the local directory `tutorial_data`.
 
 ```bash
@@ -64,7 +64,7 @@ example is shown below.
 
 ## MATCH
 
-In Kuzu, a graph's nodes and relationships are stored in tables. The `MATCH` clause is used to
+In CypherDB, a graph's nodes and relationships are stored in tables. The `MATCH` clause is used to
 find nodes that match the pattern specified in the clause. All entities in the pattern are
 returned via the `RETURN` clause.
 

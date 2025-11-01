@@ -1,18 +1,18 @@
 ---
 title: "LLM extension"
-description: "Access popular LLM APIs to create embeddings directly within Kuzu using Cypher"
+description: "Access popular LLM APIs to create embeddings directly within CypherDB using Cypher"
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-The `llm` extension helps you run LLM-based workflows directly within Kuzu using Cypher.
+The `llm` extension helps you run LLM-based workflows directly within CypherDB using Cypher.
 
 Currently, this extension provides the following function:
 
 - `CREATE_EMBEDDING`: Create embeddings from text
 
 :::note[Note]
-We plan to add more functions to this extension in the future, such as sending queries to LLMs directly from Kuzu.
+We plan to add more functions to this extension in the future, such as sending queries to LLMs directly from CypherDB.
 :::
 
 ## Usage
@@ -130,4 +130,4 @@ RETURN CREATE_EMBEDDING( "Hello world", "voyageai", "voyage-3-large", 512);
 ### Storing embeddings in a vector index
 
 The `CREATE_EMBEDDING` function can be used together with the `vector` extension to store and search embeddings
-directly in Kuzu. Refer to the [vector search docs](/extensions/vector) for an example.
+directly in CypherDB. Refer to the [vector search docs](/extensions/vector) for an example.

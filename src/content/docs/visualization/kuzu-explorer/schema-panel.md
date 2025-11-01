@@ -1,12 +1,12 @@
 ---
 title: Schema Panel
-description: Explore database schema visually with node and relationship table information in Kuzu Explorer.
+description: Explore database schema visually with node and relationship table information in CypherDB Explorer.
 ---
 
-If you click on the `Schema` tab in the top right corner of Kuzu Explorer, you get to the Schema Panel,
+If you click on the `Schema` tab in the top right corner of CypherDB Explorer, you get to the Schema Panel,
 where you can see the existing node and relationship tables in your database in a graph view.
 The screenshot below shows the default schema you would see if you loaded the `demo-db` database that is bundled
-with Kuzu Explorer.
+with CypherDB Explorer.
 
 <img src="/img/visualization/schema-panel.png" />
 

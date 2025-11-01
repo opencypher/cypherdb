@@ -7,7 +7,7 @@ The full-text search (`FTS`) extension can be used to efficiently search within 
 any string property and return results based on a similarity score. The extension
 works by building an index on specified string properties.
 
-Currently, Kuzu supports creating FTS indexes on only node tables' `STRING` properties.
+Currently, CypherDB supports creating FTS indexes on only node tables' `STRING` properties.
 
 ## Usage
 
@@ -226,7 +226,7 @@ CALL DROP_FTS_INDEX('Book', 'book_index');
 ### Show FTS indexes
 
 There is no function to specifically show only FTS indexes. However, you can use [`SHOW_INDEXES`](/cypher/query-clauses/call)
-to show all the available indexes in Kuzu, including FTS indexes.
+to show all the available indexes in CypherDB, including FTS indexes.
 
 ```cypher
 CALL SHOW_INDEXES() RETURN *;

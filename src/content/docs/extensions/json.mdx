@@ -136,7 +136,7 @@ then proceed to copy the JSON data and construct a graph.
 ### Scan the JSON file
 
 `LOAD FROM` is a Cypher query that scans a file or object element by element, but doesn’t actually
-move the data into a Kuzu table.
+move the data into a CypherDB table.
 
 Because the JSON format contains simple data types without type information, the structure will be inferred.
 To declare type information explicitly, you can use `LOAD WITH HEADERS` like you would for CSV files.
@@ -157,7 +157,7 @@ LOAD FROM 'patient.json' RETURN *;
 └────────┴─────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Because `info` is a nested object, its type in Kuzu is inferred as a `STRUCT` that itself contains
+Because `info` is a nested object, its type in CypherDB is inferred as a `STRUCT` that itself contains
 other types, like `DOUBLE`, `UINT8`, `STRING`, and `STRUCT`.
 
 #### Missing keys
@@ -232,7 +232,7 @@ The following optional parameters are supported:
 
 ### Copy JSON files to a table
 
-The `COPY FROM` statement allows you to copy data from a JSON file into a node or relationship table in Kuzu.
+The `COPY FROM` statement allows you to copy data from a JSON file into a node or relationship table in CypherDB.
 In this section, we will walk through the example dataset shown above and build a graph from the JSON data.
 
 #### Copy to node tables
@@ -498,7 +498,7 @@ The output JSON would look like this:
 
 ### Takeaways
 
-When using the `json` extension, keep in mind the following considerations when copying data to Kuzu tables:
+When using the `json` extension, keep in mind the following considerations when copying data to CypherDB tables:
 
 1. The order of the keys in the JSON file doesn't need to match the order of the columns defined
 in the schema. Only the names need to match.
@@ -557,11 +557,11 @@ RETURN p.id AS id, json_extract(p.description, 'age') AS age;
 
 ## JSON functions
 
-This section lists the built-in functions that operate on the JSON data type within Kuzu.
+This section lists the built-in functions that operate on the JSON data type within CypherDB.
 
 ##### `to_json(value:ANY) -> JSON`
 
-Converts `value` of any Kuzu type to JSON.
+Converts `value` of any CypherDB type to JSON.
 
 Example 1:
 
@@ -890,7 +890,7 @@ RETURN
 
 ##### `json_structure(json:JSON) -> STRING`
 
-Returns the type structure of the `json` in Kuzu type notation. Integer widths are automatically inferred from input values.
+Returns the type structure of the `json` in CypherDB type notation. Integer widths are automatically inferred from input values.
 
 Example:
 ```cypher

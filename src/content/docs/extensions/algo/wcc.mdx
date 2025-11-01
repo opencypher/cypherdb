@@ -5,10 +5,10 @@ description: Find connected components in directed graphs by treating edges as u
 
 Weak connectivity is a notion defined on undirected graphs. The weakly connected components (WCC) of an
 undirected graph is the maximal subgraph where any two vertices are connected to each other by some
-path. In Kuzu, both base and projected graphs are directed. Weak connectivity of directed graphs is
+path. In CypherDB, both base and projected graphs are directed. Weak connectivity of directed graphs is
 defined as the WCC of the corresponding undirected version, i.e., each edge is treated as undirected.
 
-Kuzu implements a parallelized version of the WCC algorithm based on [Ligra](https://jshun.github.io/ligra/docs/examples.html).
+CypherDB implements a parallelized version of the WCC algorithm based on [Ligra](https://jshun.github.io/ligra/docs/examples.html).
 
 ## Syntax
 
@@ -39,7 +39,7 @@ Returns:
 - `group_id`: The ID of the WCC that the node belongs to
 
 :::note[Note]
-`group_id` is assigned based on Kuzu's internal node offsets. Currently there is no way to assign `group_id` based on node properties.
+`group_id` is assigned based on CypherDB's internal node offsets. Currently there is no way to assign `group_id` based on node properties.
 :::
 
 ## Example

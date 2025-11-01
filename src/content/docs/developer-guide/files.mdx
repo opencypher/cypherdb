@@ -1,24 +1,24 @@
 ---
-title: On-disk files managed by Kuzu
-description: All the files that are created and managed by Kuzu on disk.
+title: On-disk files managed by CypherDB
+description: All the files that are created and managed by CypherDB on disk.
 ---
 
 ## Database files
 
 :::note[Note]
-Before version `0.11.0`, Kuzu required the database path to be a directory, and created multiple files
-within that directory. This section only describes Kuzu versions starting from `0.11.0`, when it
+Before version `0.11.0`, CypherDB required the database path to be a directory, and created multiple files
+within that directory. This section only describes CypherDB versions starting from `0.11.0`, when it
 switched to a single-file format.
 :::
 
-Kuzu uses a single-file format for persisting the data to disk. That is, the database is stored in a single file rather than a directory of files.
+CypherDB uses a single-file format for persisting the data to disk. That is, the database is stored in a single file rather than a directory of files.
 The single-file format is also used by other popular embedded databases such as [DuckDB](https://duckdb.org/docs/stable/internals/storage) and [SQLite](https://sqlite.org/fileformat.html).
 
-When opening a Kuzu database in the "on-disk" read-write mode, Kuzu creates the database file at the specified
+When opening a CypherDB database in the "on-disk" read-write mode, CypherDB creates the database file at the specified
 path if it doesn't already exist. It can also create other temporary files at runtime. These files are
 automatically cleaned up when the database is closed.
 
-The following table lists the different types of files that are created and managed by Kuzu.
+The following table lists the different types of files that are created and managed by CypherDB.
 The database file is the only necessary file to open a database. The rest of the files are created
 in the same directory as the database file.
 
@@ -52,20 +52,20 @@ The file is automatically removed when a query finishes its execution.
 
 ## Official extension downloads
 
-When you install an official extension by executing `INSTALL <extension_name>`, Kuzu downloads the extension
+When you install an official extension by executing `INSTALL <extension_name>`, CypherDB downloads the extension
 libraries from the official repo into your home directory at `~/.kuzu/extensions`.
-When loading an extension using `LOAD <extension_name>`, Kuzu looks for the extension in the same directory.
+When loading an extension using `LOAD <extension_name>`, CypherDB looks for the extension in the same directory.
 
 ### HTTPS local cache
 
 For the `httpfs` extension, when its [local cache](/extensions/httpfs/#local-cache)
-is enabled using the command `CALL HTTP_CACHE_FILE=TRUE`, Kuzu saves the cached files under `.cache`
+is enabled using the command `CALL HTTP_CACHE_FILE=TRUE`, CypherDB saves the cached files under `.cache`
 in the extension's local directory inside `~/.kuzu/extensions`.
 The cached files are always removed when the transaction commits or rolls back.
 
 ## History file
 
-The Kuzu CLI records the history of executed Cypher queries in a persistent `history.txt` file.
+The CypherDB CLI records the history of executed Cypher queries in a persistent `history.txt` file.
 By default, this file is stored in the `~/.kuzu` directory.
 You can configure a different directory for storing the history file using the `--path_history`/`-p` option.
 For more information, see `kuzu --help`.

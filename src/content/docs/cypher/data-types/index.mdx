@@ -1,11 +1,11 @@
 ---
 title: Data types
-description: "Primitive and nested data types supported in Kuzu for properties and expressions"
+description: "Primitive and nested data types supported in CypherDB for properties and expressions"
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-Kuzu supports a set of primitive and nested data types both for node and relationship properties as
+CypherDB supports a set of primitive and nested data types both for node and relationship properties as
 well as for forming expressions whose outputs are specified using these data types. This section
 shows all built-in data types.
 
@@ -131,7 +131,7 @@ Error: Overflow exception: To Decimal Cast Failed: 127.300000 is not in DECIMAL(
 | 16 bytes | signed sixteen-byte integer
 
 The data type `UUID` stores Universally Unique Identifiers (UUID) as defined by RFC 4122,
-ISO/IEC 9834-8:2005, and related standards. Kuzu follows [PostgreSQL's implementation](https://www.postgresql.org/docs/13/datatype-uuid.html)
+ISO/IEC 9834-8:2005, and related standards. CypherDB follows [PostgreSQL's implementation](https://www.postgresql.org/docs/13/datatype-uuid.html)
 for the `UUID` format.
 
 Example:
@@ -213,7 +213,7 @@ RETURN null = null;
 │           │
 └───────────┘
 ```
-Kuzu's CLI returns an empty cell to indicate nulls.
+CypherDB's CLI returns an empty cell to indicate nulls.
 
 ## DATE
 
@@ -247,7 +247,7 @@ RETURN date('2022-06-06') as x;
 according to the ISO-8601 format (`YYYY-MM-DD hh:mm:ss[.zzzzzz][+-TT[:tt]]`),
 which specifies the date (`YYYY-MM-DD`), time (`hh:mm:ss[.zzzzzz]`) and a timezone offset
 `[+-TT[:tt]]`. Only the date section is mandatory. If the time is specified, then the millisecond
-`[.zzzzzz]` is left out. The default timezone is UTC, and Kuzu stores the timestamp based on the
+`[.zzzzzz]` is left out. The default timezone is UTC, and CypherDB stores the timestamp based on the
 timezone offset relative to UTC.
 
 Example:
@@ -296,7 +296,7 @@ kuzu> RETURN timestamp("1970-01-01 00:00:00.004666") as x;
 | 4 bytes | date/time difference | DURATION
 
 `INTERVAL` consists of multiple date parts and represents the total time length of these date parts.
-Kuzu follows [DuckDB's implementation](https://duckdb.org/docs/sql/data_types/interval) for the
+CypherDB follows [DuckDB's implementation](https://duckdb.org/docs/sql/data_types/interval) for the
 interval format.
 
 Example:
@@ -447,7 +447,7 @@ Functions that work on `UNION` data types can be found [here](/cypher/expression
 | variable | arbitrary binary object | BYTEA
 
 `BLOB`(**B**inary **L**arge **OB**ject) allows storage of an arbitrary binary object with up to
-4KB in size in Kuzu. The database processes it as binary data because it has no knowledge as to what
+4KB in size in CypherDB. The database processes it as binary data because it has no knowledge as to what
 the underlying data represents (e.g. image, video).
 
 Below is an example of how to create a blob object with 3 bytes (188, 189, 186, 170):
@@ -614,7 +614,7 @@ RETURN rels(p);
 
 ## LIST and ARRAY
 
-Kuzu supports two list-like data types: (i) variable-length lists, simply called `LIST`, and
+CypherDB supports two list-like data types: (i) variable-length lists, simply called `LIST`, and
 (ii) fixed-length lists, called `ARRAY`. Click on the card below to learn more about them.
 
 <LinkCard
@@ -627,7 +627,7 @@ Kuzu supports two list-like data types: (i) variable-length lists, simply called
 ## JSON
 
 :::note[Note]
-The JSON data type is not natively available in Kuzu, and requires the [JSON extension](/extensions/json)
+The JSON data type is not natively available in CypherDB, and requires the [JSON extension](/extensions/json)
 :::
 
 Using the official `json` extension, you can model and operate on properties as JSON natively via the `JSON`

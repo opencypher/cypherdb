@@ -6,7 +6,7 @@ const docsDir = path.join(__dirname, '../src/content/docs');
 const outputFile = path.join(__dirname, '../public/llms.txt');
 const baseUrl = 'https://kuzudb.github.io/docs';
 
-const header = "# Kuzu Documentation\n\n> Comprehensive documentation for Kuzu, an embedded (in-process), scalable, blazing fast graph database.\n";
+const header = "# CypherDB Documentation\n\n> Comprehensive documentation for CypherDB, an embedded (in-process), scalable, blazing fast graph database.\n";
 
 // Node structure for the directory tree
 function TreeNode(name, isDir, filePath = null, title = null) {

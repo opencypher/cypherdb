@@ -1,36 +1,36 @@
 ---
-title: Visualize graphs in Kuzu Explorer
-description: Browser-based frontend for visualizing and exploring Kuzu database schemas and query results as graphs, tables, or JSON.
+title: Visualize graphs in CypherDB Explorer
+description: Browser-based frontend for visualizing and exploring CypherDB database schemas and query results as graphs, tables, or JSON.
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-## What is Kuzu Explorer?
+## What is CypherDB Explorer?
 
-Kuzu Explorer is a browser-based frontend to visualize and explore Kuzu database schemas
+CypherDB Explorer is a browser-based frontend to visualize and explore CypherDB database schemas
 and query results in the form of a graph, table, or JSON. This is a useful tool for exploring
 your graph data and debugging your data model during the prototyping phase.
 An example visualization (in light mode and dark mode) is shown below.
 
 <img src="/img/visualization/explorer-preview.png" />
 
-## Launching Kuzu Explorer
+## Launching CypherDB Explorer
 
-Kuzu Explorer is a web application that is launched from a deployed Docker image.
+CypherDB Explorer is a web application that is launched from a deployed Docker image.
 Please refer to the [Docker documentation](https://docs.docker.com/get-docker/) for details on how to install and use Docker.
 
-Below we show two different ways to launch Kuzu Explorer. Each of these options make
-Kuzu Explorer accessible on [http://localhost:8000](http://localhost:8000). If the launching is successful, you should see the logs similar to the following in your shell:
+Below we show two different ways to launch CypherDB Explorer. Each of these options make
+CypherDB Explorer accessible on [http://localhost:8000](http://localhost:8000). If the launching is successful, you should see the logs similar to the following in your shell:
 
 ```bash
 Access mode: READ_WRITE
-Version of Kuzu: v0.0.11
+Version of CypherDB: v0.0.11
 Deployed server started on port: 8000
 ```
 
 ### Option 1: Using an existing database
 
-To access an existing Kuzu database, you can mount its path to the `/database` directory as follows:
+To access an existing CypherDB database, you can mount its path to the `/database` directory as follows:
 
 ```bash
 docker run -p 8000:8000 \
@@ -39,14 +39,14 @@ docker run -p 8000:8000 \
            --rm kuzudb/explorer:latest
 ```
 
-By mounting a local database file in Docker via `-v {path to the directory containing the database file}` and `-e KUZU_FILE={database file name}`, the changes done in the UI will persist to the local database file after the UI is shutdown. If the directory is mounted but the `KUZU_FILE` environment variable is not set, Kuzu Explorer will look for a file named `database.kz` in the mounted directory or create it if missing.
+By mounting a local database file in Docker via `-v {path to the directory containing the database file}` and `-e KUZU_FILE={database file name}`, the changes done in the UI will persist to the local database file after the UI is shutdown. If the directory is mounted but the `KUZU_FILE` environment variable is not set, CypherDB Explorer will look for a file named `database.kz` in the mounted directory or create it if missing.
 
 The `--rm` flag tells docker that the container should automatically be removed after we close docker.
 
 ### Option 2: Start with an empty database with example data
 
-You can also launch Kuzu Explorer without specifying an existing database. Kuzu Explorer comes with
-bundled datasets that you can use to explore the basic functionalities of Kuzu.
+You can also launch CypherDB Explorer without specifying an existing database. CypherDB Explorer comes with
+bundled datasets that you can use to explore the basic functionalities of CypherDB.
 This is simply done by removing the `-v` flag in the example above. If no database path is specified
 with `-v`, the server will be started with an empty database.
 
@@ -55,8 +55,8 @@ docker run -p 8000:8000 --rm kuzudb/explorer:latest
 ```
 
 Click on the `Datasets` tab on the top right corner and then: (i) you can select one of the bundled datasets
-of your choice from the drop-down menu; (ii) load it into Kuzu by clicking the "Load Dataset" button; and (iii)
-finally use Kuzu Explorer to explore it.
+of your choice from the drop-down menu; (ii) load it into CypherDB by clicking the "Load Dataset" button; and (iii)
+finally use CypherDB Explorer to explore it.
 
 <img src="/img/visualization/datasets-panel.png" />
 
@@ -64,8 +64,8 @@ finally use Kuzu Explorer to explore it.
 
 ### Access mode
 
-By default, Kuzu Explorer is launched in `READ_WRITE` mode, which means that you can modify the database.
-If you want to launch Kuzu Explorer in read-only mode, you can do so by setting the `MODE`
+By default, CypherDB Explorer is launched in `READ_WRITE` mode, which means that you can modify the database.
+If you want to launch CypherDB Explorer in read-only mode, you can do so by setting the `MODE`
 environment variable to `READ_ONLY` as shown below.
 
 ```bash
@@ -81,8 +81,8 @@ database schema.
 
 ### In-memory mode
 
-By default, Kuzu Explorer is launched under on-disk mode, in which the database exists on disk.
-If you want to launch Kuzu Explorer to operate on an in-memory database,
+By default, CypherDB Explorer is launched under on-disk mode, in which the database exists on disk.
+If you want to launch CypherDB Explorer to operate on an in-memory database,
 you can do so by setting the `KUZU_IN_MEMORY` environment variable to true as follows.
 
 ```bash
@@ -102,9 +102,9 @@ can only be opened with `READ_WRITE` access.
 
 ### Buffer pool size
 
-By default, Kuzu Explorer is launched with a maximum buffer pool size of 80% of the available memory. If you want to launch Kuzu Explorer with a different buffer pool size, you can do so by setting the `KUZU_BUFFER_POOL_SIZE` environment variable to the desired value in bytes as follows.
+By default, CypherDB Explorer is launched with a maximum buffer pool size of 80% of the available memory. If you want to launch CypherDB Explorer with a different buffer pool size, you can do so by setting the `KUZU_BUFFER_POOL_SIZE` environment variable to the desired value in bytes as follows.
 
-For example, to launch Kuzu Explorer with a buffer pool size of 1GB, you can run the following command.
+For example, to launch CypherDB Explorer with a buffer pool size of 1GB, you can run the following command.
 
 ```bash
 docker run -p 8000:8000 \
@@ -115,7 +115,7 @@ docker run -p 8000:8000 \
 
 #### Accessing data files in the container
 
-As mentioned above, Kuzu Explorer is launched from a Docker image. If you want to access the data files in the container, you can do so by mounting a directory on your host machine as follows:
+As mentioned above, CypherDB Explorer is launched from a Docker image. If you want to access the data files in the container, you can do so by mounting a directory on your host machine as follows:
 
 ```bash
 docker run -p 8000:8000 \
@@ -134,7 +134,7 @@ Note that it is possible to mount multiple directories in the container. For mor
 
 ## Panels
 
-Kuzu Explorer comes with the following panels, accessible on the top-right of the menu bar.
+CypherDB Explorer comes with the following panels, accessible on the top-right of the menu bar.
 You can refer to the corresponding cards below for more details.
 
 <CardGrid>
@@ -156,11 +156,11 @@ You can refer to the corresponding cards below for more details.
   />
 </CardGrid>
 
-## Development build of Kuzu Explorer
+## Development build of CypherDB Explorer
 
-If you are working with the nightly build of Kuzu to access the bleeding edge features, the stable
-release of Kuzu Explorer may not be compatible with it due to storage format changes. In this case,
-you can use the development build of Kuzu Explorer, which we also make available on DockerHub.
+If you are working with the nightly build of CypherDB to access the bleeding edge features, the stable
+release of CypherDB Explorer may not be compatible with it due to storage format changes. In this case,
+you can use the development build of CypherDB Explorer, which we also make available on DockerHub.
 
 To install the dev build, you can attach the `dev` tag to the docker command as follows:
 
@@ -170,16 +170,16 @@ docker run -p 8000:8000 \
            --rm kuzudb/explorer:dev
 ```
 
-The dev build of Kuzu Explorer is compatible with the nightly build of Kuzu, but it's not guaranteed to be stable
-(and can contain bugs), so the dev build of Kuzu Explorer is recommended for testing purposes only.
+The dev build of CypherDB Explorer is compatible with the nightly build of CypherDB, but it's not guaranteed to be stable
+(and can contain bugs), so the dev build of CypherDB Explorer is recommended for testing purposes only.
 
 :::caution[Note]
-If you try to use the development build of Kuzu Explorer with the stable (or outdated) release of Kuzu,
+If you try to use the development build of CypherDB Explorer with the stable (or outdated) release of CypherDB,
 it will produce an error that looks like the following, because the storage formats are not compatible:
 
 ```
-ERROR (1): Error getting version of Kuzu: Error: std::bad_alloc
+ERROR (1): Error getting version of CypherDB: Error: std::bad_alloc
 ```
-To resolve this, simply pull the latest version of Kuzu Explorer's dev build from DockerHub, and
-install the latest nightly build of Kuzu.
+To resolve this, simply pull the latest version of CypherDB Explorer's dev build from DockerHub, and
+install the latest nightly build of CypherDB.
 :::

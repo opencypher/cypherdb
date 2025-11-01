@@ -1,6 +1,6 @@
 ---
 title: Example database
-description: Sample database schemas and datasets for learning and testing Kuzu features with real-world data examples.
+description: Sample database schemas and datasets for learning and testing CypherDB features with real-world data examples.
 ---
 
 The dataset used in the tutorials is a social network dataset of users and posts that has the following schema.
@@ -82,9 +82,9 @@ userID,postID
 11,1
 ```
 
-## Create Kuzu tables
+## Create CypherDB tables
 
-In the Kuzu CLI, let's create a node table for the `User`s in our dataset.
+In the CypherDB CLI, let's create a node table for the `User`s in our dataset.
 
 ```cypher
 // Create a node table for the `User`s in our dataset.
@@ -113,4 +113,4 @@ CREATE REL TABLE LIKES(From User To Post);
 
 ```
 
-This will create the required node and relationship tables in Kuzu.
+This will create the required node and relationship tables in CypherDB.

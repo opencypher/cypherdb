@@ -1,12 +1,12 @@
 ---
 title: "Python Tutorial: Analyze a Social Network"
-description: "Learn to use Kuzu's Python API to analyze social network data with hands-on examples"
+description: "Learn to use CypherDB's Python API to analyze social network data with hands-on examples"
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-This tutorial will get you started using Kuzu's Python API to analyze a dataset.
+This tutorial will get you started using CypherDB's Python API to analyze a dataset.
 
 In this tutorial, we will use the following social network dataset that consists of users and their posts.
 
@@ -19,7 +19,7 @@ In this tutorial, we will use the following social network dataset that consists
 ## Setup
 
 Ensure that you have [Python](https://www.python.org/) installed on your system. For this tutorial, we will use
-a virtual environment and install Kuzu via `pip`. Refer to this [page](/installation/#python)
+a virtual environment and install CypherDB via `pip`. Refer to this [page](/installation/#python)
 for alternative installation methods.
 ```bash
 python -m venv .venv
@@ -34,7 +34,7 @@ unzip tutorial_data.zip
 rm tutorial_data.zip
 ```
 
-Before we can start querying the data, we need to create a new Kuzu database and import the CSV files.
+Before we can start querying the data, we need to create a new CypherDB database and import the CSV files.
 Since this is a one-time operation, we will use a separate Python script. We will also create another
 script to contain the querying logic.
 
@@ -45,7 +45,7 @@ touch src/create_db.py
 touch src/main.py
 ```
 
-- The `create_db.py` script will be used to create the Kuzu database and import the CSV files.
+- The `create_db.py` script will be used to create the CypherDB database and import the CSV files.
 - The `main.py` script will be used to query the graph.
 
 Your directory should now look something like this:
@@ -68,11 +68,11 @@ kuzu_social_network
 We are now ready to start the tutorial.
 
 ## Create the database
-Clear out the contents of `src/create_db.py` and import Kuzu:
+Clear out the contents of `src/create_db.py` and import CypherDB:
 ```py
 import kuzu
 ```
-Next, create and connect to an empty Kuzu database:
+Next, create and connect to an empty CypherDB database:
 ```py
 def main() -> None:
     db = kuzu.Database("social_network.kuzu")
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 This will create a database `social_network.kuzu` where the imported CSV data will be stored.
 
 :::note[Note]
-Kuzu also supports an "in-memory" mode where the database is active only during the execution of the Python program.
+CypherDB also supports an "in-memory" mode where the database is active only during the execution of the Python program.
 This mode is useful when you want to create on-the-fly graphs for ephemeral query workloads (the graph is not persisted to disk).
 For more information, refer to the example in the [create your first graph](/get-started) section.
 :::
@@ -94,7 +94,7 @@ For more information, refer to the example in the [create your first graph](/get
 For this tutorial, we are using the "on-disk" mode, and the database will be persisted to the `social_network.kuzu` database file.
 
 ### Define schema
-The first step in building a Kuzu graph is to define a schema.
+The first step in building a CypherDB graph is to define a schema.
 For our example dataset, we need the following node and relationship tables:
 ```py
 conn.execute("""
@@ -145,7 +145,7 @@ for row in result:
 ```
 
 ### Running the code
-Run `create_db.py` to create the Kuzu database and import the CSV files:
+Run `create_db.py` to create the CypherDB database and import the CSV files:
 ```bash
 $ python src/create_db.py
 ['id', 'name', 'type', 'database name', 'comment']
@@ -158,8 +158,8 @@ $ python src/create_db.py
 
 :::caution[Note]
 If you run the program again, you'll get an error about duplicated primary keys.
-This is because the data has already been imported into the Kuzu database, and because
-Kuzu is strictly typed, you cannot overwrite data when there are primary key conflicts.
+This is because the data has already been imported into the CypherDB database, and because
+CypherDB is strictly typed, you cannot overwrite data when there are primary key conflicts.
 To ingest the data again, you will have to delete the database file (i.e. `rm social_network.kuzu`)
 in between runs.
 :::
@@ -326,9 +326,9 @@ result = conn.execute(prepared_stmt, params)
 This tells us that there is exactly one path of length 3 between the three users specified.
 
 ## Summary
-In this tutorial, we've shown how to use Kuzu's Python API to import CSV data as a graph and query it using Cypher.
+In this tutorial, we've shown how to use CypherDB's Python API to import CSV data as a graph and query it using Cypher.
 
-You're now ready to import your own datasets into Kuzu and query them usin Kuzu's Python API!
+You're now ready to import your own datasets into CypherDB and query them usin CypherDB's Python API!
 
 ## Code
 Here is the full code from the tutorial that you can use to follow along. Reminder that you can run the code as follows:

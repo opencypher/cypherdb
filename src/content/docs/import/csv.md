@@ -1,6 +1,6 @@
 ---
 title: Import data from CSV files
-description: Bulk import data from CSV files into Kuzu using COPY FROM with extensive configuration options and error handling.
+description: Bulk import data from CSV files into CypherDB using COPY FROM with extensive configuration options and error handling.
 ---
 
 You can bulk import data to node and relationship tables from CSV files
@@ -15,8 +15,8 @@ on how to skip erroneous CSV rows during the import.
 :::caution[Guidelines]
 - **Copy nodes before relationships:** In order to copy a relationship table `R` from a csv file `RFile`, the nodes that appear in `RFile` need to
   already exist in the database (either imported in bulk or inserted through Cypher data manipulation commands).
-- **Wrap strings inside quotes:** Kuzu will accept strings in string columns both with and without quotes, though it's recommended to wrap strings in quotes to avoid any ambiguity with delimiters.
-- **Avoid leading and trailing spaces**: As per the CSV standard, Kuzu does not ignore leading and trailing spaces (e.g., if you input `   213   ` for
+- **Wrap strings inside quotes:** CypherDB will accept strings in string columns both with and without quotes, though it's recommended to wrap strings in quotes to avoid any ambiguity with delimiters.
+- **Avoid leading and trailing spaces**: As per the CSV standard, CypherDB does not ignore leading and trailing spaces (e.g., if you input `   213   ` for
   an integer value, that will be read as malformed integer and the corresponding node/rel property will be set to NULL.
   :::
 
@@ -44,7 +44,7 @@ COPY User FROM "user.csv" (header=true);
 
 ## Import to relationship table
 
-When loading into a relationship table, Kuzu assumes the first two columns in the file are:
+When loading into a relationship table, CypherDB assumes the first two columns in the file are:
 
 - `FROM` Node Column: The primary key of the `FROM` nodes.
 - `TO` Node Column: The primary key of the `TO` nodes.
@@ -81,7 +81,7 @@ COPY Follows FROM "follows.csv" (SKIP=3);
 ## Import multiple files to a single table
 
 It is common practice to divide a large CSV file into several smaller files for cleaner data management.
-Kuzu can read multiple files with the same structure, consolidating their data into a single node or relationship table.
+CypherDB can read multiple files with the same structure, consolidating their data into a single node or relationship table.
 You can specify that multiple files are loaded in the following ways:
 
 ### Glob pattern
@@ -115,7 +115,7 @@ between the columns of the CSV is. See below for the list of all supported confi
 configurations can be manually set by specifying parameters inside `( )` at the
 end of the `COPY FROM` clause. Several of the supported configurations, such as the header and delimiter characters,
 are automatically detected if they are not manually specified at the end of  `COPY FROM` clause.
-See the subsections below for more details on how Kuzu automatically detects these configurations.
+See the subsections below for more details on how CypherDB automatically detects these configurations.
 
 The following configuration parameters are supported:
 
@@ -145,56 +145,56 @@ Finally, the assignment operator `=` can also be omitted and replaced with space
 :::
 
 If any of the following configuration options are not manually specified at the end of the `COPY FROM` statement,
-by default Kuzu will try to automatically detect them:
+by default CypherDB will try to automatically detect them:
 - HEADER
 - DELIM
 - QUOTE
 - ESCAPE
 
 If you specify a subset of these manually but not the others, then only those that have not been specified will be automatically detected.
-You can turn off auto-detection by setting `(auto_detect=false)` as a parameter, in which case Kuzu will default to using the default values
+You can turn off auto-detection by setting `(auto_detect=false)` as a parameter, in which case CypherDB will default to using the default values
 for any of the unspecified configurations. For example, consider the example from above again:
 ```cypher
 COPY User FROM "user.csv" (HEADER=true, DELIM="|");
 ```
 In this case (which is equivalent to `COPY User FROM "user.csv" (HEADER=true, DELIM="|", auto_detect=true)`),
-Kuzu will try to automatically detect the `QUOTE` and `ESCAPE` characters.
+CypherDB will try to automatically detect the `QUOTE` and `ESCAPE` characters.
 It will not try to automatically detect if the first line is a header line or the `DELIM` character,
 since those configurations are manually specified in the query.
 If instead the query was:
 ```cypher
 COPY User FROM "user.csv" (HEADER=true, DELIM="|", auto_detect=false);
 ```
-Then, Kuzu will use the default values of `QUOTE` and `ESCAPE`, which are `"` and `\` respectively (and use
+Then, CypherDB will use the default values of `QUOTE` and `ESCAPE`, which are `"` and `\` respectively (and use
 the manually specified configurations for `HEADER` and `DELIM`).
 
 ### Sample size parameter
-By default, Kuzu will use the first 256 lines of the CSV file to auto-detect unspecified configurations.
+By default, CypherDB will use the first 256 lines of the CSV file to auto-detect unspecified configurations.
 If you want to use a different number of lines, you can specify the `sample_size` parameter.
 
-You can find more information on how Kuzu automatically tries to detect these configurations below.
+You can find more information on how CypherDB automatically tries to detect these configurations below.
 
 ### Header auto detection
-Kuzu parses the first line of the CSV into columns and checks if each column can be cast to the data type of the target column in the node or rel table that is being copied into.
+CypherDB parses the first line of the CSV into columns and checks if each column can be cast to the data type of the target column in the node or rel table that is being copied into.
 If so, the line is assumed to be a valid "data" line and inserted as a record into the target table. Otherwise, it is assumed to be
 a header line and skipped.
 
 ### Delimiter, quote and escape character auto detection
-Kuzu uses the first `sample_size` lines to auto detect any configuration that has not been manually specified.
+CypherDB uses the first `sample_size` lines to auto detect any configuration that has not been manually specified.
 The possible configurations for different configurations are:
 - DELIM: `,`, `|`, `;`, `\t`.
 - QUOTE: `"`, `'` and (no quote character)
 - ESCAPE: `"`, `'`, `\` and (no escape character)
 
 ### Null strings handling
-By default, Kuzu treats only empty strings (`""`) as `NULL` values. However, in certain scenarios, the default behaviour may not be sufficient. For example, if you're working with a CSV file exported by a tool that uses the string `"NULL"` to represent nulls, you can modify Kuzu's behaviour by setting the `NULL_STRINGS` parameter to include both the empty string and the string `"NULL"`:
+By default, CypherDB treats only empty strings (`""`) as `NULL` values. However, in certain scenarios, the default behaviour may not be sufficient. For example, if you're working with a CSV file exported by a tool that uses the string `"NULL"` to represent nulls, you can modify CypherDB's behaviour by setting the `NULL_STRINGS` parameter to include both the empty string and the string `"NULL"`:
 
 ```cypher
 LOAD FROM 'xxx.csv'(null_strings=[null_str1, null_str2, null_str3]) RETURN *;
 ```
  
 ## Compressed CSV files
-To reduce file size, CSV files are often distributed in compressed formats. Kuzu supports directly scanning `*.csv.gz` files (compressed with `gzip`)
+To reduce file size, CSV files are often distributed in compressed formats. CypherDB supports directly scanning `*.csv.gz` files (compressed with `gzip`)
 without requiring manual decompression. Simply specify the file path in the `LOAD FROM` or `COPY FROM` clause.
 
 Assume that you compress the `user.csv` from above with the `gzip` command:

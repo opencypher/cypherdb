@@ -3,7 +3,7 @@ title: Comparison Operators
 description: Comparison operators are used to compare two values.
 ---
 
-The following table describes the standard comparison operators supported by Kuzu. If any of the input arguments is `NULL`, the comparison result will also be `NULL`.
+The following table describes the standard comparison operators supported by CypherDB. If any of the input arguments is `NULL`, the comparison result will also be `NULL`.
 
 <div class="scroll-table">
 

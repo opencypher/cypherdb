@@ -3,7 +3,7 @@ title: Logical Operators
 description: Logical operators are used to combine boolean values.
 ---
 
-Kuzu supports using `AND`/`OR`/`XOR`/`NOT` logical operators to combine boolean values.
+CypherDB supports using `AND`/`OR`/`XOR`/`NOT` logical operators to combine boolean values.
 
 ## Truth table for `AND`
 

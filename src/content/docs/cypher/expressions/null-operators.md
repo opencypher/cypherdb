@@ -3,7 +3,7 @@ title: NULL Operators
 description: NULL operators are used to compare NULL values.
 ---
 
-The following table describes all `NULL` operators supported by Kuzu. These predicates are often used
+The following table describes all `NULL` operators supported by CypherDB. These predicates are often used
 inside a `WHERE` statement.
 
 | Predicate | Description |

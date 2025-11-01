@@ -1,17 +1,17 @@
 ---
 title: Migrate your database
-description: "Export and import databases between different Kuzu versions using EXPORT/IMPORT DATABASE commands"
+description: "Export and import databases between different CypherDB versions using EXPORT/IMPORT DATABASE commands"
 ---
 
-You can migrate databases between different versions of Kuzu without manually writing DDL and COPY statements.
-To perform a migration, you would first export the database from an existing Kuzu version using the command `EXPORT DATABASE`.
-Then, you would import this database into another Kuzu version using `IMPORT DATABASE`.
+You can migrate databases between different versions of CypherDB without manually writing DDL and COPY statements.
+To perform a migration, you would first export the database from an existing CypherDB version using the command `EXPORT DATABASE`.
+Then, you would import this database into another CypherDB version using `IMPORT DATABASE`.
 
 ## Export database
 
-The `EXPORT DATABASE` command exports all the contents of a Kuzu database to the specified directory.
+The `EXPORT DATABASE` command exports all the contents of a CypherDB database to the specified directory.
 The command generates the following files under the `/path/to/export` directory, which
-are needed to import this database to a new Kuzu version:  
+are needed to import this database to a new CypherDB version:  
 - `schema.cypher`: Contains the definitions of all node and edge tables.
 - `macro.cypher`: Includes the definitions of all macro functions.
 - `copy.cypher`: Contains `COPY FROM` statements for reimporting data.
@@ -39,9 +39,9 @@ The `EXPORT DATABASE` command only exports indexes whose dependent extensions ha
 ## Import database
 
 The `IMPORT DATABASE` command imports the contents of the database from a specific directory to which
-a Kuzu database was exported using the `EXPORT DATABASE` command. Under the hood, this command uses the
+a CypherDB database was exported using the `EXPORT DATABASE` command. Under the hood, this command uses the
 Cypher and data files that were created by the `EXPORT DATABASE` command to recreate the necessary databases
-and tables in the new Kuzu version you are migrating to.
+and tables in the new CypherDB version you are migrating to.
 
 The query below imports the database from a directory named `/path/to/export` to
 the current database that your session points to:
@@ -63,4 +63,4 @@ Similar to SQLite's `.schema` command, you can use the `schema_only = true` opti
 ```cypher
 EXPORT DATABASE '/path/to/export' (schema_only=true);
 ```
-This command will generate a `schema.cypher` file containing only the DDL (Data Definition Language) statements that can be used to recreate the schema of the database inside Kuzu.
+This command will generate a `schema.cypher` file containing only the DDL (Data Definition Language) statements that can be used to recreate the schema of the database inside CypherDB.

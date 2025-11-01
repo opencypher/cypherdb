@@ -1,16 +1,16 @@
 ---
 title: WebAssembly (Wasm)
-description: "Run Kuzu graph database in web browsers using WebAssembly for client-side graph processing"
+description: "Run CypherDB graph database in web browsers using WebAssembly for client-side graph processing"
 ---
 
 [WebAssembly](https://webassembly.org/), a.k.a. _Wasm_, is a standard defining any suitable low-level
 programming language as compilation target, enabling deployment of software within web browsers on a variety
-of devices. This page describes Kuzu's Wasm API, enabling Kuzu databases to run inside Wasm-capable
+of devices. This page describes CypherDB's Wasm API, enabling CypherDB databases to run inside Wasm-capable
 browsers.
 
 ## Benefits of WASM
 
-Several benefits of Kuzu-Wasm are the following:
+Several benefits of CypherDB-Wasm are the following:
 
 - Fast, in-browser graph analysis without ever sending data to a server.
 - Strong data privacy guarantees, as the data never leaves the browser.
@@ -24,14 +24,14 @@ npm i kuzu-wasm
 
 ## Example usage
 
-We provide a simple example to demonstrate how to use Kuzu-Wasm. In this example, we will create a simple graph and run a few simple queries.
+We provide a simple example to demonstrate how to use CypherDB-Wasm. In this example, we will create a simple graph and run a few simple queries.
 
 We provide three versions of this example: 
-- `browser_in_memory`: This example demonstrates how to use Kuzu-Wasm in a web browser with an in-memory filesystem.
-- `browser_persistent`: This example demonstrates how to use Kuzu-Wasm in a web browser with a persistent IDBFS filesystem.
-- `nodejs`: This example demonstrates how to use Kuzu-Wasm in Node.js.
+- `browser_in_memory`: This example demonstrates how to use CypherDB-Wasm in a web browser with an in-memory filesystem.
+- `browser_persistent`: This example demonstrates how to use CypherDB-Wasm in a web browser with a persistent IDBFS filesystem.
+- `nodejs`: This example demonstrates how to use CypherDB-Wasm in Node.js.
 
-The example can be found in [the examples directory](https://github.com/kuzudb/kuzu/tree/master/tools/wasm/examples).
+The example can be found in [the examples directory](https://github.com/opencypher/cypherdb/tree/master/tools/wasm/examples).
 
 ## Understanding the package
 
@@ -68,7 +68,7 @@ The API documentation can be found here:
 
 ## Local development
 
-This section is relevant if you are interested in contributing to Kuzu's Wasm API.
+This section is relevant if you are interested in contributing to CypherDB's Wasm API.
 
 First, build the WebAssembly module:
 

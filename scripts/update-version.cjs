@@ -1,4 +1,4 @@
-const GITHUB_API_URL = "https://api.github.com/repos/kuzudb/kuzu/releases/latest";
+const GITHUB_API_URL = "https://api.github.com/repos/opencypher/cypherdb/releases/latest";
 const fs = require('fs/promises');
 const path = require('path');
 

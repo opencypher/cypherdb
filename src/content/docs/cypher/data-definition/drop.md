@@ -50,12 +50,12 @@ DROP TABLE User
 ```
 
 ## Drop if exists
-If the given table does not exist in the database, Kuzu throws an exception when you try to drop it.
-To avoid the exception being raised, use the `IF EXISTS` clause. This instructs Kuzu to do nothing when
+If the given table does not exist in the database, CypherDB throws an exception when you try to drop it.
+To avoid the exception being raised, use the `IF EXISTS` clause. This instructs CypherDB to do nothing when
 the given table name does not exist in the database.
 
 Example:
 ```cypher
 DROP TABLE IF EXISTS UW
 ```
-This query tells Kuzu to drop the `UW` table only if it exists.
+This query tells CypherDB to drop the `UW` table only if it exists.

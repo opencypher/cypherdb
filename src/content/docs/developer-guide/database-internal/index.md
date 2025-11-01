@@ -1,6 +1,6 @@
 ---
 title: Database internals
-description: "Architecture overview of Kuzu's internal modules including parser, binder, planner, and storage"
+description: "Architecture overview of CypherDB's internal modules including parser, binder, planner, and storage"
 ---
 
 ## Database modules
@@ -9,7 +9,7 @@ The following sections describe the role of each module under the `src/` directo
 
 ### Parser
 
-The parser transforms an input string statement into Kuzu's internal AST, called a `Statement`. The parser validates the syntax correctness of the input statement. An input statement will first be parsed into an antlr4 AST according to the grammar file under `src/antlr4/Cypher.g4`. We then perform a bottom-up traversal over the antlr4 AST and transform it into a `Statement` through `Transformer`.
+The parser transforms an input string statement into CypherDB's internal AST, called a `Statement`. The parser validates the syntax correctness of the input statement. An input statement will first be parsed into an antlr4 AST according to the grammar file under `src/antlr4/Cypher.g4`. We then perform a bottom-up traversal over the antlr4 AST and transform it into a `Statement` through `Transformer`.
 
 ### Binder
 

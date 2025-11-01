@@ -1,6 +1,6 @@
 ---
 title: Query Panel
-description: Execute Cypher queries in Kuzu Explorer with syntax highlighting, autocomplete, and result visualization options.
+description: Execute Cypher queries in CypherDB Explorer with syntax highlighting, autocomplete, and result visualization options.
 ---
 
 ## Query editor
@@ -97,10 +97,10 @@ for query generation.
 
 :::note[Note]
 If you're using Docker Desktop, you may need to enable host networking to be able to access your locally running Ollama server
-from within the Docker container that's running Kuzu Explorer. In Docker Desktop, go to "Settings", and then navigate to "Resources" > "Network" > "Enable host networking".
+from within the Docker container that's running CypherDB Explorer. In Docker Desktop, go to "Settings", and then navigate to "Resources" > "Network" > "Enable host networking".
 Once this is enabled, you should be able to run the following command and then open `http://localhost:8000` as normal.
 ```bash
-# Run the following command to start Kuzu Explorer with host networking enabled
+# Run the following command to start CypherDB Explorer with host networking enabled
 docker run --net=host --rm kuzudb/explorer:latest
 ```
 :::

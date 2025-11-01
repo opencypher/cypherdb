@@ -1,11 +1,11 @@
 ---
 title: Vector types
-description: "Kuzu's column-oriented in-memory data structures for efficient data processing"
+description: "CypherDB's column-oriented in-memory data structures for efficient data processing"
 ---
 
 ## ValueVector
 
-A value vector is Kuzu's column-oriented in-memory data structure to store a chunk of data of the same data type. The size of `ValueVector` is defined by `DEFAULT_VECTOR_CAPACITY`, which is 2048. This is an empirically selected value with the presumption that the data stored in the value vector will fit into CPU cache.
+A value vector is CypherDB's column-oriented in-memory data structure to store a chunk of data of the same data type. The size of `ValueVector` is defined by `DEFAULT_VECTOR_CAPACITY`, which is 2048. This is an empirically selected value with the presumption that the data stored in the value vector will fit into CPU cache.
 
 A value vector has the following core fields:
 - `data`: Stores the actual data which is a trivial byte array managed by a unique pointer.

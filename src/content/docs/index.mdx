@@ -1,13 +1,14 @@
 ---
 title: Documentation
-description: Documentation for Kuzu, an open source, embedded graph database that supports
+description: Documentation for CypherDB, an open source, embedded graph database
 template: doc
 ---
 
-Welcome to the Kuzu docs!
+Welcome to the CypherDB docs!
 
-Kuzu is an embedded graph database built for query speed and scalability. It is optimized for
-handling complex join-heavy analytical workloads on very large graphs and has the following core features:
+CypherDB is an embedded graph database. 
+
+Features:
 
 - Property Graph data model and Cypher query language
 - Embedded (in-process) integration with applications
@@ -18,42 +19,28 @@ handling complex join-heavy analytical workloads on very large graphs and has th
 - Multi-core query parallelism
 - Serializable ACID transactions
 
-## Why Kuzu?
-
-Although there are many graph database management systems (GDBMSs) in the market today,
-Kuzu stands apart because its design and implementation address specific trade-offs that
-make it a compelling choice for analytical query workloads on large graphs.
-Below, we list some of the key reasons why you should consider using Kuzu.
-
-### Performance and scalability
-
-Kuzu is a state-of-the-art graph DBMS that came out of state-of-the-art academic research and is built by a
-core team of database experts who relentlessly focus on scalability and performance.
-Its founding engineers have co-authored several cutting-edge technical papers and articles on storing
-and querying large graphs.
 
 ### Usability
 
-Kuzu is built for industry use cases. It implements a suite of features that lower the barrier of entry
+CypherDB is built for industry use cases. It implements a suite of features that lower the barrier of entry
 for modeling your data as a graph and querying it in an expressive [graph query language](https://github.com/opencypher/openCypher).
-Because Kuzu is an embedded database, it runs within your application process, making it easy to set up and use Kuzu.
-Kuzu does not require installing any external dependencies or managing it as a DBMS server.
+Because CypherDB is an embedded database, it runs within your application process, making it easy to set up and use CypherDB.
+CypherDB does not require installing any external dependencies or managing it as a DBMS server.
 
 ### Interoperability
 
-Kuzu is designed to be highly interoperable with a variety of external formats and columnar or relational stores,
-including Parquet, Arrow, DuckDB, and more. This allows you to easily move your existing data to and from Kuzu,
+CypherDB is designed to be highly interoperable with a variety of external formats and columnar or relational stores,
+including Parquet, Arrow, DuckDB, and more. This allows you to easily move your existing data to and from CypherDB,
 making it a great choice for graph data science, machine learning, and analytics use cases.
 
 ### Structured property graph model
 
-The data model in Kuzu is based on the property graph model, together with some structure (including
+The data model in CypherDB is based on the property graph model, together with some structure (including
 node and relationship tables, and a pre-defined schema). This makes it flexible and intuitive to model your existing
 data as a graph, while also being smart enough to optimize query performance and perform vectorized
 operations at scale.
 
 ### Open source
 
-Kuzu is open source and has a permissive MIT license, which allows you to build commercial and proprietary
-applications on top of it. Check out [our GitHub repo](https://github.com/kuzudb/kuzu) and try out Kuzu.
+CypherDB is open source and has a permissive MIT license. Check out [our GitHub repo](https://github.com/opencypher/cypherdb) and try out CypherDB.
 And while you're there, consider giving us a star and spreading the word!

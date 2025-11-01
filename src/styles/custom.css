@@ -19,9 +19,9 @@ https://github.com/withastro/starlight/blob/main/packages/starlight/style/props.
   --sl-color-black: #17181c;
 
 
-  --sl-color-accent-low: #ca5921;
-  --sl-color-accent: #dc6428;
-  --sl-color-accent-high: #e0743e;
+  --sl-color-accent-low: #102135;
+  --sl-color-accent: #004063;
+  --sl-color-accent-high: #0E5F8F;
 
   --sl-color-text: var(--sl-color-gray-2);
   --sl-color-text-accent: var(--sl-color-accent-high);
@@ -130,9 +130,9 @@ body {
   --sl-color-gray-7: hsl(224, 19%, 97%);
   --sl-color-black: hsl(0, 0%, 100%);
 
-  --sl-color-accent-low: #ca5921;
-  --sl-color-accent: #dc6428;
-  --sl-color-accent-high: #e0743e;
+  --sl-color-accent-low: #0C1A2A;
+  --sl-color-accent: #004063;
+  --sl-color-accent-high: #0E5F8F;
 
   --sl-color-text-accent: var(--sl-color-accent);
   --sl-color-text-invert: var(--sl-color-black);

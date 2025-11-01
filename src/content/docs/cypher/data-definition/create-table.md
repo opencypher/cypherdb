@@ -4,17 +4,17 @@ description: Create table DDL statements for node and relationship tables
 ---
 
 As a first step to creating your database, you need to define your nodes and relationships.
-In the property graph model, nodes and relationships have labels. In Kuzu, every node or
+In the property graph model, nodes and relationships have labels. In CypherDB, every node or
 relationship can have only **one** label. Nodes and relationships, and their properties, are
 defined through `CREATE NODE TABLE` and `CREATE REL TABLE` statements.
 The choice of using the term "table" over "label" is intentional and explained below.
 
 :::note[Why are there no "labels"?]
-Kuzu uses the term **table** rather than **label** because, unlike other graph systems, Kuzu is
+CypherDB uses the term **table** rather than **label** because, unlike other graph systems, CypherDB is
 ultimately a relational system in the sense that it stores and processes sets of tuples, i.e., tables
 or relations.
 
-In fact, Kuzu's data model can be viewed as a _structured_ property graph model, in
+In fact, CypherDB's data model can be viewed as a _structured_ property graph model, in
 which you tag your tables as "node" and "relationship" tables depending on their roles in your
 application data. Nodes are generally
 well-suited for representing entities, while relationships are used to represent the
@@ -62,8 +62,8 @@ RETURN a.name, a.age;
 
 ### Primary key
 
-Kuzu requires a primary key column for node tables, which can be a property of the node of type `STRING`, numeric, `DATE`, or `BLOB`.
-Kuzu will generate an index to do quick lookups on the primary key (e.g., `name` in the above example).
+CypherDB requires a primary key column for node tables, which can be a property of the node of type `STRING`, numeric, `DATE`, or `BLOB`.
+CypherDB will generate an index to do quick lookups on the primary key (e.g., `name` in the above example).
 Alternatively, you can use the [`SERIAL`](/cypher/data-types/#serial) data type to use an auto-incremented integers as the primary key.
 
 ### Default value
@@ -178,8 +178,8 @@ As you can imagine, the more relationships you want to selectively query on, the
 
 ## If not exists
 
-If the given table name already exists in the database, Kuzu throws an exception when you try to create it again.
-You can use the `IF NOT EXISTS` clause to avoid the error. This tells Kuzu to do nothing when
+If the given table name already exists in the database, CypherDB throws an exception when you try to create it again.
+You can use the `IF NOT EXISTS` clause to avoid the error. This tells CypherDB to do nothing when
 the given table name already exists in the database. For example:
 
 ```cypher
@@ -212,7 +212,7 @@ CREATE NODE TABLE Person AS
     RETURN *;
 ```
 
-Note that the above query did not need an explicit schema for the table. Kuzu will automatically infer the
+Note that the above query did not need an explicit schema for the table. CypherDB will automatically infer the
 schema from the result of the subquery. In this case, `LOAD FROM` infers the properties names and types from
 the CSV file header, which in turn is used to define the schema of the `Person` table.
 

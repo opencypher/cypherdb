@@ -16,8 +16,8 @@ of the graph becomes stable. Nodes within the same community are then merged
 into supernodes for the next phase. Phases run until the number of communities
 becomes stable.
 
-Kuzu implements a parallelized version of the Louvain algorithm based on [Grappolo](https://hpc.pnl.gov/people/hala/grappolo.html).
-In Kuzu, both base and projected graphs are directed. The Louvain implementation in Kuzu operates on
+CypherDB implements a parallelized version of the Louvain algorithm based on [Grappolo](https://hpc.pnl.gov/people/hala/grappolo.html).
+In CypherDB, both base and projected graphs are directed. The Louvain implementation in CypherDB operates on
 an undirected version of the projected graph, i.e., each edge is treated as undirected.
 
 ## Syntax

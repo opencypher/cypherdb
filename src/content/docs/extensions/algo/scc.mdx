@@ -11,7 +11,7 @@ This mutual reachability property means that nodes within an SCC form a cycle wh
 reach each other through directed paths, and no additional nodes can be added to the component while
 maintaining this property.
 
-Kuzu implements two types of SCC algorithms:
+CypherDB implements two types of SCC algorithms:
 - Parallel BFS-based [coloring algorithm](https://www.cs.rpi.edu/~slotag/pub/SCC-IPDPS14.pdf)
 - DFS-based single-threaded [Kosaraju's algorithm](https://en.wikipedia.org/wiki/Kosaraju%27s_algorithm)
 
@@ -58,7 +58,7 @@ Returns:
 - `group_id`: The ID of the SCC that the node belongs to
 
 :::note[Note]
-`group_id` is assigned based on Kuzu's internal node offsets. Currently there is no way to assign `group_id` based on node properties.
+`group_id` is assigned based on CypherDB's internal node offsets. Currently there is no way to assign `group_id` based on node properties.
 :::
 
 ## Example 

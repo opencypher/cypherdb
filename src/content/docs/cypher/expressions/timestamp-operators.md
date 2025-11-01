@@ -3,7 +3,7 @@ title: Timestamp operators
 description: Timestamp operators are used to work with timestamp values.
 ---
 
-Kuzu supports the following operators for working with timestamp and interval values:
+CypherDB supports the following operators for working with timestamp and interval values:
 
 <div class="scroll-table">
 

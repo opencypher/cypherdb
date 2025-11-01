@@ -1,13 +1,13 @@
 ---
 title: "Copy from dataframes"
-description: Import data directly from Pandas and Polars DataFrames or PyArrow tables into Kuzu using COPY FROM commands.
+description: Import data directly from Pandas and Polars DataFrames or PyArrow tables into CypherDB using COPY FROM commands.
 ---
 
-You can copy from Pandas/Polars dataframes or in-memory Arrow tables directly into Kuzu using the `COPY FROM` command.
+You can copy from Pandas/Polars dataframes or in-memory Arrow tables directly into CypherDB using the `COPY FROM` command.
 This is useful when you are performing data transformations with these libraries and want to quickly ingest
-the prepared data into Kuzu.
+the prepared data into CypherDB.
 
-There are two different ways in Kuzu to import dataframes:
+There are two different ways in CypherDB to import dataframes:
 
 ### Use a query parameter
 
@@ -146,14 +146,14 @@ which kinds of errors can be ignored when copying from Pandas or Polars DataFram
 
 :::note[Note]
 Currently, you cannot ignore parsing or type-casting errors when copying from dataframes,
-because Kuzu uses a strictly-typed schema.
+because CypherDB uses a strictly-typed schema.
 :::
 
 ## Examples
 
 ### Pandas
 
-You can directly copy from a Pandas dataframe into Kuzu. Both numpy-backed and PyArrow-backed Pandas
+You can directly copy from a Pandas dataframe into CypherDB. Both numpy-backed and PyArrow-backed Pandas
 dataframes are supported.
 
 ```python
@@ -184,7 +184,7 @@ print(res.get_as_df())
 
 ### Arrow tables
 
-You can utilize an existing in-memory PyArrow table to copy data directly into Kuzu.
+You can utilize an existing in-memory PyArrow table to copy data directly into CypherDB.
 Internally, the Polars dataframe example above also leverages scanning from PyArrow tables.
 
 ```python
@@ -334,7 +334,7 @@ Polars is able to handle this nested JSON data gracefully due its type-safety an
 
 #### Inspect the output of `LOAD FROM`
 
-We can now scan the DataFrame using the `LOAD FROM` clause in Kuzu in combination with `UNWIND` to
+We can now scan the DataFrame using the `LOAD FROM` clause in CypherDB in combination with `UNWIND` to
 obtain each of the insurance provider records in a row-wise manner.
 
 ```python
@@ -360,9 +360,9 @@ print(result.get_as_df())
 ```
 We were able to successfully extract each of the non-null insurance provider records in a row-wise manner!
 The Polars type system can appropriately handle complex data types, nulls and missing values, which
-aligns well with Kuzu's type system.
+aligns well with CypherDB's type system.
 
-#### Define Kuzu schema
+#### Define CypherDB schema
 
 We now have the necessary information to create our `Patient`, `InsuranceProvider` and `HAS_PROVIDER`
 tables and copy the relevant data into them.
@@ -402,14 +402,14 @@ conn.execute(
 )
 ```
 
-The above code creates the following tables in Kuzu:
+The above code creates the following tables in CypherDB:
 - `Patient` node table with `p_id` as the primary key
 - `InsuranceProvider` node table with `type` and `name` as the primary key
 - `HAS_INSURANCE` relationship table from `Patient` to `InsuranceProvider`
 
 #### Copy data into the node tables
 
-Let's proceed to copy the data from Polars into the Kuzu tables.
+Let's proceed to copy the data from Polars into the CypherDB tables.
 
 ```python
 conn.execute(
@@ -429,7 +429,7 @@ with the column names and data types defined in the `CREATE NODE TABLE` statemen
 
 :::caution[Note]
 The `age` field is cast to an unsigned integer via `CAST(info.age AS UINT8)`. This is because the original
-data type of `age` was inferred in Polars as `i8` (signed 8-bit integer), but the Kuzu schema requires
+data type of `age` was inferred in Polars as `i8` (signed 8-bit integer), but the CypherDB schema requires
 the unsigned integer type `UINT8`. To better handle cases like this, you can explicitly cast the data types.
 :::
 
@@ -474,7 +474,7 @@ If there are properties associated with the relationship, we can also specify th
 columns in the `RETURN` clause of the scan statement. The `COPY` statement will then obtain the exact
 columns it needs to efficiently populate the relationship table using the contents of the Polars DataFrame.
 
-That's it! We have successfully copied the relevant data into our Kuzu graph.
+That's it! We have successfully copied the relevant data into our CypherDB graph.
 
 #### Query the graph
 
@@ -505,4 +505,4 @@ The `WHERE` predicate requests only the health insurance providers, and we can s
 patient and insurance provider information in the results.
 
 This example shows that it's possible to construct arbitrarily complex graph schemas and transform
-the data using Polars dataframes and Kuzu. Happy querying!
+the data using Polars dataframes and CypherDB. Happy querying!

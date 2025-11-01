@@ -1,37 +1,37 @@
 ---
 title: "Query and visualize your graph"
-description: "Learn how to query graphs using Cypher and visualize results in Kuzu"
+description: "Learn how to query graphs using Cypher and visualize results in CypherDB"
 ---
 
 Cypher is a declarative query language for graphs, and should be easy to get started with for
-anyone who is familiar with SQL. Kuzu's implementation of Cypher is based on the
+anyone who is familiar with SQL. CypherDB's implementation of Cypher is based on the
 [openCypher standard](https://opencypher.org/).
 
 This section will briefly cover how to use Cypher to query the graph created
-in the [previous section](/get-started). For a detailed guide on using Cypher in Kuzu and to see all the
+in the [previous section](/get-started). For a detailed guide on using Cypher in CypherDB and to see all the
 available functions, see the [Cypher manual](/cypher).
 
 ## Query interfaces
 
-There are three ways you can query an existing Kuzu database:
+There are three ways you can query an existing CypherDB database:
 
-- **CLI**: Write Cypher queries directly in the Kuzu CLI shell.
-- **Kuzu Explorer**: Interactively write and run Cypher queries using [Kuzu Explorer](/visualization/kuzu-explorer/),
+- **CLI**: Write Cypher queries directly in the CypherDB CLI shell.
+- **CypherDB Explorer**: Interactively write and run Cypher queries using [CypherDB Explorer](/visualization/kuzu-explorer/),
 a web-based query interface that also provides graph visualization.
-- **Client APIs**: Integrate Kuzu in your application using your preferred programming language.
+- **Client APIs**: Integrate CypherDB in your application using your preferred programming language.
 
 ## Cypher introduction
 
-For simplicity, we'll demonstrate how to run Cypher queries using Kuzu Explorer.
+For simplicity, we'll demonstrate how to run Cypher queries using CypherDB Explorer.
 You are welcome to run the same queries via the CLI or your preferred client language APIs.
 
-The advantage of using Kuzu Explorer to run queries during the prototyping and exploration phase
+The advantage of using CypherDB Explorer to run queries during the prototyping and exploration phase
 is that you can visualize the graph as you query it. Additionally, you can view the query results
 as a table or as JSON, allowing you to easily design and test your application logic.
 
-### Open a database in Kuzu Explorer
+### Open a database in CypherDB Explorer
 
-Run the appropriate version of Kuzu Explorer via Docker as follows:
+Run the appropriate version of CypherDB Explorer via Docker as follows:
 
 ```bash
 docker run --rm -p 8000:8000 \
@@ -45,8 +45,8 @@ docker run -p 8000:8000 \
 ```
 
 :::note[Note]
-You can alternatively install a specific version of Kuzu Explorer by replacing `latest` with the version number,
-such as `kuzudb/explorer:0.xx.0`. The explorer version must match the Kuzu version used to create
+You can alternatively install a specific version of CypherDB Explorer by replacing `latest` with the version number,
+such as `kuzudb/explorer:0.xx.0`. The explorer version must match the CypherDB version used to create
 any existing database in the provided path to ensure storage format compatibility.
 :::
 

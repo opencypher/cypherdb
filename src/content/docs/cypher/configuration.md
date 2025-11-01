@@ -3,7 +3,7 @@ title: Configuration
 description: "Connection and database configuration"
 ---
 
-The configuration of a Kuzu database or a connection to the database can be changed through a standalone `CALL`
+The configuration of a CypherDB database or a connection to the database can be changed through a standalone `CALL`
 statement, described in this section. Different from [the `CALL` clause](/cypher/query-clauses/call), this statement for changing
 configuration **cannot** be used with other query clauses, such as `RETURN`.
 

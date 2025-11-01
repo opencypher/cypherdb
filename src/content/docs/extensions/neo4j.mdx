@@ -1,19 +1,19 @@
 ---
 title: "Neo4j extension"
-description: "Migrate your Neo4j graph database data directly into Kuzu"
+description: "Migrate your Neo4j graph database data directly into CypherDB"
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-The `neo4j` extension allows you to migrate your Neo4j data into a Kuzu database.
+The `neo4j` extension allows you to migrate your Neo4j data into a CypherDB database.
 It provides the following function:
 
-- `NEO4J_MIGRATE`: Migrate data from Neo4j to Kuzu
+- `NEO4J_MIGRATE`: Migrate data from Neo4j to CypherDB
 
 :::note[Note]
-* Multi-labelled nodes in Neo4j cannot be migrated as Kuzu doesn't support them yet.
+* Multi-labelled nodes in Neo4j cannot be migrated as CypherDB doesn't support them yet.
 * Nodes and relationships without any labels in Neo4j will be skipped during migration.
-* Any property with a data type that is not natively supported in Kuzu will be imported into Kuzu as a `STRING`.
+* Any property with a data type that is not natively supported in CypherDB will be imported into CypherDB as a `STRING`.
 :::
 
 ## Usage
@@ -64,11 +64,11 @@ The `apoc.conf` file may not exist in the `conf` directory, in which case, you w
 If you're running Neo4j in Docker, you can use `-e NEO4J_apoc_export_file_enabled=true -e NEO4J_apoc_import_file_use__neo4j__config=false` to configure APOC.
 Additionally, you'll need to mount `/tmp` as `-v /tmp:/tmp` to allow access to the exported data from Neo4j.
 
-The following section shows how to migrate _labels_ from Neo4j to _tables_ in Kuzu.
+The following section shows how to migrate _labels_ from Neo4j to _tables_ in CypherDB.
 
 ### Importing data from Neo4j
 
-You can use the `NEO4J_MIGRATE` function to import data from Neo4j into Kuzu:
+You can use the `NEO4J_MIGRATE` function to import data from Neo4j into CypherDB:
 
 ```cypher
 CALL NEO4J_MIGRATE(
@@ -85,9 +85,9 @@ CALL NEO4J_MIGRATE(
   - Type: `STRING`
 - `PASSWORD`: Neo4j password. Leave blank if not needed.
   - Type: `STRING`
-- `NODE_LABELS`: A list of node labels to migrate to Kuzu. Use `["*"]` to import all nodes with labels.
+- `NODE_LABELS`: A list of node labels to migrate to CypherDB. Use `["*"]` to import all nodes with labels.
   - Type: `STRING[]`
-- `REL_LABELS`: A list of relationship labels to migrate to Kuzu. Use `["*"]` to import all relationships with labels.
+- `REL_LABELS`: A list of relationship labels to migrate to CypherDB. Use `["*"]` to import all relationships with labels.
   - Type: `STRING[]`
 
 #### Example
@@ -113,7 +113,7 @@ CALL NEO4J_MIGRATE(
 );
 ```
 
-You can use `SHOW_TABLES()` to verify that the tables have been imported into Kuzu:
+You can use `SHOW_TABLES()` to verify that the tables have been imported into CypherDB:
 ```cypher
 CALL SHOW_TABLES() RETURN *;
 ```
@@ -129,7 +129,7 @@ CALL SHOW_TABLES() RETURN *;
 └────────┴─────────┴────────┴───────────────┴─────────┘
 ```
 
-The data from Neo4j is now available in Kuzu and you can start querying them.
+The data from Neo4j is now available in CypherDB and you can start querying them.
 For example, let's find the user who was most recently followed by another user:
 
 ```cypher

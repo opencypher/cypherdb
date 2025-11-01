@@ -1,6 +1,6 @@
 ---
 title: C++
-description: "Use Kuzu embedded graph database in C++ applications with the official C++ API"
+description: "Use CypherDB embedded graph database in C++ applications with the official C++ API"
 ---
 
 import { LinkCard } from '@astrojs/starlight/components';
@@ -12,7 +12,7 @@ See the following link for the full documentation of the C++ API.
   href="https://kuzudb.github.io/api-docs/cpp/annotated.html"
 />
 
-## Handling Kuzu output using `getNext()`
+## Handling CypherDB output using `getNext()`
 
 For the examples in this section we will be using the following schema:
 ```cypher
@@ -77,16 +77,16 @@ void mainFunction() {
 In addition to interfacing with the database, the C++ API offers users the ability to define custom
 functions via User Defined Functions (UDFs), described below.
 
-Kuzu provides two interfaces that enable you to define your own custom scalar and vectorized functions.
+CypherDB provides two interfaces that enable you to define your own custom scalar and vectorized functions.
 
 ### Scalar functions
 
-This API allows user to register ordinary scalar functions which are defined in c++ and use them as Kuzu built-in functions in a query. UDF functions are as efficient as the built-in functions.
-Since two c++ primitive types may map to the same Cypher data types(e.g. `int32` can map to both `INT32` or `DATE` in Kuzu), Kuzu provides two overloaded APIs which can eliminate the ambiguity in datatype mapping.
+This API allows user to register ordinary scalar functions which are defined in c++ and use them as CypherDB built-in functions in a query. UDF functions are as efficient as the built-in functions.
+Since two c++ primitive types may map to the same Cypher data types(e.g. `int32` can map to both `INT32` or `DATE` in CypherDB), CypherDB provides two overloaded APIs which can eliminate the ambiguity in datatype mapping.
 
 #### Option 1: Scalar function with automatic inference
 
-Create a scalar function by automatically inferring the parameter and result type in Kuzu.
+Create a scalar function by automatically inferring the parameter and result type in CypherDB.
 
 ```cpp
 template<typename TR, typename... Args>
@@ -95,10 +95,10 @@ void createScalarFunction(const std::string& name, TR (*udfFunc)(Args...))
 
 Template parameters:
 * `TR`: return type of the UDF in c++.
-* `ARGS`: are the type of the arguments in c++, Kuzu currently support UDF functions with up to 3 parameters.
+* `ARGS`: are the type of the arguments in c++, CypherDB currently support UDF functions with up to 3 parameters.
 
 Parameters:
-* `name`: the name of the function to be created in Kuzu (note: function name must be unique).
+* `name`: the name of the function to be created in CypherDB (note: function name must be unique).
 * `udfFunc`: the UDF defined in c++.
 
 Inference rule for c++ type to cypher type is defined as follows:
@@ -135,10 +135,10 @@ void createScalarFunction(const std::string& name, TR (*udfFunc)(Args...))
 
 Template parameters:
 * `TR`: return type of the UDF in c++.
-* `ARGS`: are the type of the arguments in c++, Kuzu currently support UDF functions with up to 3 parameters.
+* `ARGS`: are the type of the arguments in c++, CypherDB currently support UDF functions with up to 3 parameters.
 
 Parameters:
-* `name`: the name of the function to be created in Kuzu (note: function name must be unique).
+* `name`: the name of the function to be created in CypherDB (note: function name must be unique).
 * `parameterTypes`: the type of parameters in cypher.
 * `returnType`: the type of return value in cypher.
 * `udfFunc`: the UDF defined in c++.
@@ -178,13 +178,13 @@ conn->query("MATCH (p:person) return addMicro(p.registerTime, to_int32(p.ID))")
 
 ### Vectorized functions
 
-Due to its columnar storage and architecture decisions, Kuzu can execute functions on input data in an
-efficient and vectorized manner. In addition to creating scalar UDFs, Kuzu also provides support for
+Due to its columnar storage and architecture decisions, CypherDB can execute functions on input data in an
+efficient and vectorized manner. In addition to creating scalar UDFs, CypherDB also provides support for
 user-defined vectorized UDFs. The `createVectorizedFunction` interface also offers two APIs to enhance clarity in datatype mapping.
 
-#### Vector types in Kuzu
+#### Vector types in CypherDB
 
-The first type of vector that Kuzu supports is flat vectors.
+The first type of vector that CypherDB supports is flat vectors.
 
 The flat vector only holds one value at `selectedPositions[0]` position.
 ```cpp
@@ -222,7 +222,7 @@ Example:
 
 #### Option 1. Vectorized function with automatic inference
 
-Create a vectorized function by automatically inferring the parameter and result type in Kuzu.
+Create a vectorized function by automatically inferring the parameter and result type in CypherDB.
 ```cpp
 template<typename TR, typename... Args>
 void createVectorizedFunction(const std::string& name, function::scalar_exec_func scalarFunc)
@@ -230,10 +230,10 @@ void createVectorizedFunction(const std::string& name, function::scalar_exec_fun
 
 Template parameters:
 * `TR`: return type of the UDF in c++.
-* `ARGS`: are the type of the arguments in c++, Kuzu currently support UDF functions with up to 3 parameters.
+* `ARGS`: are the type of the arguments in c++, CypherDB currently support UDF functions with up to 3 parameters.
 
 Parameters:
-* `name`: the name of the function to be created in Kuzu (note: function name must be unique).
+* `name`: the name of the function to be created in CypherDB (note: function name must be unique).
 * `scalarFunc`: a vectorized udf function. The vectorized udf function takes in a vector of ValueVectors and puts the result in the resultVector.
 
 Inference rule for c++ type to cypher type is defined as follows:
@@ -283,7 +283,7 @@ void createVectorizedFunction(const std::string& name,
 ```
 
 Parameters:
-* `name`: the name of the function to be created in Kuzu (note: function name must be unique).
+* `name`: the name of the function to be created in CypherDB (note: function name must be unique).
 * `parameterTypes`: the type of parameters in cypher.
 * `returnType`: the type of return value in cypher.
 * `scalarFunc`: a vectorized udf function. The vectorized udf function takes in a vector of ValueVectors and puts the result in the resultVector.
@@ -310,7 +310,7 @@ struct AddDate {
     }
 };
 // Utilize the pre-defined `function::BinaryFunctionExecutor::execute` API to execute the AddDate function on parameters.
-// Note: Users can utilize Kuzu pre-defined FunctionExecutors(UnaryFunctionExecutor, BinaryFunctionExecutor, TernaryFunctionExecutor) to execute operations on parameters without writing code to retrieve the valueVectors.
+// Note: Users can utilize CypherDB pre-defined FunctionExecutors(UnaryFunctionExecutor, BinaryFunctionExecutor, TernaryFunctionExecutor) to execute operations on parameters without writing code to retrieve the valueVectors.
 static void addDate(
     const std::vector<std::shared_ptr<ValueVector>>& parameters, ValueVector& result) {
     assert(parameters.size() == 2);
