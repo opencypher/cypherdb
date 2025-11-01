@@ -1,0 +1,251 @@
+---
+title: Import data
+description: Guide to importing data into Kuzu using COPY FROM commands for CSV, Parquet, JSON, NumPy, and DataFrame sources.
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+There are multiple ways to import data in Kuzu. The only prerequisite for inserting data
+into a database is that you first create a graph schema, i.e., the structure of your node and relationship tables.
+
+For small graphs (a few thousand nodes), the `CREATE` and `MERGE` [Cypher clauses](/cypher/data-manipulation-clauses)
+can be used to insert nodes and
+relationships. These are similar to SQL's `INSERT` statements, but bear in mind that they are slower than the bulk import
+options shown below. The `CREATE`/`MERGE` clauses are intended to do small additions or updates on a sporadic basis.
+
+In general, the recommended approach is to use `COPY FROM` (rather than creating or
+merging nodes one by one), for larger graphs of millions of nodes and beyond.
+This is the fastest way to bulk insert data into Kuzu.
+
+The following sections show how to bulk import data using `COPY FROM` on various data formats.
+
+<CardGrid>
+
+    <LinkCard
+    title="Copy from CSV"
+    href="/import/csv"
+    />
+
+    <LinkCard
+    title="Copy from Parquet"
+    href="/import/parquet"
+    />
+
+    <LinkCard
+    title="Copy from NumPy"
+    href="/import/npy"
+    />
+
+    <LinkCard
+    title="Copy from subquery"
+    href="/import/copy-from-subquery"
+    />
+
+    <LinkCard
+    title="Copy from DataFrame"
+    href="/import/copy-from-dataframe"
+    />
+
+    <LinkCard
+    title="Copy from JSON"
+    href="/extensions/json#copy-json-files-to-a-table"
+    />
+
+</CardGrid>
+
+:::caution[Note]
+Similar to the [LOAD FROM](/cypher/query-clauses/load-from) clause, the `COPY FROM` clause determines the file format based on the file extension if the `file_format` option is not provided. Alternatively, the `file_format` option can be used in the `COPY FROM` clause to explicitly specify the file format.
+
+Example: To copy from a file ending with an arbitrary extension like `.dsv`, use the `file_format = 'csv'` option to explicitly tell Kuzu to treat the file as a `CSV` file.
+```cypher
+COPY person FROM 'person.dsv' (file_format = 'csv')
+```
+:::
+
+## Bulk insert from a subset
+
+In certain cases, you may only want to partially fill your Kuzu table using the data from your input
+source. This is common in cases where you want to create extra columns during DDL that will hold
+a default value, and only a subset of the Kuzu table's columns are filled during the `COPY` operation.
+
+This is better illustrated with an example. Consider a case where you have a CSV file `person.csv`
+that has 3 columns: `id`, `name` and `age`.
+Assume you have a data model where you want to attach an additional property to a `Person` node,
+i.e., the address they live in, initially populated as nulls but to be filled in with appropriate
+values at a later time.
+
+The DDL for the `Person` node table is as follows:
+```cypher
+CREATE NODE TABLE Person(id INT64 PRIMARY KEY, name STRING, age INT64, address STRING);
+```
+
+However, the given CSV file to `COPY FROM` has only 3 columns -- the address information will be
+obtained from another source.
+
+In such a case, you can explicitly tell the `COPY` pipeline to partially fill the node table and
+only map the named columns from the CSV file as follows:
+
+```cypher
+COPY Person(id, name, age) FROM 'person.csv'
+```
+
+This will only copy the `id`, `name` and `age` columns from the CSV file, while filling the fourth
+column, `address` with null values. These values can be populated at a later time via `MERGE`.
+
+:::caution[Note]
+The above approach only works when the input data source contains *fewer* columns than exists in the
+node table being copied into. If the node table had fewer columns than the data source, it would
+lead to a Runtime error because of a column number mismatch.
+:::
+
+## Bulk insert into relationship table with multiple FROM-TO connections 
+
+Given a relationship table with multiple from-to connections, internally Kuzu will create a child table per connection.
+
+Consider the following statement
+```cypher
+CREATE REL TABLE Knows(FROM User TO User, FROM User TO City);
+```
+Two children tables will be created internally
+```
+Knows_User_User
+Knows_User_City
+```
+
+When bulk inserting into a relationship table with multiple from-to pairs, you need to specify which child table to insert through `from, to` options, e.g.
+```cypher
+COPY Knows FROM 'knows_user_user.csv' (from='User', to='User');
+COPY Knows FROM 'knows_user_city.csv' (from='User', to='City');
+```
+
+Alternatively, you can also directly copy into a child table. This approach is **deprecated** since v0.11.
+```cypher
+COPY Knows_User_User FROM 'knows_user_user.csv';
+COPY Knows_User_City FROM 'knows_user_city.csv';
+```
+
+## Bulk insert into large relationship tables
+
+Importing large relationship tables from external files (100M+ scale) can use significant amounts of memory.
+If the memory used to prepare the
+imported relationship table data comes close to exceeding the buffer pool size,
+Kuzu will spill some of this data to a `.tmp` file in the local directory.
+You can disable spilling to disk by `CALL spill_to_disk=false`.
+
+This feature is disabled for in-memory or read-only databases.
+
+## Ignore erroneous rows
+
+By default, your `COPY FROM` and `LOAD FROM` clauses will fail if there are any erroneous rows/tuples
+in your input file.
+You can instead skip these rows by setting the `IGNORE_ERRORS` parameter to `true`.
+By default this parameter is set to `false`.
+There can be several reasons for errors when scanning a row/tuple from
+a file, such as the row/tuple being malformed (e.g., in a CSV file) or that the row leads
+to duplicate primary keys if the clause was COPY FROM. We support skipping over different types
+of errors for different files, which are documented [below](#skippable-errors-by-source).
+
+:::caution[Note]
+When `IGNORE_ERRORS` is set to `true`, Kuzu will skip any rows that have errors and continue loading the rest of the rows.
+This has some performance costs, so if you think your input files are clean, we recommend keeping `IGNORE_ERRORS` as `false`.
+:::
+
+Here is an example of using `IGNORE_ERRORS` when [reading from a CSV file](/import/csv).
+Consider the following `User` node table:
+
+```cypher
+CREATE NODE TABLE User (name STRING PRIMARY KEY, age INT32);
+```
+
+Let the CSV file `user.csv` contain the following rows:
+```csv
+Alice,4
+Bob,2147483650
+```
+Note that `2147483650` does not fit into an INT32 and will cause an error.
+The following statement will load only the first row of `user.csv` into `User` table, skipping the malformed second row.
+
+```cypher
+COPY User FROM "user.csv" (header=false, ignore_errors=true);
+```
+
+To check that only one `User` node has been inserted, we can run the following query:
+```cypher
+MATCH (a:User) RETURN count(*)
+```
+
+```table
+┌──────────┬
+│ count(*) │
+│ UINT64   │
+├──────────┼
+│ 1        │
+└──────────┴
+```
+
+### Warnings table: Inspecting skipped rows
+
+Information about skipped rows are kept in a system-level `Warnings` table.
+Warnings table is a connection-level table that accumulates warnings that are
+generated due to erroneous and skipped rows during all `COPY FROM` and `LOAD FROM`
+executions during the
+lifetime of a database connection. You can inspect the contents of this table, e.g., to see the warnings
+about the malformed rows, or clear this table.
+
+For example, to see the warning messages generated about the malformed line when importing `user.csv` using `COPY FROM` above,
+you can run the [`SHOW_WARNINGS`](/cypher/query-clauses/call#show_warnings) function:
+
+```cypher
+CALL show_warnings() RETURN *;
+```
+
+```table
+┌──────────┬─────────────────────────────────────────────────────────────────────────────┬───────────┬─────────────┬────────────────────────┐
+│ query_id │ message                                                                     │ file_path │ line_number │ skipped_line_or_record │
+│ UINT64   │ STRING                                                                      │ STRING    │ UINT64      │ STRING                 │
+├──────────┼─────────────────────────────────────────────────────────────────────────────┼───────────┼─────────────┼────────────────────────┤
+│ 1        │ Conversion exception: Cast failed. Could not convert "2147483650" to INT32. │ user.csv  │ 2           │ Bob,2147483650         │
+└──────────┴─────────────────────────────────────────────────────────────────────────────┴───────────┴─────────────┴────────────────────────┘
+```
+
+At any point in time you can also call the [`CLEAR_WARNINGS`](/cypher/query-clauses/call#clear_warnings) function to clear the Warnings table.
+
+```cypher
+CALL clear_warnings();
+```
+
+After clearing the warnings, the Warnings table will be empty.
+
+```cypher
+CALL show_warnings() RETURN *;
+```
+
+```table
+┌──────────┬─────────┬───────────┬─────────────┬────────────────────────┐
+│ query_id │ message │ file_path │ line_number │ skipped_line_or_record │
+│ UINT64   │ STRING  │ STRING    │ UINT64      │ STRING                 │
+├──────────┼─────────┼───────────┼─────────────┼────────────────────────┤
+└──────────┴─────────┴───────────┴─────────────┴────────────────────────┘
+```
+
+By default, Kuzu stores a limited number of warnings per connection, determined by the `warning_limit` connection configuration parameter.
+You can change this configuration as follows (see the [Connection Configuration](/cypher/configuration#connection-configuration) section for more details):
+```cypher
+CALL warning_limit=1024;
+```
+### Skippable Errors By Source
+
+When the `IGNORE_ERRORS` option is enabled, the errors that can be skipped can be different depending on the scan source.
+If the error is not skippable for a specific source, `COPY/LOAD FROM` will instead error and fail.
+Below is a table that shows the errors that are skippable by each source.
+
+||Parsing Errors|Casting Errors|Duplicate/Null/Missing Primary-Key errors|
+|---|:---:|:---:|:---:|
+|CSV| ✅ | ✅ | ✅ |
+|JSON| ❌ | ❌ | ✅ |
+|Numpy| ❌ | ❌ | ✅ |
+|Parquet| ❌ | ❌ | ✅ |
+|PyArrow tables| ❌ | ❌ | ✅ |
+|Pandas DataFrames| ❌ | ❌ | ✅ |
+|Polars DataFrames| ❌ | ❌ | ✅ |
+|Subquery| ❌ | ❌ | ✅ |

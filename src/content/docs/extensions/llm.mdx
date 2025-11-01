@@ -1,0 +1,133 @@
+---
+title: "LLM extension"
+description: "Access popular LLM APIs to create embeddings directly within Kuzu using Cypher"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The `llm` extension helps you run LLM-based workflows directly within Kuzu using Cypher.
+
+Currently, this extension provides the following function:
+
+- `CREATE_EMBEDDING`: Create embeddings from text
+
+:::note[Note]
+We plan to add more functions to this extension in the future, such as sending queries to LLMs directly from Kuzu.
+:::
+
+## Usage
+
+Please see [Install an extension](/extensions#install-an-extension) and [Load an extension](/extensions#load-an-extension) first before getting started.
+
+## Create embeddings
+
+The `CREATE_EMBEDDING` function allows you to create embeddings from text using the following providers:
+
+* [Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/titan-embedding-models.html)
+* [Google Vertex](https://cloud.google.com/vertex-ai/generative-ai/docs/embeddings/get-text-embeddings)
+* [Google Gemini](https://ai.google.dev/gemini-api/docs/embeddings)
+* [Ollama](https://ollama.com/blog/embedding-models)
+* [OpenAI](https://platform.openai.com/docs/guides/embeddings)
+* [Voyage AI](https://docs.voyageai.com/docs/embeddings)
+
+The general form of the function is shown below. It returns an embedding of type `LIST[FLOAT]`.
+
+```cypher
+CREATE_EMBEDDING(
+    // Required arguments
+    <PROMPT>,
+    <PROVIDER>,
+    <MODEL>
+    // Provider-specific arguments
+    <DIMENSIONS>,
+    <REGION>,
+    <ENDPOINT>
+);
+```
+
+Required arguments:
+
+- `PROMPT`: The input text to embed.
+    - Type: `STRING`
+- `PROVIDER`: The embedding provider.
+    - Type: `STRING`
+- `MODEL`: The identifier of the embedding model.
+    - Type: `STRING`
+
+Additional provider-specific arguments:
+
+- `DIMENSIONS`: The size of the embedding vector.
+    - Type: `INT64`
+    - Note: This value must be positive.
+- `REGION`: The region to send requests to.
+    - Type: `STRING`
+    - Note: This value is required when the provider supports it.
+- `ENDPOINT`: The endpoint to send requests to.
+    - Type: `STRING`
+    - Default: `http://localhost:11434`
+
+The additional arguments that you can use depends on the provider. The following table shows
+the arguments associated with each provider:
+
+| Provider | `dimensions` | `region` | `endpoint` |
+| --- | --- | --- | --- |
+| `amazon-bedrock` | - | Required | - |
+| `google-vertex` | Optional | Required | - |
+| `google-gemini` | - | - | - |
+| `openai` | Optional | - | - |
+| `voyageai` | Optional | - | - |
+| `ollama` | - | - | Optional |
+
+:::note[Note]
+If an unsupported model, dimension, region, or endpoint is specified, the API call to the provider will fail. Check the provider's API documentation for the currently supported options.
+:::
+
+### Configuration
+
+To allow API calls to the providers, you must set the appropriate environment variables:
+
+| Provider | Required Environment Variables |
+| --- | --- |
+| `amazon-bedrock` | `AWS_ACCESS_KEY`, `AWS_SECRET_ACCESS_KEY` |
+| `google-vertex` | `GOOGLE_CLOUD_PROJECT_ID`, `GOOGLE_VERTEX_ACCESS_KEY` |
+| `google-gemini` | `GOOGLE_GEMINI_API_KEY` |
+| `openai` | `OPENAI_API_KEY` |
+| `voyageai` | `VOYAGE_API_KEY` |
+| `ollama` | `OLLAMA_URL` |
+
+:::note[Note]
+`OLLAMA_URL` is optional for `ollama`. You can also choose to configure the endpoint
+as an argument to the `CREATE_EMBEDDING` function, as explained above.
+:::
+
+
+### Examples
+
+```cypher
+// Required REGION
+RETURN CREATE_EMBEDDING("Hello world", "amazon-bedrock", "amazon.titan-embed-text-v1", "us-east-1");
+
+RETURN CREATE_EMBEDDING("Hello world", "google-gemini", "gemini-embedding-exp-03-07");
+
+// Required REGION
+RETURN CREATE_EMBEDDING("Hello world", "google-vertex", "gemini-embedding-001", "us-central1");
+// Optional DIMENSIONS and required REGION.
+RETURN CREATE_EMBEDDING("Hello world", "google-vertex", "gemini-embedding-001", 256, "us-central1");
+
+RETURN CREATE_EMBEDDING("Hello world", "ollama", "nomic-embed-text");
+// Optional ENDPOINT
+RETURN CREATE_EMBEDDING("Hello world", "ollama", "nomic-embed-text", "http://endpoint.example.com:8000");
+
+RETURN CREATE_EMBEDDING( "Hello world", "openai", "text-embedding-3-small");
+// Optional DIMENSIONS
+RETURN CREATE_EMBEDDING( "Hello world", "openai", "text-embedding-3-small", 512);
+
+RETURN CREATE_EMBEDDING( "Hello world", "voyageai", "voyage-3-large");
+// Optional DIMENSIONS
+RETURN CREATE_EMBEDDING( "Hello world", "voyageai", "voyage-3-large", 512);
+```
+
+### Storing embeddings in a vector index
+
+The `CREATE_EMBEDDING` function can be used together with the `vector` extension to store and search embeddings
+directly in Kuzu. Refer to the [vector search docs](/extensions/vector) for an example.

@@ -1,0 +1,76 @@
+---
+title: Tutorials
+description: Learning resources for Kuzu's features, Cypher query language, and Python data science integration tutorials.
+---
+
+In this section, we link to some learning resources to become more familiar with Kuzu's usability
+features, Cypher and its integration with the Python data science and machine learning ecosystem.
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Cypher tutorial
+
+If you're just getting started with Kuzu, we recommend starting with our introductory tutorial on
+Cypher, the query language used in Kuzu.
+
+<LinkCard
+  title="Intro to Cypher"
+  description="Become familiar with Cypher syntax"
+  href="/tutorials/cypher"
+/>
+
+## Python
+
+For Python developers, see the following tutorials.
+
+### Intro tutorial
+
+<LinkCard
+title="Python tutorial"
+description="Tutorial for Kuzu's Python API"
+href="/tutorials/python"
+/>
+
+### Colab notebooks
+
+We've compiled a series of Google Colab 
+notebooks that demonstrate how Kuzu can be used and integrated with the Python data science, machine 
+learning and AI ecosystem.
+
+<CardGrid>
+  <LinkCard
+    title="Kuzu and NetworkX"
+    description="Working with NetworkX & graph algorithms using a Kuzu graph"
+    href="https://colab.research.google.com/drive/1_AK-CHELz0fLAc2RCPvPgD-R7-NGyrGu"
+  />
+  <LinkCard
+    title="Kuzu and PyTorch Geometric (1)"
+    description="Node property prediction"
+    href="https://colab.research.google.com/drive/1ijFoPN4USr4umUzRoCfRPFNZfbhKKLcC"
+  />
+  <LinkCard
+    title="Kuzu and PyTorch Geometric (2)"
+    description="Link prediction"
+    href="https://colab.research.google.com/drive/1OxlDLUYZL8jTkqKdVebFtek7yZ5of7FK"
+  />
+  <LinkCard
+    title="LlamaIndex-Kuzu Integration"
+    description="Using Kuzu as a property graph store for LlamaIndex"
+    href="https://colab.research.google.com/drive/1brAdNRNLG2XHD7Jv3ZwSQCOCJ_wmfd1B"
+  />
+  <LinkCard
+    title="LangChain-Kuzu Integration"
+    description="Using Kuzu as a property graph store for LangChain"
+    href="https://colab.research.google.com/drive/16FscFHwSKQNXFprChdQufMP7G6u8cMTS"
+  />
+</CardGrid>
+
+## Rust
+
+For Rust developers, see the following tutorials.
+
+<LinkCard
+title="Rust tutorial"
+description="Tutorial for Kuzu's Rust API"
+href="/tutorials/rust"
+/>

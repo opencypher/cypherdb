@@ -1,0 +1,123 @@
+---
+title: Strongly Connected Components
+description: Identify maximal subgraphs with mutual reachability using parallel BFS or DFS-based SCC algorithms.
+---
+
+A strongly connected component (SCC) in a directed graph is a maximal subgraph where every pair of
+vertices is mutually reachable, i.e., for any two nodes `u` and `v` in the component, there exists a
+directed path from `u` to `v` and a directed path from `v` to `u`.
+
+This mutual reachability property means that nodes within an SCC form a cycle where they can all
+reach each other through directed paths, and no additional nodes can be added to the component while
+maintaining this property.
+
+Kuzu implements two types of SCC algorithms:
+- Parallel BFS-based [coloring algorithm](https://www.cs.rpi.edu/~slotag/pub/SCC-IPDPS14.pdf)
+- DFS-based single-threaded [Kosaraju's algorithm](https://en.wikipedia.org/wiki/Kosaraju%27s_algorithm)
+
+You can choose between either of the two algorithms, depending on your use case.
+Kosaraju's algorithm is recommended in the following cases:
+- Your graph is very sparse, i.e. has a large number of nodes but a small number of edges.
+- Your graph has a very high [diameter](https://en.wikipedia.org/wiki/Diameter_(graph_theory)).
+
+## Syntax
+
+```cypher
+CALL strongly_connected_components(
+    <GRAPH_NAME>,
+    maxIterations := 100
+)
+RETURN node, group_id
+```
+
+**Alias**: `scc`
+
+```cypher
+CALL strongly_connected_components_kosaraju(
+    <GRAPH_NAME>
+)
+RETURN node, group_id
+```
+
+**Alias**: `scc_ko`
+
+Required arguments:
+
+- `GRAPH_NAME`: Name of the projected graph to run the algorithm on
+    - Type: `STRING`
+
+Optional arguments:
+
+- `maxIterations`: Maximum number of iterations to run
+    - Type: `INT64`
+    - Default: `100`
+
+Returns:
+
+- `node`: A node object
+- `group_id`: The ID of the SCC that the node belongs to
+
+:::note[Note]
+`group_id` is assigned based on Kuzu's internal node offsets. Currently there is no way to assign `group_id` based on node properties.
+:::
+
+## Example 
+
+Create the node and relationship tables:
+```cypher
+CREATE NODE TABLE Person(name STRING PRIMARY KEY);
+CREATE REL TABLE KNOWS(FROM Person to Person);
+```
+Insert nodes and edges:
+```cypher
+CREATE (u0:Person {name: 'Alice'}),
+        (u1:Person {name: 'Bob'}),
+        (u2:Person {name: 'Charlie'}),
+        (u3:Person {name: 'Derek'}),
+        (u4:Person {name: 'Eve'}),
+        (u5:Person {name: 'Frank'}),
+        (u6:Person {name: 'George'}),
+        (u7:Person {name: 'Hina'}),
+        (u8:Person {name: 'Ira'}),
+        (u0)-[:KNOWS]->(u1),
+        (u1)-[:KNOWS]->(u2),
+        (u1)-[:KNOWS]->(u4),
+        (u2)-[:KNOWS]->(u2),
+        (u2)-[:KNOWS]->(u5),
+        (u3)-[:KNOWS]->(u1),
+        (u3)-[:KNOWS]->(u6),
+        (u4)-[:KNOWS]->(u0),
+        (u4)-[:KNOWS]->(u5),
+        (u4)-[:KNOWS]->(u3),
+        (u5)-[:KNOWS]->(u7),
+        (u6)-[:KNOWS]->(u4),
+        (u6)-[:KNOWS]->(u5),
+        (u7)-[:KNOWS]->(u8),
+        (u8)-[:KNOWS]->(u5);
+```
+Create a projected graph from the node and relationship tables:
+```cypher
+CALL project_graph('Graph', ['Person'], ['KNOWS']);
+```
+Run SCC using either of the two algorithms:
+```cypher
+// BFS-based algorithm
+CALL strongly_connected_components('Graph')
+RETURN group_id, collect(node.name)
+ORDER BY group_id;
+
+// DFS-based algorithm (Kosaraju's algorithm)
+CALL strongly_connected_components_kosaraju('Graph')
+RETURN group_id, collect(node.name)
+ORDER BY group_id;
+```
+```table
+┌──────────┬──────────────────────────────┐
+│ group_id │ COLLECT(node.name)           │
+│ INT64    │ STRING[]                     │
+├──────────┼──────────────────────────────┤
+│ 0        │ [Ira,Frank,Hina]             │
+│ 8        │ [Charlie]                    │
+│ 3        │ [George,Eve,Derek,Alice,Bob] │
+└──────────┴──────────────────────────────┘
+```

@@ -1,0 +1,90 @@
+---
+title: "Scan data from various sources"
+description: "Use LOAD FROM to scan and inspect data from CSV, JSON, Parquet and other sources before importing"
+---
+
+import { LinkCard } from '@astrojs/starlight/components';
+
+Cypher supports the `LOAD FROM` clause to scan data from various sources. Scanning is the act of
+reading data from a source, but _not inserting it_ into the database. Inserting data into the database
+involves "copying"; see the [Import data](/import) section for details.
+
+Scanning data using `LOAD FROM` is useful to inspect a subset of your data, understand its structure,
+and perform transformations like rearranging columns.
+
+## General usage
+
+Say you have a `user.csv` file that looks like this:
+
+```csv
+// user.csv
+name,age
+Adam,30
+Karissa,40
+Zhang,50
+Noura,25
+```
+
+You can scan the file and count the number of rows:
+```cypher
+LOAD FROM "user.csv" (header = true)
+RETURN COUNT(*);
+```
+This counts the number of rows in the file.
+```table
+┌──────────────┐
+│ COUNT_STAR() │
+│ INT64        │
+├──────────────┤
+│ 4            │
+└──────────────┘
+```
+
+You can also apply filter predicates via the `WHERE` clause, like this:
+```cypher
+LOAD FROM "user.csv" (header = true)
+WHERE age > 25
+RETURN COUNT(*);
+```
+The above query counts only the rows where the `age` column is greater than 25.
+```table
+┌──────────────┐
+│ COUNT_STAR() │
+│ INT64        │
+├──────────────┤
+│ 3            │
+└──────────────┘
+```
+Note that when scanning from CSV files, Kuzu will attempt to auto-cast the data to the correct type
+when possible. For example, the `age` column is cast to an `INT64` type.
+
+You can reorder the columns by simply returning them in the order you want. The `LIMIT` keyword
+can be used to limit the number of rows returned. The example below returns the first two rows,
+with the `age` and `name` columns in the order specified.
+
+```cypher
+LOAD FROM "user.csv" (header = true)
+RETURN age, name
+LIMIT 2;
+```
+```table
+┌───────┬─────────┐
+│ age   │ name    │
+│ INT64 │ STRING  │
+├───────┼─────────┤
+│ 30    │ Adam    │
+│ 40    │ Karissa │
+└───────┴─────────┘
+```
+
+## More features
+
+`LOAD FROM` is a general-purpose clause in Cypher for scanning data from various data sources,
+including files and in-memory DataFrames. See the detailed documentation below for more details
+on how to use the `LOAD FROM` clause.
+
+<LinkCard
+  title="LOAD (Scan)"
+  description="Explore the options for the LOAD clause in Kuzu"
+  href="/cypher/query-clauses/load-from"
+/>

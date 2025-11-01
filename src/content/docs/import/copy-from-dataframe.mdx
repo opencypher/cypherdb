@@ -1,0 +1,508 @@
+---
+title: "Copy from dataframes"
+description: Import data directly from Pandas and Polars DataFrames or PyArrow tables into Kuzu using COPY FROM commands.
+---
+
+You can copy from Pandas/Polars dataframes or in-memory Arrow tables directly into Kuzu using the `COPY FROM` command.
+This is useful when you are performing data transformations with these libraries and want to quickly ingest
+the prepared data into Kuzu.
+
+There are two different ways in Kuzu to import dataframes:
+
+### Use a query parameter
+
+The dataframe can be passed as a query parameter:
+
+```python
+import kuzu
+import polars as pl
+
+db = kuzu.Database(":memory:")
+conn = kuzu.Connection(db)
+
+conn.execute(
+    """
+    CREATE NODE TABLE Person(
+        name STRING PRIMARY KEY,
+        age INT64
+    );
+    """
+)
+
+df = pl.DataFrame({
+    "name": ["Adam", "Karissa", "Zhang"],
+    "age": [30, 40, 50]
+})
+
+conn.execute("COPY Person FROM $dataframe", {"dataframe": df})
+
+rows = conn.execute("MATCH (p:Person) RETURN p.name, p.age")
+print(rows.get_as_df())
+```
+```
+    p.name  p.age
+0     Adam     30
+1  Karissa     40
+2    Zhang     50
+```
+
+This is the most reliable way of importing a dataframe.
+
+### Reference by name
+
+The dataframe can also be directly referenced by name:
+
+```python
+df = pl.DataFrame({
+    "name": ["Adam", "Karissa", "Zhang"],
+    "age": [30, 40, 50]
+})
+
+conn.execute("COPY Person FROM df")
+```
+
+This method requires the dataframe to be a local variable that is in the same scope as the call
+to `conn.execute()`. For example, the code below will not work:
+
+```python
+def get_df():
+    return pl.DataFrame({
+        "name": ["Adam", "Karissa", "Zhang"],
+        "age": [30, 40, 50]
+    })
+
+conn.execute("COPY Person FROM get_df()")
+```
+```
+RuntimeError: Catalog exception: function get_df does not exist.
+```
+We generally **do not recommend** using this method to reference dataframes. Use query parameters instead:
+
+```python
+def get_df():
+    return pl.DataFrame({
+        "name": ["Adam", "Karissa", "Zhang"],
+        "age": [30, 40, 50]
+    })
+
+conn.execute("COPY Person FROM $df", {"df": get_df()})
+```
+
+## Ignore malformed rows
+
+When copying from DataFrames, you can ignore "malformed" or "erroneous" rows due to duplicates, nulls,
+or missing primary keys.
+
+Let's understand this with an example.
+
+```py
+import pandas as pd
+
+persons = ["Rhea", "Alice", "Rhea", None]
+age = [25, 23, 25, 24]
+
+df = pd.DataFrame({"name": persons, "age": age})
+print(df)
+```
+The given DataFrame is as follows:
+```
+    name  age
+0   Rhea   25
+1  Alice   23
+2   Rhea   25
+3   None   24
+```
+As can be seen, the Pandas dataframe has a duplicate name `Rhea` and also a null value for the `name` field.
+We can ignore these erroneous rows during import by setting the `ignore_errors` parameter to `True`
+in the `COPY FROM` command:
+
+```py
+import kuzu
+
+db = kuzu.Database(":memory:")
+conn = kuzu.Connection(db)
+
+# Create a Person node table with name as the primary key
+conn.execute("CREATE NODE TABLE Person(name STRING PRIMARY KEY, age INT64)")
+# Enable the `ignore_errors` parameter below to ignore the erroneous rows
+conn.execute(
+    "COPY Person FROM $dataframe (ignore_errors=true)",
+    {"dataframe": df}
+)
+
+res = conn.execute("MATCH (p:Person) RETURN p.name, p.age")
+print(res.get_as_df())
+```
+This is the resulting dataframe after ignoring errors:
+```
+  p.name  p.age
+0   Rhea     25
+1  Alice     23
+```
+If the `ignore_errors` parameter is not set, the import operation will fail with an error.
+
+You can see [Ignore erroneous rows](/import#ignore-erroneous-rows) section for details on
+which kinds of errors can be ignored when copying from Pandas or Polars DataFrames.
+
+:::note[Note]
+Currently, you cannot ignore parsing or type-casting errors when copying from dataframes,
+because Kuzu uses a strictly-typed schema.
+:::
+
+## Examples
+
+### Pandas
+
+You can directly copy from a Pandas dataframe into Kuzu. Both numpy-backed and PyArrow-backed Pandas
+dataframes are supported.
+
+```python
+import kuzu
+import pandas as pd
+
+db = kuzu.Database(":memory:")
+conn = kuzu.Connection(db)
+
+conn.execute("CREATE NODE TABLE Person(name STRING PRIMARY KEY, age INT64);")
+
+df = pd.DataFrame({
+    "name": ["Adam", "Karissa", "Zhang"],
+    "age": [30, 40, 50]
+})
+
+conn.execute("COPY Person FROM $dataframe", {"dataframe": df})
+
+res = conn.execute("MATCH (p:Person) RETURN p.name, p.age")
+print(res.get_as_df())
+```
+```
+    p.name  p.age
+0     Adam     30
+1  Karissa     40
+2    Zhang     50
+```
+
+### Arrow tables
+
+You can utilize an existing in-memory PyArrow table to copy data directly into Kuzu.
+Internally, the Polars dataframe example above also leverages scanning from PyArrow tables.
+
+```python
+import kuzu
+import pyarrow as pa
+
+db = kuzu.Database(":memory:")
+conn = kuzu.Connection(db)
+
+conn.execute("CREATE NODE TABLE Person(name STRING PRIMARY KEY, age INT64);")
+
+pa_table = pa.table({
+    "name": ["Adam", "Karissa", "Zhang"],
+    "age": [30, 40, 50]
+})
+
+conn.execute("COPY Person FROM $pa", {"pa": pa_table})
+
+res = conn.execute("MATCH (p:Person) RETURN p.name, p.age")
+print(res.get_as_df())
+```
+```
+    p.name  p.age
+0     Adam     30
+1  Karissa     40
+2    Zhang     50
+```
+
+### Polars: basic example
+
+This example shows a basic use case where you have no nesting of data and no null values.
+
+```python
+import kuzu
+import polars as pl
+
+db = kuzu.Database(":memory:")
+conn = kuzu.Connection(db)
+
+conn.execute("CREATE NODE TABLE Person(name STRING PRIMARY KEY, age INT64);")
+
+df = pl.DataFrame({
+    "name": ["Adam", "Karissa", "Zhang"],
+    "age": [30, 40, 50]
+})
+
+conn.execute("COPY Person FROM $dataframe", {"dataframe": df})
+
+res = conn.execute("MATCH (p:Person) RETURN p.name, p.age")
+print(res.get_as_df())
+```
+```
+    p.name  p.age
+0     Adam     30
+1  Karissa     40
+2    Zhang     50
+```
+
+### Polars: advanced example
+
+In this section, we show how to use `COPY FROM` on nested JSON-like data with Polars, including handling
+null and missing values.
+
+#### Dataset
+
+We will use the same nested JSON data as in the [COPY FROM JSON](/import/copy-from-json) example.
+
+Consider the JSON file `people.json` shown below. Our goal is to create a `Patient` node table
+and an `InsuranceProvider` relationship table, with the `HAS_INSURANCE` relationship going from
+`Patient` to `InsuranceProvider`. All the information we need for our graph of patients
+and their insurance providers is contained in this single JSON object.
+
+```json
+// people.json
+[
+    {
+        "p_id": "p1",
+        "name": "Gregory",
+        "info": {
+            "height": 1.81,
+            "weight": 75.5,
+            "age": 35,
+            "insurance_provider": [
+                {
+                    "type": "health",
+                    "name": "Blue Cross Blue Shield",
+                    "policy_number": "1536425345"
+                }
+            ]
+        }
+    },
+    {
+        "p_id": "p2",
+        "name": "Alicia",
+        "info": {
+            "height": 1.65,
+            "weight": 60.1,
+            "age": 28,
+            "insurance_provider": [
+                {
+                    "type": "health",
+                    "name": "Aetna",
+                    "policy_number": "9876543210"
+                }
+            ]
+        }
+    },
+    {
+        "p_id": "p3",
+        "name": "Rebecca"
+    }
+]
+```
+Some property keys are missing in some of the objects, as can be seen in the third object for the
+person named `Rebecca`.
+
+#### Scan data to inspect its contents
+
+Let's first read this JSON file into a Polars dataframe.
+
+```python
+import json
+import polars as pl
+
+with open("people.json", "r") as f:
+    data = json.load(f)
+
+df = pl.DataFrame(data)
+print(df)
+```
+```table
+shape: (3, 3)
+┌──────┬─────────┬─────────────────────────────────┐
+│ p_id ┆ name    ┆ info                            │
+│ ---  ┆ ---     ┆ ---                             │
+│ str  ┆ str     ┆ struct[4]                       │
+╞══════╪═════════╪═════════════════════════════════╡
+│ p1   ┆ Gregory ┆ {1.81,75.5,35,[{"health","Blue… │
+│ p2   ┆ Alicia  ┆ {1.65,60.1,28,[{"health","Aetn… │
+│ p3   ┆ Rebecca ┆ null                            │
+└──────┴─────────┴─────────────────────────────────┘
+```
+The `info` column is a struct with 4 fields: `height`, `weight`, `age`, and `insurance_provider`.
+The `insurance_provider` field is a list of structs, each containing 3 fields: `type`, `name`, and `policy_number`.
+The missing `info` field in the third object for the person named "Rebecca" is represented as `null`.
+Polars is able to handle this nested JSON data gracefully due its type-safety and first-class support for structs.
+
+#### Inspect the output of `LOAD FROM`
+
+We can now scan the DataFrame using the `LOAD FROM` clause in Kuzu in combination with `UNWIND` to
+obtain each of the insurance provider records in a row-wise manner.
+
+```python
+import kuzu
+
+db = kuzu.Database(":memory:")
+conn = kuzu.Connection(db)
+
+result = conn.execute(
+    """
+    LOAD FROM $dataframe
+    UNWIND info.insurance_provider AS i
+    RETURN DISTINCT i.*
+    """,
+    {"dataframe": df}
+)
+print(result.get_as_df())
+```
+```
+  STRUCT_EXTRACT(i,type)  STRUCT_EXTRACT(i,name) STRUCT_EXTRACT(i,policy_number)
+0                 health  Blue Cross Blue Shield                      1536425345
+1                 health                   Aetna                      9876543210
+```
+We were able to successfully extract each of the non-null insurance provider records in a row-wise manner!
+The Polars type system can appropriately handle complex data types, nulls and missing values, which
+aligns well with Kuzu's type system.
+
+#### Define Kuzu schema
+
+We now have the necessary information to create our `Patient`, `InsuranceProvider` and `HAS_PROVIDER`
+tables and copy the relevant data into them.
+
+```python
+import kuzu
+
+db = kuzu.Database(":memory:")
+conn = kuzu.Connection(db)
+
+conn.execute(
+    """
+    CREATE NODE TABLE IF NOT EXISTS Patient(
+        p_id STRING PRIMARY KEY,
+        name STRING,
+        height DOUBLE,
+        weight DOUBLE,
+        age UINT8
+    );
+    """
+)
+conn.execute(
+    """
+    CREATE NODE TABLE IF NOT EXISTS InsuranceProvider(
+        type STRING,
+        name STRING PRIMARY KEY,
+        policy_number STRING
+    );
+    """
+)
+conn.execute(
+    """
+    CREATE REL TABLE IF NOT EXISTS HAS_INSURANCE(
+        FROM Patient TO InsuranceProvider
+    );
+    """
+)
+```
+
+The above code creates the following tables in Kuzu:
+- `Patient` node table with `p_id` as the primary key
+- `InsuranceProvider` node table with `type` and `name` as the primary key
+- `HAS_INSURANCE` relationship table from `Patient` to `InsuranceProvider`
+
+#### Copy data into the node tables
+
+Let's proceed to copy the data from Polars into the Kuzu tables.
+
+```python
+conn.execute(
+    """
+    COPY Patient FROM (
+        LOAD FROM $dataframe
+        RETURN p_id, name, info.height, info.weight, CAST(info.age AS UINT8)
+    );
+    """,
+    {"dataframe": df}
+)
+```
+
+The `LOAD FROM` subquery scans the entire dataframe's contents, and returns only the relevant fields
+that are associated with each patient. We take care to ensure that the columns returned are aligned
+with the column names and data types defined in the `CREATE NODE TABLE` statement above.
+
+:::caution[Note]
+The `age` field is cast to an unsigned integer via `CAST(info.age AS UINT8)`. This is because the original
+data type of `age` was inferred in Polars as `i8` (signed 8-bit integer), but the Kuzu schema requires
+the unsigned integer type `UINT8`. To better handle cases like this, you can explicitly cast the data types.
+:::
+
+Next, we copy the insurance provider records into the `InsuranceProvider` node table.
+
+```python
+conn.execute(
+    """
+    COPY InsuranceProvider FROM (
+        LOAD FROM $dataframe
+        UNWIND info.insurance_provider AS i
+        RETURN DISTINCT i.*
+    );
+    """,
+    {"dataframe": df}
+)
+```
+The `DISTINCT` keyword is used after the `RETURN` clause here to ensure unique values for the names
+of the insurance providers, because the `name` field is the primary key of the `InsuranceProvider` node table
+(and we can only `COPY` unique primary key values into a node table).
+
+#### Copy data into relationship table
+
+The final step is to copy the `HAS_INSURANCE` relationship table using the following query:
+
+```python
+conn.execute(
+    """
+    COPY HAS_INSURANCE FROM (
+        LOAD FROM $dataframe
+        UNWIND info.insurance_provider AS i
+        RETURN p_id, i.name AS name
+    );
+    """,
+    {"dataframe": df}
+)
+```
+Because the `info.insurance_provider` field is a list of structs, we use `UNWIND` to obtain each of the
+insurance provider records in a row-wise manner, following which we organize the results into
+a `FROM` and `TO` column, which are the source and target nodes of the `HAS_INSURANCE` relationship table.
+If there are properties associated with the relationship, we can also specify them after the from/to
+columns in the `RETURN` clause of the scan statement. The `COPY` statement will then obtain the exact
+columns it needs to efficiently populate the relationship table using the contents of the Polars DataFrame.
+
+That's it! We have successfully copied the relevant data into our Kuzu graph.
+
+#### Query the graph
+
+To test that the graph has the expected structure, we can run the following query:
+
+```python
+res = conn.execute(
+    """
+    MATCH (p:Patient)-[:HAS_INSURANCE]->(i:InsuranceProvider)
+    WHERE i.type = "health"
+    RETURN p.*, i.*;
+    """
+)
+print(res.get_as_pl())
+```
+```table
+shape: (2, 8)
+┌────────┬─────────┬──────────┬──────────┬───────┬────────┬────────────────────────┬─────────────────┐
+│ p.p_id ┆ p.name  ┆ p.height ┆ p.weight ┆ p.age ┆ i.type ┆ i.name                 ┆ i.policy_number │
+│ ---    ┆ ---     ┆ ---      ┆ ---      ┆ ---   ┆ ---    ┆ ---                    ┆ ---             │
+│ str    ┆ str     ┆ f64      ┆ f64      ┆ u8    ┆ str    ┆ str                    ┆ str             │
+╞════════╪═════════╪══════════╪══════════╪═══════╪════════╪════════════════════════╪═════════════════╡
+│ p1     ┆ Gregory ┆ 1.81     ┆ 75.5     ┆ 35    ┆ health ┆ Blue Cross Blue Shield ┆ 1536425345      │
+│ p2     ┆ Alicia  ┆ 1.65     ┆ 60.1     ┆ 28    ┆ health ┆ Aetna                  ┆ 9876543210      │
+└────────┴─────────┴──────────┴──────────┴───────┴────────┴────────────────────────┴─────────────────┘
+```
+The `WHERE` predicate requests only the health insurance providers, and we can see the associated
+patient and insurance provider information in the results.
+
+This example shows that it's possible to construct arbitrarily complex graph schemas and transform
+the data using Polars dataframes and Kuzu. Happy querying!

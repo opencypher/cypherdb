@@ -1,0 +1,41 @@
+---
+title: Data definition language
+description: "Commands to create, alter, and delete database objects including node and relationship tables"
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+The data definition language (DDL) in Kuzu defines the commands and statements that create, alter,
+and delete database objects. The schema provides a logical grouping of node and relationship tables,
+along with their associated properties and data types that define the structure of the graph database.
+
+## Create
+
+The cards below highlight the various create statements you can use in DDL.
+
+<CardGrid>
+  <LinkCard
+    title="CREATE TABLE" href="/cypher/data-definition/create-table"
+    description="Create table statements"
+  />
+</CardGrid>
+
+## Alter
+
+You can update the schema of a table using `ALTER TABLE`.
+
+<LinkCard
+    title="ALTER" href="/cypher/data-definition/alter"
+    description="Alter statements"
+/>
+
+## Drop
+
+You can drop tables from the database with `DROP TABLE`.
+
+<LinkCard
+    title="DROP" href="/cypher/data-definition/drop"
+    description="Drop statements"
+/>
+
+---

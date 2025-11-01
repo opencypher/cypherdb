@@ -1,0 +1,416 @@
+---
+title: "Python Tutorial: Analyze a Social Network"
+description: "Learn to use Kuzu's Python API to analyze social network data with hands-on examples"
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+This tutorial will get you started using Kuzu's Python API to analyze a dataset.
+
+In this tutorial, we will use the following social network dataset that consists of users and their posts.
+
+<LinkCard
+  title="Example dataset"
+  description="Social network dataset used in this tutorial"
+  href="/tutorials/example-database"
+/>
+
+## Setup
+
+Ensure that you have [Python](https://www.python.org/) installed on your system. For this tutorial, we will use
+a virtual environment and install Kuzu via `pip`. Refer to this [page](/installation/#python)
+for alternative installation methods.
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install kuzu
+```
+
+Next, [download the zipped data](https://kuzudb.github.io/data/tutorial/tutorial_data.zip) and unzip the files.
+```bash
+curl -o tutorial_data.zip https://kuzudb.github.io/data/tutorial/tutorial_data.zip
+unzip tutorial_data.zip
+rm tutorial_data.zip
+```
+
+Before we can start querying the data, we need to create a new Kuzu database and import the CSV files.
+Since this is a one-time operation, we will use a separate Python script. We will also create another
+script to contain the querying logic.
+
+Make a new `src` directory and create two files named `create_db.py` and `main.py` in it.
+```bash
+mkdir src
+touch src/create_db.py
+touch src/main.py
+```
+
+- The `create_db.py` script will be used to create the Kuzu database and import the CSV files.
+- The `main.py` script will be used to query the graph.
+
+Your directory should now look something like this:
+```
+kuzu_social_network
+│   ...
+├── src
+│   ├── create_db.py
+│   └── main.py
+└── tutorial_data
+    ├── node
+    │   ├── post.csv
+    │   └── user.csv
+    └── relation
+        ├── FOLLOWS.csv
+        ├── LIKES.csv
+        └── POSTS.csv
+```
+
+We are now ready to start the tutorial.
+
+## Create the database
+Clear out the contents of `src/create_db.py` and import Kuzu:
+```py
+import kuzu
+```
+Next, create and connect to an empty Kuzu database:
+```py
+def main() -> None:
+    db = kuzu.Database("social_network.kuzu")
+    conn = kuzu.Connection(db)
+
+    # Rest of the code goes here
+
+if __name__ == "__main__":
+    main()
+```
+This will create a database `social_network.kuzu` where the imported CSV data will be stored.
+
+:::note[Note]
+Kuzu also supports an "in-memory" mode where the database is active only during the execution of the Python program.
+This mode is useful when you want to create on-the-fly graphs for ephemeral query workloads (the graph is not persisted to disk).
+For more information, refer to the example in the [create your first graph](/get-started) section.
+:::
+
+For this tutorial, we are using the "on-disk" mode, and the database will be persisted to the `social_network.kuzu` database file.
+
+### Define schema
+The first step in building a Kuzu graph is to define a schema.
+For our example dataset, we need the following node and relationship tables:
+```py
+conn.execute("""
+    CREATE NODE TABLE User (
+        user_id INT64 PRIMARY KEY,
+        username STRING,
+        account_creation_date DATE
+    )""")
+conn.execute("""
+    CREATE NODE TABLE Post (
+        post_id INT64 PRIMARY KEY,
+        post_date DATE,
+        like_count INT64,
+        retweet_count INT64
+    )""")
+conn.execute("""
+    CREATE REL TABLE FOLLOWS (
+        FROM User TO User
+    )""")
+conn.execute("""
+    CREATE REL TABLE POSTS (
+        FROM User TO Post
+    )""")
+conn.execute("""
+    CREATE REL TABLE LIKES (
+        FROM User TO Post
+    )""")
+```
+
+### Import CSV data
+We can now import the CSV data into the node and relationship tables:
+```py
+conn.execute("COPY User FROM './tutorial_data/node/user.csv'")
+conn.execute("COPY Post FROM './tutorial_data/node/post.csv'")
+conn.execute("COPY FOLLOWS FROM './tutorial_data/relation/FOLLOWS.csv'")
+conn.execute("COPY POSTS FROM './tutorial_data/relation/POSTS.csv'")
+conn.execute("COPY LIKES FROM './tutorial_data/relation/LIKES.csv'")
+```
+See the documentation on [importing data](/import/csv) for more details on the parameters for CSV import.
+
+### Show table information
+Finally, we can print out a list of tables:
+```py
+result = conn.execute("CALL SHOW_TABLES() RETURN *")
+
+for row in result:
+    print(row)
+```
+
+### Running the code
+Run `create_db.py` to create the Kuzu database and import the CSV files:
+```bash
+$ python src/create_db.py
+['id', 'name', 'type', 'database name', 'comment']
+[0, 'User', 'NODE', 'local(kuzu)', '']
+[1, 'Post', 'NODE', 'local(kuzu)', '']
+[2, 'FOLLOWS', 'REL', 'local(kuzu)', '']
+[3, 'POSTS', 'REL', 'local(kuzu)', '']
+[4, 'LIKES', 'REL', 'local(kuzu)', '']
+```
+
+:::caution[Note]
+If you run the program again, you'll get an error about duplicated primary keys.
+This is because the data has already been imported into the Kuzu database, and because
+Kuzu is strictly typed, you cannot overwrite data when there are primary key conflicts.
+To ingest the data again, you will have to delete the database file (i.e. `rm social_network.kuzu`)
+in between runs.
+:::
+
+## Query the graph
+We can now start querying the graph to answer some questions about the social network.
+
+Replace the contents of `src/main.py` with the following code snippet:
+```py
+import kuzu
+
+def main() -> None:
+    db = kuzu.Database("social_network.kuzu")
+    conn = kuzu.Connection(db)
+
+    # Query to be filled out below
+    result = conn.execute(...)
+
+    for row in result:
+        print(row)
+
+if __name__ == "__main__":
+    main()
+```
+
+Then, for each of the following queries, replace `...` with the query and run the program as:
+```bash
+python src/main.py
+```
+
+### Q1: Which user has the most followers? And how many followers do they have?
+First, we use a simple `MATCH` query to list some users who are followed by some other user:
+```cypher
+MATCH (u1:User)-[f:FOLLOWS]->(u2:User)
+RETURN u2.username
+LIMIT 5
+```
+```
+['u2.username']
+['coolwolf752']
+['stormfox762']
+['stormninja678']
+['darkdog878']
+['brightninja683']
+```
+
+For each relation `FOLLOWS`, this will simply return the followee's username of that relation.
+Next, we will improve on this query by using aggregation.
+
+Let's count the number of appearances of a followee by using the `COUNT()` function:
+```cypher
+MATCH (u1:User)-[f:FOLLOWS]->(u2:User)
+RETURN u2.username, COUNT(u2) AS follower_count
+LIMIT 5
+```
+```
+['u2.username', 'follower_count']
+['darkdog878', 6]
+['epicking81', 3]
+['fastgirl798', 4]
+['stormcat597', 2]
+['epiccat105', 4]
+```
+
+This is a lot more useful! We can now clearly see how many followers each user has.
+
+Lastly, we use `ORDER_BY` and `LIMIT` to order the usernames by their followers count, and return
+only the first entry. This is one of the users we are looking for, including the count of how many followers
+that user has:
+```cypher
+MATCH (u1:User)-[f:FOLLOWS]->(u2:User)
+RETURN u2.username, COUNT(u2) AS follower_count
+ORDER BY follower_count DESC
+LIMIT 1
+```
+```
+['u2.username', 'follower_count']
+['stormninja678', 6]
+```
+
+This dataset has multiple users with the greatest follower count of `6`. So, we are
+excluding other users with the same follower count as `stormninja678` (or whoever appeared first).
+If you want to retrieve all of them, the query becomes a bit longer:
+```cypher
+MATCH (u1:User)-[f:FOLLOWS]->(u2:User)
+WITH u2, COUNT(u1) as follower_count
+WITH MAX(follower_count) as max_count
+MATCH (u1:User)-[f:FOLLOWS]->(u2:User)
+WITH u2, COUNT(u1) as follower_count, max_count
+WHERE follower_count = max_count
+RETURN u2.username, follower_count
+```
+
+### Q2: What is the shortest path between two users?
+We might also be interested in finding the shortest path between two users. For example, how
+many follows does it take to get from user `silentguy245` to `epicwolf202`?
+
+We can query this by using a [recursive match](/cypher/query-clauses/match) to find the shortest path length:
+```cypher
+MATCH p = (u1:User)-[f:FOLLOWS* SHORTEST]->(u2:User)
+WHERE u1.username = 'silentguy245'
+AND u2.username = 'epicwolf202'
+RETURN p
+```
+```
+['p']
+[{'_nodes': [{'_id': {'offset': 19, 'table': 0}, '_label': 'User', 'user_id': 20, 'username': 'silentguy245', 'account_creation_date': datetime.date(2022, 10, 11)}, {'_id': {'offset': 14, 'table': 0}, '_label': 'User', 'user_id': 15, 'username': 'mysticwolf198', 'account_creation_date': datetime.date(2021, 1, 4)}, {'_id': {'offset': 0, 'table': 0}, '_label': 'User', 'user_id': 1, 'username': 'epicwolf202', 'account_creation_date': datetime.date(2022, 9, 9)}], '_rels': [{'_src': {'offset': 19, 'table': 0}, '_dst': {'offset': 14, 'table': 0}, '_label': 'FOLLOWS', '_id': {'offset': 64, 'table': 2}}, {'_src': {'offset': 14, 'table': 0}, '_dst': {'offset': 0, 'table': 0}, '_label': 'FOLLOWS', '_id': {'offset': 47, 'table': 2}}]}]
+```
+This will return a result of the `RECURSIVE_REL` datatype, which as you can see is difficult to interpret.
+
+To make this more useful, we will collect just the usernames in the path by using a [recursive relationship function](/cypher/expressions/recursive-rel-functions).
+```cypher
+MATCH p = (u1:User)-[f:FOLLOWS* SHORTEST]->(u2:User)
+WHERE u1.username = 'silentguy245'
+AND u2.username = 'epicwolf202'
+RETURN PROPERTIES(NODES(p), 'username')
+```
+```
+['PROPERTIES(NODES(p),username)']
+[['silentguy245', 'mysticwolf198', 'epicwolf202']]
+```
+This is much easier to read! We can now clearly see the shortest path between the two users with one user, `mysticwolf198`, in between them.
+
+### Q3: How many 3-hop paths exist between userA and userB that passes through userC?
+To answer this query, we will follow a similar approach as Q1. We first count the number of 3-hop queries:
+```cypher
+MATCH (u1:User)-[f1:FOLLOWS]->(u2:User)-[f2:FOLLOWS]->(u3:User)-[f3:FOLLOWS]->(u4:User)
+RETURN COUNT(u4)
+```
+```
+['COUNT(u4._ID)']
+[667]
+```
+This tells us that there are 667 paths of length 3 in the graph.
+Next, we use a prepared statement to construct queries involving particular users.
+
+#### Run a prepared statement
+We will now modify the query to only match paths with userA, userB, and userC.
+Here, we will use [prepared statements](/get-started/prepared-statements/) to separate the query from its *parameters*.
+We arbitrarily choose userA to be `epicwolf202`, userB to be `stormcat597`, and userC to be `stormfox762`.
+```py
+query = """
+    MATCH (u1:User)-[f1:FOLLOWS]->(u2:User)-[f2:FOLLOWS]->(u3:User)-[f3:FOLLOWS]->(u4:User)
+    WHERE u1.username = $usersrc
+    AND u4.username = $userdst
+    AND (u2.username = $userint OR u3.username = $userint)
+    RETURN COUNT(u4)
+    """
+prepared_stmt = conn.prepare(query)
+usersrc = "epicwolf202"
+userdst = "stormcat597"
+userint = "stormfox762"
+params = {
+    'usersrc': usersrc,
+    'userdst': userdst,
+    'userint': userint
+}
+result = conn.execute(prepared_stmt, params)
+```
+```
+['COUNT(u4._ID)']
+[1]
+```
+This tells us that there is exactly one path of length 3 between the three users specified.
+
+## Summary
+In this tutorial, we've shown how to use Kuzu's Python API to import CSV data as a graph and query it using Cypher.
+
+You're now ready to import your own datasets into Kuzu and query them usin Kuzu's Python API!
+
+## Code
+Here is the full code from the tutorial that you can use to follow along. Reminder that you can run the code as follows:
+```bash
+# Copy CSV files to the database
+python src/create_db.py
+
+# Run queries on the database
+python src/main.py
+```
+
+<Tabs syncKey="python-tutorial-code">
+<TabItem label="create_db.py">
+
+```py
+import kuzu
+
+def main() -> None:
+    db = kuzu.Database("social_network.kuzu")
+    conn = kuzu.Connection(db)
+
+    conn.execute("""
+        CREATE NODE TABLE User (
+            user_id INT64 PRIMARY KEY,
+            username STRING,
+            account_creation_date DATE
+        )""")
+    conn.execute("""
+        CREATE NODE TABLE Post (
+            post_id INT64 PRIMARY KEY,
+            post_date DATE,
+            like_count INT64,
+            retweet_count INT64
+        )""")
+    conn.execute("""
+        CREATE REL TABLE FOLLOWS (
+            FROM User TO User
+        )""")
+    conn.execute("""
+        CREATE REL TABLE POSTS (
+            FROM User TO Post
+        )""")
+    conn.execute("""
+        CREATE REL TABLE LIKES (
+            FROM User TO Post
+        )""")
+
+    conn.execute("COPY User FROM './tutorial_data/node/user.csv'")
+    conn.execute("COPY Post FROM './tutorial_data/node/post.csv'")
+    conn.execute("COPY FOLLOWS FROM './tutorial_data/relation/FOLLOWS.csv'")
+    conn.execute("COPY POSTS FROM './tutorial_data/relation/POSTS.csv'")
+    conn.execute("COPY LIKES FROM './tutorial_data/relation/LIKES.csv'")
+
+    result = conn.execute("CALL SHOW_TABLES() RETURN *")
+
+    for row in result:
+        print(row)
+
+if __name__ == "__main__":
+    main()
+```
+
+</TabItem>
+
+<TabItem label="main.py">
+
+```py
+import kuzu
+
+def main() -> None:
+    db = kuzu.Database("social_network.kuzu")
+    conn = kuzu.Connection(db)
+
+    # Query to be filled out below
+    result = conn.execute(...)
+
+    for row in result:
+        print(row)
+
+if __name__ == "__main__":
+    main()
+```
+
+</TabItem>
+</Tabs>

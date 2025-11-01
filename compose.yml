@@ -1,0 +1,9 @@
+services:
+  kuzu-docs-server:
+    image: ghcr.io/kuzudb/dev-docs
+    pull_policy: always
+    ports:
+      - "8082:80"
+    restart: always
+    labels:
+      - com.centurylinklabs.watchtower.enable=true

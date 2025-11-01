@@ -1,0 +1,26 @@
+{
+  "name": "kuzu-docs",
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "npm run generate-llms && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check-links": "CHECK_LINKS=true astro build",
+    "generate-llms": "node scripts/generate-llms.cjs",
+    "update-version": "node scripts/update-version.cjs"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^6.3.1",
+    "@astrojs/sitemap": "^3.3.0",
+    "@astrojs/starlight": "^0.32.5",
+    "astro": "^5.5.6",
+    "sharp": "^0.33.5",
+    "starlight-links-validator": "^0.14.3"
+  },
+  "devDependencies": {
+    "gray-matter": "^4.0.3"
+  }
+}

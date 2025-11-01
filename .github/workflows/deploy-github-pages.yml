@@ -1,0 +1,36 @@
+name: Build and deploy docs to GitHub Pages
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      skipVersionUpdate:
+        description: 'Skip updating the version in package.json'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-and-check-links.yml
+    with:
+      skipVersionUpdate: ${{ github.event.inputs.skipVersionUpdate == 'true' }}
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

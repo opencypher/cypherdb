@@ -1,0 +1,131 @@
+---
+title: Visualize graphs with G.V()
+---
+
+This page describes how to use [G.V()](https://gdotv.com/), a third-party desktop application that
+integrates with Kuzu to provide a rich set of visualization and analysis features for your graph data.
+
+:::note[When is it beneficial to use G.V()?]
+G.V() provides a wealth of tools to support developers and data analysts working with graph databases.
+At it’s core, It is an integrated development environment with which you can write and execute Kuzu
+Cypher queries, and analyze the results interactively. It’s also built for large scale, high performance
+graph visualization to analyze trends in your graph data. 
+:::
+
+## Key features
+
+G.V()'s Kuzu Cypher query editor offers a powerful suite of features to accelerate and enhance your
+query writing experience, by offering essential development features:
+
+- Cypher syntax validation
+- Autocomplete suggestions based on your graph data schema
+- Embedded schema documentation so you can immediately identify the relevant labels and property keys for your nodes & edges
+- Procedure autocomplete
+- Query parameter support
+
+## Installation
+
+G.V() is a desktop application that can be installed on Windows, macOS and Linux. You can download the
+installer from their [home page](https://gdotv.com). It is also available for deployment as a web
+application on [AWS Marketplace](https://aws.amazon.com/marketplace/pp/prodview-lifzpx4adcwsq), or
+self-service deployment via Docker. To get started with self-service deployments, please contact
+support@gdotv.com.
+
+## Connecting to Kuzu
+
+G.V() directly connects to a local Kuzu database. First, open the G.V() application and click on the
+"New Database Connection" button. You can select Kuzu from the list of supported databases as shown below.
+
+<img src="/img/visualization/gdotv/gdotv-1.png" />
+
+The next step is to point G.V() to the Kuzu database you want to connect to. To do this, either click
+on the empty path selector, or drag-drop your Kuzu database file into the UI. By default, G.V() will try to
+connect to the Kuzu database in read-write mode. If you want it to connect in read-only mode,
+you can select the "Read Only" button shown. Once selected, you can click on "Test Connection"
+to make sure that the connection is successful.
+
+<img src="/img/visualization/gdotv/gdotv-2.png" />
+
+## Query using Cypher
+
+You're now ready to write and execute Cypher queries in G.V()! The default query is loaded in
+the query editor, which can be executed by clicking on the "Play" button or pressing `Ctrl+Enter`
+(or `Cmd+Enter` on macOS). You should see your graph data visualized in the main panel.
+
+<img src="/img/visualization/gdotv/gdotv-3.png" />
+
+The default visualization is a graph of the results, if you choose to `RETURN *` or return nodes,
+relationships, or paths from your query. You can also choose to visualize the results as a table
+by returning the properties of the nodes or relationships.
+
+## No-code Kuzu Exploration
+
+G.V()’s Graph Data Explorer gives you the ability to quickly query your Kuzu instance without the
+need to write a Cypher query, through the use of easily configured filters. Combined with their
+graph exploration features, you can explore your Kuzu data in just a few clicks, with no prior
+knowledge of Cypher!
+
+<img src="/img/visualization/gdotv/gdotv-5.png" />
+
+## View graph schema
+
+You can view the graph schema by clicking on the "View Graph Data Model" button in the left sidebar.
+This displays the graph schema in a convenient layout that shows the node labels, relationship labels
+and their associated properties (and their data types).
+
+<img src="/img/visualization/gdotv/gdotv-4.png" />
+
+## Advanced features
+
+In addition to basic Cypher query editing, G.V() offers a richer set of features to help
+you explore, debug and analyze your graph data. Below are some of the key features:
+
+#### Query history
+
+Access your previous queries and quickly re-run them.
+
+#### Save queries
+
+Save your queries for future use, and organize them into folders.
+Queries can be configured with Cypher parameters (e.g. `MATCH (s) RETURN s LIMIT $limit`) which
+G.V() automatically detects and prompts you back for, meaning you can effectively create and
+categorize parameterized reports against your Kuzu instance.
+
+#### Advanced Graph Visualization Customization
+
+G.V() offers a comprehensive set of features to
+customize the look and feel of your graph visualizations, giving you the ability to create insightful
+renderings of your graph data for analysis and demonstration purposes.
+
+#### View query profile and explain query
+
+You can also view Kuzu's internal query execution profile and get a detailed explanation of the query plan and
+execution strategy.
+
+#### Custom graph layouts
+
+Choose from a variety of graph layouts to visualize your data
+  - Force-directed layout (default)
+  - Circular
+  - Grid
+  - Community layout
+  - Tree layout (vertical and horizontal)
+
+There are many more features to explore than what we've listed here! Please see the
+[release announcement post](https://gdotv.com/blog/gdotv-kuzu-release-announcement/) that details
+all the important features along with examples.
+
+## How is G.V() licensed?
+G.V() is a licensed commercial product, but you can
+get started with no commitment using their free 1 month trial, as well as their free tier version.
+To find out more, please visit their pricing page, or contact them at support@gdotv.com.
+
+## Troubleshooting
+
+If you notice any issues with the integration, please let us know by filing a bug report on
+[GitHub](https://github.com/kuzudb/kuzu/issues).
+
+## References
+
+Read the [release announcement post](https://gdotv.com/blog/gdotv-kuzu-release-announcement/)
+for a more comprehensive list of features and examples.

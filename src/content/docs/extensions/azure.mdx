@@ -1,0 +1,72 @@
+---
+title: "Azure extension"
+description: "Scan and query data from Azure Blob Storage and Azure Data Lake Storage"
+---
+The `azure` extension allows you to scan data from [Azure Blob Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-overview)
+and [Azure Data Lake Storage (ADLS)](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction).
+
+## Usage
+
+Unlike the [S3](/extensions/s3) and [GCS](/extensions/gcs) extensions, the `azure` extension
+is implemented as a separate extension, rather than as a feature of the `httpfs` extension.
+
+Please see [Install an extension](/extensions#install-an-extension) and [Load an extension](/extensions#load-an-extension) first before getting started.
+
+### Configure the connection
+
+Before reading and writing from Azure, you have to configure the connection using [CALL](/cypher/configuration) statements.
+
+```cypher
+CALL <OPTION_NAME> = <OPTION_VALUE>;
+```
+The following options are supported:
+
+| Option | Description |
+|----------|----------|
+| `azure_connection_string` | Azure connection string |
+| `azure_account_name` | Azure storage account name |
+
+Alternatively, you can set the following environment variables:
+
+| Environment variable | Description |
+|----------|----------|
+| `AZURE_CONNECTION_STRING` | Azure connection string |
+| `AZURE_ACCOUNT_NAME` | Azure storage account name |
+
+At least one of the options must be set. Generally, `azure_connection_string` should be used.
+`azure_account_name` is only useful for connecting to a container that allows anonymous read access.
+
+### Scan data from Azure
+
+The extension supports both `az` and [`abfss`](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction-abfs-uri) URI schemes. We recommend using `abfss` when scanning
+from ADLS for much better performance.
+
+For example, to scan from a container:
+```cypher
+LOAD FROM 'az://container/path/to/file.csv'
+RETURN *;
+```
+```cypher
+LOAD FROM 'abfss://container/path/to/file.csv'
+RETURN *;
+```
+You can also use a fully qualified path:
+```cypher
+LOAD FROM 'az://account_name.blob.core.windows.net/container/path/to/file.csv'
+RETURN *;
+```
+
+### Glob data from Azure
+
+You can glob data from Azure just as you would from a local file system.
+
+For example, the following query will scan the contents of all files matching the pattern `vPerson*.csv`.
+
+```cypher
+LOAD FROM "az://tinysnb/vPerson*.csv" RETURN *;
+```
+
+:::note[Note]
+Currently, we only support scanning from Azure Blob Storage or ADLS. If you're looking for other specific features,
+open an issue on [GitHub](https://github.com/kuzudb/kuzu/issues).
+:::

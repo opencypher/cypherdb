@@ -1,0 +1,109 @@
+---
+title: Louvain
+description: Detect communities in large networks by maximizing modularity score using the hierarchical Louvain algorithm.
+---
+
+The Louvain algorithm extracts communities from large networks by maximizing their
+[modularity score](https://en.wikipedia.org/wiki/Louvain_method#Modularity),
+where the modularity measures the relative density of edges inside communities
+as compared to edges outside communities. A higher modularity theoretically
+represents a better grouping of the nodes into communities.
+
+The Louvain algorithm is a hierarchical clustering algorithm that runs in
+phases. In each phase, the nodes start in their own community and the algorithm
+attempts to iteratively group nodes into the same community until the modularity
+of the graph becomes stable. Nodes within the same community are then merged
+into supernodes for the next phase. Phases run until the number of communities
+becomes stable.
+
+Kuzu implements a parallelized version of the Louvain algorithm based on [Grappolo](https://hpc.pnl.gov/people/hala/grappolo.html).
+In Kuzu, both base and projected graphs are directed. The Louvain implementation in Kuzu operates on
+an undirected version of the projected graph, i.e., each edge is treated as undirected.
+
+## Syntax
+
+```cypher
+CALL louvain(
+    <GRAPH_NAME>,
+    maxPhases := 20,
+    maxIterations := 20
+)
+RETURN node, louvain_id
+```
+
+Required arguments:
+
+- `GRAPH_NAME`: Name of the projected graph to run the algorithm on
+    - Type: `STRING`
+
+Optional arguments:
+
+- `maxPhases`: Maximum number of phases to run
+    - Type: `INT64`
+    - Default: `20`
+
+- `maxIterations`: Maximum number of iterations to run in each phase
+    - Type: `INT64`
+    - Default: `20`
+
+Returns:
+
+- `node`: A node object
+- `louvain_id`: The Louvain community ID that the node belongs to
+
+## Example
+
+Create the node and relationship tables:
+
+```cypher
+CREATE NODE TABLE Person(name STRING PRIMARY KEY);
+CREATE REL TABLE KNOWS(FROM Person to Person);
+```
+
+Insert nodes and edges:
+
+```cypher
+CREATE (u0:Person {name: 'Alice'}),
+        (u1:Person {name: 'Bob'}),
+        (u2:Person {name: 'Charlie'}),
+        (u3:Person {name: 'Derek'}),
+        (u4:Person {name: 'Eve'}),
+        (u5:Person {name: 'Frank'}),
+        (u6:Person {name: 'George'}),
+        (u7:Person {name: 'Hina'}),
+        (u0)-[:KNOWS]->(u1),
+        (u0)-[:KNOWS]->(u2),
+        (u1)-[:KNOWS]->(u2),
+        (u0)-[:KNOWS]->(u3),
+        (u1)-[:KNOWS]->(u3),
+        (u2)-[:KNOWS]->(u3),
+        (u4)-[:KNOWS]->(u5),
+        (u4)-[:KNOWS]->(u6),
+        (u5)-[:KNOWS]->(u6),
+        (u4)-[:KNOWS]->(u7),
+        (u5)-[:KNOWS]->(u7),
+        (u6)-[:KNOWS]->(u7),
+        (u3)-[:KNOWS]->(u4);
+```
+
+Create a projected graph from the node and relationship tables:
+
+```cypher
+CALL project_graph('Graph', ['Person'], ['KNOWS']);
+```
+
+Run the Louvain algorithm on the projected graph:
+```cypher
+CALL louvain('Graph')
+RETURN louvain_id, collect(node.name)
+ORDER BY louvain_id;
+```
+```table
+┌────────────┬───────────────────────────┐
+│ louvain_id │ COLLECT(node.name)        │
+│ INT64      │ STRING[]                  │
+├────────────┼───────────────────────────┤
+│ 0          │ [Derek,Charlie,Bob,Alice] │
+│ 1          │ [Eve,George,Hina,Frank]   │
+└────────────┴───────────────────────────┘
+```

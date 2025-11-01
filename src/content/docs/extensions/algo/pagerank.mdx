@@ -1,0 +1,95 @@
+---
+title: PageRank
+description: Rank node importance in networks by analyzing connections and link structure using the PageRank algorithm.
+---
+
+The PageRank algorithm ranks nodes in a network based on their importance by analyzing the connections
+between them. Each node gets a score, such that nodes linked with other high-scoring nodes get a higher score.
+Scores are iteratively calculated, distributing a node's rank across its outgoing connections, until the scores
+stabilize. In common domains, like citation networks or recommendation systems, it identifies influential nodes,
+such as highly cited papers or key influencers.
+
+Kuzu implements a parallelized version of PageRank based on [Ligra](https://jshun.github.io/ligra/docs/examples.html).
+
+## Syntax
+
+```cypher
+CALL page_rank(
+    <GRAPH_NAME>,
+    dampingFactor := 0.85, 
+    maxIterations := 20, 
+    tolerance := 0.0000001,
+    normalizeInitial := true
+)
+RETURN node, rank
+```
+
+**Alias**: `pr`
+
+Required arguments:
+
+- `GRAPH_NAME`: Name of the projected graph to run the algorithm on
+    - Type: `STRING`
+
+Optional arguments:
+
+- `dampingFactor`: Probability of following an outgoing edge, must be between 0 and 1
+    - Type: `DOUBLE`
+    - Default: `0.85`
+- `maxIterations`: Maximum number of iterations to run
+    - Type: `INT64`
+    - Default: `20`
+- `tolerance`: Minimum change in scores between iterations to continue
+    - Type: `DOUBLE`
+    - Default: `0.0000001`
+- `normalizeInitial`: Whether to normalize initial scores to sum to 1
+    - Type: `BOOLEAN`
+    - Default: `true`
+
+Returns:
+
+- `node`: A node object
+- `rank`: The PageRank score of the node
+
+## Example
+
+Create the node and relationship tables:
+```cypher
+CREATE NODE TABLE Person(name STRING PRIMARY KEY);
+CREATE REL TABLE KNOWS(FROM Person to Person);
+```
+Insert nodes and edges:
+```cypher
+CREATE (u0:Person {name: 'Alice'}),
+        (u1:Person {name: 'Bob'}),
+        (u2:Person {name: 'Charlie'}),
+        (u3:Person {name: 'Derek'}),
+        (u4:Person {name: 'Eve'}),
+        (u0)-[:KNOWS]->(u1),
+        (u0)-[:KNOWS]->(u4),
+        (u1)-[:KNOWS]->(u4),
+        (u2)-[:KNOWS]->(u4),
+        (u3)-[:KNOWS]->(u4);
+```
+Create a projected graph from the node and relationship tables:
+```cypher
+CALL project_graph('Graph', ['Person'], ['KNOWS']);
+```
+Run PageRank on the projected graph:
+```cypher
+CALL page_rank('Graph')
+RETURN node.name, rank
+ORDER BY rank DESC;
+```
+```table
+┌───────────┬──────────┐
+│ node.name │ rank     │
+│ STRING    │ DOUBLE   │
+├───────────┼──────────┤
+│ Eve       │ 0.130088 │
+│ Bob       │ 0.042750 │
+│ Derek     │ 0.030000 │
+│ Charlie   │ 0.030000 │
+│ Alice     │ 0.030000 │
+└───────────┴──────────┘
+```

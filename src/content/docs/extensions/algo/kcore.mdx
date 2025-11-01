@@ -1,0 +1,86 @@
+---
+title: K-Core Decomposition
+description: Find cohesive subgraphs where each node has at least k connections using the K-Core Decomposition algorithm.
+---
+
+K-Core Decomposition identifies subgraphs where every node has a degree of at least `k`.
+In other words, a K-Core is a maximal subgraph where each node is connected to at least `k` other nodes in the same subgraph.
+The K-Core Decomposition algorithm iteratively removes nodes with degree less than `k` until no more nodes can be removed,
+with the remaining nodes forming the K-Core.
+
+K-Core Decomposition is useful in domains such as social network analysis, where it can help identify
+cohesive groups, and in network resilience analysis, where it can help understand a network's robustness to node removal.
+
+Kuzu implements a parallelized version of K-Core Decomposition based on [Ligra](https://jshun.github.io/ligra/docs/examples.html).
+
+## Syntax
+
+```cypher
+CALL k_core_decomposition(
+    <GRAPH_NAME>
+)
+RETURN node, k_degree
+```
+
+**Alias**: `kcore`
+
+Required arguments:
+
+- `GRAPH_NAME`: Name of the projected graph to run the algorithm on
+    - Type: `STRING`
+
+Returns:
+
+- `node`: A node object
+- `k_degree`: The k-core degree of the node
+
+## Example
+
+Create the node and relationship tables:
+```cypher
+CREATE NODE TABLE Person(name STRING PRIMARY KEY);
+CREATE REL TABLE KNOWS(FROM Person TO Person);
+```
+Insert nodes and edges:
+```cypher
+CREATE (u0:Person {name: 'Alice'}),
+        (u1:Person {name: 'Bob'}),
+        (u2:Person {name: 'Charlie'}),
+        (u3:Person {name: 'Derek'}),
+        (u4:Person {name: 'Eve'}),
+        (u5:Person {name: 'Frank'}),
+        (u6:Person {name: 'George'}),
+        (u0)-[:KNOWS]->(u1),
+        (u1)-[:KNOWS]->(u2),
+        (u2)-[:KNOWS]->(u3),
+        (u3)-[:KNOWS]->(u4),
+        (u3)-[:KNOWS]->(u5),
+        (u3)-[:KNOWS]->(u6),
+        (u4)-[:KNOWS]->(u5),
+        (u4)-[:KNOWS]->(u6),
+        (u5)-[:KNOWS]->(u6);
+```
+Create a projected graph from the node and relationship tables:
+```cypher
+CALL project_graph('Graph', ['Person'], ['KNOWS']);
+```
+Run the K-Core Decomposition algorithm on the projected graph:
+```cypher
+CALL k_core_decomposition('Graph')
+RETURN node.name, k_degree
+ORDER BY k_degree DESC;
+```
+```table
+┌───────────┬──────────┐
+│ node.name │ k_degree │
+│ STRING    │ INT64    │
+├───────────┼──────────┤
+│ Frank     │ 3        │
+│ George    │ 3        │
+│ Eve       │ 3        │
+│ Derek     │ 3        │
+│ Charlie   │ 1        │
+│ Bob       │ 1        │
+│ Alice     │ 1        │
+└───────────┴──────────┘
+```

@@ -1,0 +1,640 @@
+---
+title: Data types
+description: "Primitive and nested data types supported in Kuzu for properties and expressions"
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Kuzu supports a set of primitive and nested data types both for node and relationship properties as
+well as for forming expressions whose outputs are specified using these data types. This section
+shows all built-in data types.
+
+## INT8
+
+| Size | Description
+| --- | ---
+| 1 byte | signed one-byte integer
+
+## INT16
+
+| Size | Description
+| --- | ---
+| 2 bytes | signed two-byte integer
+
+## INT32
+
+| Size | Description | Aliases
+| --- | --- | ---
+| 4 bytes | signed four-byte integer | INT
+
+## INT64
+
+| Size | Description | Aliases
+| --- | --- | ---
+| 8 bytes | signed eight-byte integer | SERIAL
+
+## INT128
+
+| Size | Description
+| --- | ---
+| 16 bytes | signed sixteen-byte integer
+
+## UINT8
+
+| Size | Description
+| --- | ---
+| 1 byte | unsigned one-byte integer
+
+## UINT16
+
+| Size | Description
+| --- | ---
+| 2 bytes | unsigned two-byte integer
+
+## UINT32
+
+| Size | Description
+| --- | ---
+| 4 bytes | unsigned four-byte integer
+
+## UINT64
+
+| Size | Description
+| --- | ---
+| 8 bytes | unsigned eight-byte integer
+
+## FLOAT
+
+| Size | Description | Aliases
+| --- | --- | ---
+| 4 bytes | single precision floating-point number | REAL, FLOAT4
+
+## DOUBLE
+
+| Size | Description | Aliases
+| --- | --- | ---
+| 8 bytes | double precision floating-point number | FLOAT8
+
+## DECIMAL
+
+| Size | Description
+| --- | ---
+| variable | arbitrary fixed precision decimal number
+
+For numbers where exact precision is required, the `DECIMAL` data type can be used. The `DECIMAL` type is
+specified as `DECIMAL(precision, scale)`, where `precision` is the total number of digits and
+`scale` is the number of digits to the right of the decimal point.
+
+Internally, decimals are represented as integers depending on their specified width.
+
+| Precision | Internal | Size (bytes)
+| --- | --- | ---
+| 1-4 | INT16 | 2
+| 5-9 | INT32 | 4
+| 10-18 | INT64 | 8
+| 19-38 | INT128 | 16
+
+You can explicitly cast a number (either integer or float) to a `DECIMAL` as follows:
+
+```cypher
+RETURN CAST(127.3, "DECIMAL(5, 2)") AS result;
+```
+
+```table
+┌───────────────┐
+│ result        │
+│ DECIMAL(5, 2) │
+├───────────────┤
+│ 127.30        │
+└───────────────┘
+```
+
+Note that if you attempt to cast with a precision or scale that is too small, an overflow exception
+will be raised:
+```cypher
+RETURN CAST(127.3, "DECIMAL(4, 2)");
+```
+```
+Error: Overflow exception: To Decimal Cast Failed: 127.300000 is not in DECIMAL(4, 2) range
+```
+
+## BOOLEAN
+
+| Size | Description
+| --- | ---
+| 1 byte | true/false
+
+## UUID
+
+| Size | Description
+| --- | ---
+| 16 bytes | signed sixteen-byte integer
+
+The data type `UUID` stores Universally Unique Identifiers (UUID) as defined by RFC 4122,
+ISO/IEC 9834-8:2005, and related standards. Kuzu follows [PostgreSQL's implementation](https://www.postgresql.org/docs/13/datatype-uuid.html)
+for the `UUID` format.
+
+Example:
+
+```cypher
+RETURN UUID('A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11') as result;
+```
+
+```table
+┌──────────────────────────────────────┐
+│ result                               │
+│ UUID                                 │
+├──────────────────────────────────────┤
+│ a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11 │
+└──────────────────────────────────────┘
+```
+
+## STRING
+
+| Size | Description
+| --- | ---
+| variable | variable-length character string
+
+`STRING` data type supports UTF-8 encoding.
+
+Example:
+
+```cypher
+RETURN 'Зарегистрируйтесь, σπαθιοῦ, Yen [jɛn], kΩ' AS str;
+```
+
+
+```table
+┌───────────────────────────────────────────┐
+│ str                                       │
+│ STRING                                    │
+├───────────────────────────────────────────┤
+│ Зарегистрируйтесь, σπ...                  │
+└───────────────────────────────────────────┘
+```
+
+## NULL
+
+| Size | Description
+| --- | ---
+| fixed | special value to represent unknown data
+
+`NULL` is a special value to represent unknown data. Node or relationship properties and the result of
+expressions can be `NULL` in addition to the non-`NULL` domain of values they are allowed to take. For
+example, boolean expressions can be `true`, `false`, or `NULL`.
+
+The `NULL` (in any of its case variations, such as `Null` or `null`) can be
+used to specify a null literal. Some examples of comparisons using `NULL` are shown below.
+
+Compare a value with `NULL`:
+```cypher
+RETURN 3 = null;
+```
+
+```table
+┌────────────┐
+│ EQUALS(3,) │
+│ BOOL       │
+├────────────┤
+│            │
+└────────────┘
+```
+
+Compare `NULL` with `NULL`:
+```cypher
+RETURN null = null;
+```
+
+```table
+┌───────────┐
+│ EQUALS(,) │
+│ BOOL      │
+├───────────┤
+│           │
+└───────────┘
+```
+Kuzu's CLI returns an empty cell to indicate nulls.
+
+## DATE
+
+| Size | Description
+| --- | ---
+| 4 bytes | year, month, day
+
+`DATE` is specified in ISO-8601 format (`YYYY-MM-DD`).
+
+Example:
+```cypher
+RETURN date('2022-06-06') as x;
+```
+
+```table
+┌────────────┐
+│ x          │
+│ DATE       │
+├────────────┤
+│ 2022-06-06 │
+└────────────┘
+```
+
+## TIMESTAMP
+
+| Size | Description
+| --- | ---
+| 4 bytes | combination of time and date
+
+`TIMESTAMP` combines date and a time (hour, minute, second, and/or millisecond) and is formatted
+according to the ISO-8601 format (`YYYY-MM-DD hh:mm:ss[.zzzzzz][+-TT[:tt]]`),
+which specifies the date (`YYYY-MM-DD`), time (`hh:mm:ss[.zzzzzz]`) and a timezone offset
+`[+-TT[:tt]]`. Only the date section is mandatory. If the time is specified, then the millisecond
+`[.zzzzzz]` is left out. The default timezone is UTC, and Kuzu stores the timestamp based on the
+timezone offset relative to UTC.
+
+Example:
+```cypher
+// Midnight in UTC-10
+kuzu> RETURN timestamp("1970-01-01 00:00:00-10") as x;
+```
+```table
+┌─────────────────────┐
+│ x                   │
+│ TIMESTAMP           │
+├─────────────────────┤
+│ 1970-01-01 10:00:00 │
+└─────────────────────┘
+```
+```cypher
+// Midnight in UTC+10
+kuzu> RETURN timestamp("1970-01-01 00:00:00+10") as x;
+```
+```table
+┌─────────────────────┐
+│ x                   │
+│ TIMESTAMP           │
+├─────────────────────┤
+│ 1969-12-31 14:00:00 │
+└─────────────────────┘
+```
+```cypher
+
+// 4.666ms after midnight in UTC
+kuzu> RETURN timestamp("1970-01-01 00:00:00.004666") as x;
+```
+```table
+┌────────────────────────────┐
+│ x                          │
+│ TIMESTAMP                  │
+├────────────────────────────┤
+│ 1970-01-01 00:00:00.004666 │
+└────────────────────────────┘
+```
+
+## INTERVAL
+
+| Size | Description | Aliases
+| --- | --- | ---
+| 4 bytes | date/time difference | DURATION
+
+`INTERVAL` consists of multiple date parts and represents the total time length of these date parts.
+Kuzu follows [DuckDB's implementation](https://duckdb.org/docs/sql/data_types/interval) for the
+interval format.
+
+Example:
+```cypher
+RETURN interval("1 year 2 days") as x;
+```
+
+```table
+┌───────────────┐
+│ x             │
+│ INTERVAL      │
+├───────────────┤
+│ 1 year 2 days │
+└───────────────┘
+```
+
+## STRUCT
+
+A `STRUCT` is a mapping of key-value pairs where the keys are of the type `STRING`. `STRUCT` is a
+**fixed-size** data type so values with the same `STRUCT` type must contain the same set of key-value pairs.
+You can think of a `STRUCT` column as a nested single column over multiple other columns.
+
+| Data Type | DDL definition |
+| --- | --- |
+| STRUCT | STRUCT(first STRING, last STRING) |
+
+To construct a `STRUCT`, provide a mapping of keys to values as follows:
+
+```cypher
+RETURN {first: 'Adam', last: 'Smith'};
+```
+
+```table
+┌───────────────────────────────────┐
+│ STRUCT_PACK(first,last)           │
+│ STRUCT(first STRING, last STRING) │
+├───────────────────────────────────┤
+│ {first: Adam, last: Smith}        │
+└───────────────────────────────────┘
+```
+
+Alternatively, you can explicitly use the `STRUCT_PACK` function. This will produce the same result.
+```cypher
+RETURN STRUCT_PACK(first := 'Adam', last := 'Smith');
+```
+
+You can extract a value from a `STRUCT` using the dot notation:
+
+```cypher
+WITH {first: 'Adam', last: 'Smith'} AS full_name
+RETURN full_name.first AS first_name;
+```
+
+```table
+┌────────────┐
+│ first_name │
+│ STRING     │
+├────────────┤
+│ Adam       │
+└────────────┘
+```
+
+Alternatively you can use the `struct_extract()` function
+```cypher
+WITH {first:'Adam', last: 'Smith'} AS full_name
+RETURN struct_extract(full_name, 'first') AS first_name;
+```
+
+Functions that work on `STRUCT`s can be found [here](/cypher/expressions/struct-functions).
+
+## MAP
+
+A `MAP` is a dictionary of key-value pairs where all keys have the same type and all values have the
+same type. `MAP` is similar to `STRUCT` in that it is an ordered list of mappings. However, `MAP` does
+not need to have the same keys present for each row, and is thus more suitable when the schema of an entity
+is unknown beforehand or when the schema varies per row.
+
+`MAP`s must have a single type for all keys, and a single type for all values. Additionally, keys of
+a `MAP` do not need to be `STRING`s like they do in a `STRUCT`.
+
+| Data Type | DDL definition |
+| --- | --- |
+| MAP | MAP(STRING, INT64) |
+
+To construct a `MAP`, provide a list of keys and a list of values. The keys and values must be of the same length.
+
+Example:
+
+```cypher
+RETURN map([1, 2], ['a', 'b']) AS m;
+```
+
+```table
+┌────────────────────┐
+│ m                  │
+│ MAP(INT64, STRING) │
+├────────────────────┤
+│ {1=a, 2=b}         │
+└────────────────────┘
+```
+
+Functions that work on map objects can be found [here](/cypher/expressions/map-functions).
+
+## UNION
+
+Similar to C++ `std::variant`, `UNION` is a nested data type that is capable of holding multiple
+alternative values with different types. The value under key `"tag"` is considered as the value being
+currently hold by the `UNION`.
+
+Internally, `UNION` are implemented as `STRUCT` with `"tag"` as one of its keys.
+
+| Data Type | DDL definition
+| --- | --- | 
+| UNION | UNION(price FLOAT, note STRING) | 
+
+Consider the following CSV file:
+```
+// demo.csv
+1
+aa
+```
+
+Example
+```cypher
+CREATE NODE TABLE demo(a SERIAL PRIMARY KEY, b UNION(num INT64, str STRING));
+COPY demo from "demo.csv";
+```
+
+```cypher
+MATCH (d:demo) RETURN d.b;
+```
+```table
+┌──────────────────────────────┐
+│ d.b                          │
+│ UNION(num INT64, str STRING) │
+├──────────────────────────────┤
+│ 1                            │
+│ aa                           │
+└──────────────────────────────┘
+```
+
+Functions that work on `UNION` data types can be found [here](/cypher/expressions/union-functions).
+
+## BLOB
+
+| Size | Description | Aliases
+| --- | --- | ---
+| variable | arbitrary binary object | BYTEA
+
+`BLOB`(**B**inary **L**arge **OB**ject) allows storage of an arbitrary binary object with up to
+4KB in size in Kuzu. The database processes it as binary data because it has no knowledge as to what
+the underlying data represents (e.g. image, video).
+
+Below is an example of how to create a blob object with 3 bytes (188, 189, 186, 170):
+```cypher
+RETURN BLOB('\\xBC\\xBD\\xBA\\xAA') as result;
+```
+
+```table
+┌──────────────────┐
+│ result           │
+│ BLOB             │
+├──────────────────┤
+│ \xBC\xBD\xBA\xAA │
+└──────────────────┘
+```
+
+## SERIAL
+
+`SERIAL` is a logical data type used for creating an auto-incrementing sequence of numbers, typically
+used as a unique column identifier, similar to `AUTO_INCREMENT` feature supported
+by some other databases. 
+
+#### Using `SERIAL` as primary key column in node tables
+
+```
+// person.csv
+Alice
+Bob
+Carol
+Dan
+```
+
+```cypher
+CREATE NODE TABLE Person(id SERIAL PRIMARY KEY, name STRING);
+COPY Person FROM 'person.csv';
+MATCH (a:Person) RETURN a.*;
+```
+
+```table
+┌────────┬────────┐
+│ a.id   │ a.name │
+│ SERIAL │ STRING │
+├────────┼────────┤
+│ 0      │ Alice  │
+│ 1      │ Bob    │
+│ 2      │ Carol  │
+│ 3      │ Dan    │
+└────────┴────────┘
+```
+
+#### Using `SERIAL` for properties in relationship tables
+
+You can create relationship tables that have a `SERIAL` property column. For example, consider a
+scenario where you want to auto-generate a unique transaction ID for each transfer between users.
+
+```cypher
+CREATE REL TABLE Transfer (from User to User, trx_id SERIAL);
+```
+
+## NODE
+
+| Size | Description
+| --- | ---
+| fixed | represents a node in a graph
+
+`NODE` is a logical data type. Internally, `NODE` is processed as `STRUCT` type. A `NODE` always contains
+an internal ID field with key `_ID` and a label field with key `_LABEL`. The rest fields are node properties.
+
+Here's how to return `NODE` column for a file `person.csv`:
+```cypher
+CREATE NODE TABLE Person(id SERIAL PRIMARY KEY, name STRING, age INT64);
+COPY Person FROM 'person.csv';
+MATCH (a:Person) RETURN a;
+```
+
+```table
+┌─────────────────────────────────────────────────────────┐
+│ a                                                       │
+│ NODE                                                    │
+├─────────────────────────────────────────────────────────┤
+│ {_ID: 0:0, _LABEL: Person, id: 0, name: Alice, age: 30} │
+│ {_ID: 0:1, _LABEL: Person, id: 1, name: Bob, age: 20}   │
+│ {_ID: 0:2, _LABEL: Person, id: 2, name: Carol, age: 25} │
+│ {_ID: 0:3, _LABEL: Person, id: 3, name: Dan, age: 28}   │
+└─────────────────────────────────────────────────────────┘
+```
+
+## REL
+
+| Size | Description
+| --- | ---
+| fixed | represents a relationship in a graph
+
+`REL` is a logical type that represents a relationship (i.e., an edge). Internally, `REL` is processed as `STRUCT` type. A `REL` always contains a
+src ID field with key `_SRC`, a dst ID field with key `_DST`, an internal ID field with key `_ID`
+and a label field with key `_LABEL`. The rest fields are rel properties.
+
+Here's how to return a relationship column that's of type `REL`:
+```cypher
+MATCH (a:Person)-[r:Follows]->(b:Person)
+RETURN r;
+```
+
+```table
+┌───────────────────────────────────────────────┐
+│ r                                             │
+│ REL                                           │
+├───────────────────────────────────────────────┤
+│ (0:0)-{_LABEL: Follows, _ID: 1:0, since: 2... │
+│ (0:1)-{_LABEL: Follows, _ID: 1:1, since: 2... │
+│ (0:2)-{_LABEL: Follows, _ID: 1:2, since: 2... │
+│ (0:3)-{_LABEL: Follows, _ID: 1:3, since: 2... │
+└───────────────────────────────────────────────┘
+```
+
+## RECURSIVE_REL
+
+`RECURSIVE_REL` is a logical type that represents recursive relationships. i.e., paths of arbitrary lengths. Internally, `RECURSIVE_REL` is processed as `STRUCT` type, more specifically, a
+`STRUCT{LIST[NODE], LIST[REL]}`. A `RECURSIVE_REL` always contains a nodes field with the key `_NODES` and a
+relationships field with the key `_RELS`.
+
+#### Return a column that's of type `RECURSIVE_REL`
+```cypher
+MATCH p = (a:User)-[:Follows]->(b:User) 
+WHERE a.name = 'Adam' AND b.name = 'Karissa' 
+RETURN p;
+```
+
+```
+{_NODES: [{_ID: 0:0, _LABEL: User, name: Adam, age: 30},{_ID: 0:1, _LABEL: User, name: Karissa, age: 40}], _RELS: [(0:0)-{_LABEL: Follows, _ID: 2:0, since: 2020}->(0:1)]}
+```
+
+#### Access all nodes on a recursive relationship
+```cypher
+MATCH p = (a:Person)-[:Follows]->(b:Person) 
+WHERE a.name = 'Alice' AND b.name = 'Bob' 
+RETURN nodes(p);
+```
+
+```table
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ NODES(p)                                                                        │
+│ NODE[]                                                                          │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│ [{_ID: 0:0, _LABEL: Person, name: Alice},{_ID: 0:1, _LABEL: Person, name: Bob}] │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Access all relationships on a recursive relationship
+```cypher
+MATCH p = (a:Person)-[:Follows]->(b:Person) 
+WHERE a.name = 'Alice' AND b.name = 'Bob' 
+RETURN rels(p);
+```
+
+```table
+┌─────────────────────────────────────────────────────────┐
+│ RELS(p)                                                 │
+│ REL[]                                                   │
+├─────────────────────────────────────────────────────────┤
+│ [(0:0)-{_LABEL: Follows, _ID: 1:0, since: 2024}->(0:1)] │
+└─────────────────────────────────────────────────────────┘
+```
+
+## LIST and ARRAY
+
+Kuzu supports two list-like data types: (i) variable-length lists, simply called `LIST`, and
+(ii) fixed-length lists, called `ARRAY`. Click on the card below to learn more about them.
+
+<LinkCard
+  title="How to work with LIST and ARRAY"
+  href="/cypher/data-types/list-and-array"
+  description="Example usage of LIST and ARRAY data types"
+/>
+
+
+## JSON
+
+:::note[Note]
+The JSON data type is not natively available in Kuzu, and requires the [JSON extension](/extensions/json)
+:::
+
+Using the official `json` extension, you can model and operate on properties as JSON natively via the `JSON`
+logical type, rather than as a string.
+
+<LinkCard
+  title="How to work with JSON"
+  href="/extensions/json#json-data-type"
+  description="Example usage of JSON data type"
+/>
