@@ -1,41 +1,50 @@
-<!--
-Sync Impact Report:
-Version change: N/A -> 1.0.0 (Major: Initial version with core principles)
-Modified principles:
-  - N/A -> Code Quality & Standards
-  - N/A -> Comprehensive Testing
-  - N/A -> Performance Considerations
-Added sections: None
-Removed sections: Principles 4 and 5 placeholders
-Templates requiring updates:
-  - .specify/templates/plan-template.md: ⚠ pending
-  - .specify/templates/spec-template.md: ⚠ pending
-  - .specify/templates/tasks-template.md: ⚠ pending
-  - .specify/templates/commands/speckit.constitution.md: ⚠ pending
-Follow-up TODOs: None
--->
-# CypherDB Constitution
+# [PROJECT_NAME] Constitution
+<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
 ## Core Principles
 
-### I. Code Quality & Standards
-All code MUST adhere to C++20 standards, utilizing GCC 12+, Clang 18+, or MSVC 19.20+ compilers. Python 3.9+ is required for Python components. Code MUST be written to support well-defined C/C++ libraries and language bindings.
+### [PRINCIPLE_1_NAME]
+<!-- Example: I. Library-First -->
+[PRINCIPLE_1_DESCRIPTION]
+<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
 
-### II. Comprehensive Testing
-All components, including C/C++ core and all language bindings (Python, Node.js, Java, Rust), MUST have comprehensive test coverage. A robust testing environment, potentially requiring increased system resource limits (e.g., `ulimit`), MUST be maintained to ensure test reliability.
+### [PRINCIPLE_2_NAME]
+<!-- Example: II. CLI Interface -->
+[PRINCIPLE_2_DESCRIPTION]
+<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
 
-### III. Performance Considerations
-Performance MUST be a core consideration throughout development, from build processes utilizing parallel compilation to runtime execution. Code MUST be designed with performance debugging and optimization in mind, ensuring efficient resource utilization.
+### [PRINCIPLE_3_NAME]
+<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+[PRINCIPLE_3_DESCRIPTION]
+<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
 
-## Additional Constraints
+### [PRINCIPLE_4_NAME]
+<!-- Example: IV. Integration Testing -->
+[PRINCIPLE_4_DESCRIPTION]
+<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
 
+### [PRINCIPLE_5_NAME]
+<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+[PRINCIPLE_5_DESCRIPTION]
+<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+
+## [SECTION_2_NAME]
+<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+
+[SECTION_2_CONTENT]
 <!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
 
-## Development Workflow
+## [SECTION_3_NAME]
+<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
 
+[SECTION_3_CONTENT]
 <!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
 
 ## Governance
-This constitution supersedes all other practices. Amendments require clear documentation, approval from designated stakeholders, and a migration plan if changes impact existing systems or workflows. All pull requests and code reviews MUST verify compliance with these principles. Complexity introduced in the codebase MUST be thoroughly justified and documented.
+<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-**Version**: 1.0.0 | **Ratified**: 2025-11-01 | **Last Amended**: 2025-11-01
+[GOVERNANCE_RULES]
+<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+
+**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->

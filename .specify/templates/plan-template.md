@@ -31,9 +31,7 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- [ ] Code Quality & Standards: Confirm adherence to C++20, required compilers (GCC 12+, Clang 18+, MSVC 19.20+), and Python 3.9+ for relevant components. Ensure code supports C/C++ libraries and language bindings. (Principle I)
-- [ ] Comprehensive Testing: Verify a plan for comprehensive test coverage for all components and language bindings. Address potential system resource limits for testing. (Principle II)
-- [ ] Performance Considerations: Document performance goals and design choices that prioritize efficient resource utilization and facilitate performance debugging. (Principle III)
+[Gates determined based on constitution file]
 
 ## Project Structure
 

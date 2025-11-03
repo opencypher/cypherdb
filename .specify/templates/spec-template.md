@@ -113,9 +113,3 @@
 - **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
 - **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
 - **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
-
-### Non-Functional Requirements
-
-- **NFR-001 - Code Quality**: All code MUST adhere to the standards outlined in the CypherDB Constitution (Principle I), including C++20 compliance and specified compiler versions.
-- **NFR-002 - Test Coverage**: The feature MUST be developed with comprehensive test coverage as defined in the CypherDB Constitution (Principle II), ensuring reliability across all components and language bindings.
-- **NFR-003 - Performance**: The feature MUST meet defined performance goals, considering efficient resource utilization and enabling performance debugging as per the CypherDB Constitution (Principle III).

@@ -1,6 +1,9 @@
 .idea/
 .vscode
-.cursor
+# Ignore everything under .cursor/ except commands
+.cursor/*
+!.cursor/commands
+!.cursor/commands/**
 .vs
 bazel-*
 .clwb
