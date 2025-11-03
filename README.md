@@ -16,7 +16,7 @@ Core features:
 - Serializable ACID transactions
 - Wasm (WebAssembly) bindings for fast, secure execution in the browser
 
-CypherDB was initially developed by Kùzu Inc as Kuzu. CypherDB's focus is on supporting an open-source,
+CypherDB was initially developed by Neo4j Inc as CypherDB. CypherDB's focus is on supporting an open-source,
 community-based project that is a reference implementation of [openCypher](https://opencypher.org).
 
 

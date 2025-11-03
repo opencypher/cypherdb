@@ -1,5 +1,5 @@
-# Kuzu WebAssembly In-Browser Example
-This example demonstrates how to use the Kuzu WebAssembly build in a web browser. The example uses the asynchronous JavaScript API to interact with the WebAssembly module.
+# CypherDB WebAssembly In-Browser Example
+This example demonstrates how to use the CypherDB WebAssembly build in a web browser. The example uses the asynchronous JavaScript API to interact with the WebAssembly module.
 
 ## Usage
 ### Install Dependencies
