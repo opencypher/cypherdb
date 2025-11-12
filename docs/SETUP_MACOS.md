@@ -85,10 +85,17 @@ make release NUM_THREADS=$(sysctl -n hw.physicalcpu)
 
 This will:
 - Configure CMake with Release build type
-- Build the core C++ library and CLI
+- Build the core C++ library and CLI (the `kuzu` interactive shell)
 - Use all available physical CPU cores for compilation
 
 **Note**: On macOS, `sysctl -n hw.physicalcpu` gives you the number of physical CPU cores, which is the recommended setting according to the developer guide.
+
+**Note**: The interactive CLI shell (`kuzu`) is built by default (`BUILD_SHELL=TRUE`). After building, you can find the executable at `build/release/tools/shell/kuzu` (or `build/debug/tools/shell/kuzu` for debug builds). You can run it with:
+```bash
+./build/release/tools/shell/kuzu [database_path]
+# or for in-memory database:
+./build/release/tools/shell/kuzu :memory:
+```
 
 ### 7. Run Basic Tests
 
@@ -236,7 +243,36 @@ To build all components (benchmarks, examples, extensions, tests, and all langua
 make all NUM_THREADS=$(sysctl -n hw.physicalcpu)
 ```
 
+### Build Shell CLI (Included by Default)
+
+The interactive CLI shell (`kuzu`) is **built by default** with all standard build targets (`release`, `debug`, `relwithdebinfo`). The `BUILD_SHELL` CMake option defaults to `TRUE`.
+
+To explicitly ensure the shell is built:
+
+```bash
+make release NUM_THREADS=$(sysctl -n hw.physicalcpu)
+# Shell is automatically included - no special flags needed
+```
+
+To test the shell after building:
+
+```bash
+make shell-test
+```
+
+**Note**: If you're building Python bindings with `make python`, note that it temporarily sets `BUILD_SHELL=FALSE` to avoid conflicts, but the shell will still be available from your earlier `make release` build.
+
 ## Common Issues and Solutions
+
+### Issue: clang < 18.x
+
+**Solution**: Install using `llvm` homebrew:
+```bash
+brew install llvm
+```
+
+Then follow post-install instructions, deciding whether to override default clang,
+or just tell cmake about it by setting `CMAKE_PREFIX_PATH`.
 
 ### Issue: "Too many open files" during tests
 
