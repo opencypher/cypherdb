@@ -18,6 +18,6 @@ body:
       label: Link
       description: >
         Provide a link to the existing documentation, if applicable.
-      placeholder: ex. https://docs.kuzudb.com/cypher/
+      placeholder: ex. https://opencypher.github.io/cypherdb/
     validations:
       required: false
