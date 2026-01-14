@@ -46,5 +46,9 @@ implementation of [openCypher](https://opencypher.org).
 
 You can build from source using the instructions provided in the [developer guide](https://opencypher.github.io/cypherdb/developer-guide/).
 
+## Disclaimer
+
+This repository is not an official Neo4j product or project. It is maintained by Neo4j employees or contributors in a personal or experimental capacity. The content here is provided “as is,” comes with no guarantees, and is unsupported.
+
 ## License
 CypherDB is licensed under the [MIT License](LICENSE), with initial support from [Neo4j, Inc.](https://neo4j.com).
