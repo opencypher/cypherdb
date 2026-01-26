@@ -1,4 +1,7 @@
-# CypherDB
+# CypherDB - Archived
+
+After evaluation of the stated goals for this fork, we have decided to not maintain the project. It will remain a public archive 
+for a short while before being deleted. There are no meaningful code contributions to preserve. 
 
 ## About CypherDB
 
